@@ -1,0 +1,4 @@
+- hosts: Windows
+  tasks:
+    - name: Get whoami information
+      win_whoami:
