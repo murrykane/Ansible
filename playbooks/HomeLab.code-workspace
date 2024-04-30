@@ -1,0 +1,13 @@
+{
+  "settings": {
+    "ansible.python.interpreterPath": "c:\\Users\\MurDog\\AppData\\Local\\Programs\\Python\\Python310\\python.exe"
+  },
+  "folders": [
+	{
+		"path": "../../HomeLab"
+	},
+	{
+		"path": ".."
+	}
+]
+}
