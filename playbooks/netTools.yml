@@ -1,5 +1,5 @@
 ---
-- hosts: ubuntu:prox
+- hosts: ubuntu:prox:unraid
   become: yes
   tasks:
   - name: make sure net-tools are installed on all nodes
