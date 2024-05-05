@@ -6,3 +6,7 @@
     apt:
       name: net-tools
       state: present
+  - name: make sure apache2-utils are installed on all nodes
+    apt:
+      name: apache2-utils
+      state: present
