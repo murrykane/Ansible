@@ -10,3 +10,5 @@
     apt:
       name: apache2-utils
       state: present
+    when:
+      - inventory_hostname != 'proxmini.kane.mk'
