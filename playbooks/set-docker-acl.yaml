@@ -3,7 +3,7 @@
   become: yes
   tasks:
   - name: make sure ACL's are in place for Docker and Telegraf
-    ansible.builtin.systemd_service:
+    ansible.builtin.systemd:
       name: set-docker-acl
       state: restart
     when:
