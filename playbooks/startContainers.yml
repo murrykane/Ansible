@@ -12,6 +12,8 @@
         docker_container:
           name: "{{ item }}"
           state: started
+          comparisons:
+            '*': ignore  # by default, ignore *all* options (including image)
         loop: "{{ container_list.stdout_lines }}"
     when:
       - inventory_hostname == 'mkserver.kane.mk'
