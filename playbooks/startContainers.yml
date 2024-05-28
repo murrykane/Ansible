@@ -9,7 +9,7 @@
         register: container_list
   
       - name: Start containers
-        community.docker.docker_container:
+        docker_container:
           name: "{{ item }}"
           state: started
         loop: "{{ container_list.stdout_lines }}"
