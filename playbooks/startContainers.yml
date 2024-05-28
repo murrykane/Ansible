@@ -1,0 +1,17 @@
+---
+- hosts: ubuntu
+  become: yes
+  tasks:
+  - name: Start all containers for Docker
+    block:
+      - name: Get list of all containers
+        shell: docker ps -aq
+        register: container_list
+  
+      - name: Start containers
+        community.docker.docker_container:
+          name: "{{ item }}"
+          state: started
+        loop: "{{ container_list.stdout_lines }}"
+    when:
+      - inventory_hostname == 'mkserver.kane.mk'
