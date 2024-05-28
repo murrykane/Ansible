@@ -17,7 +17,7 @@
       #  loop: "{{ container_list.stdout_lines }}"
       - name: Start containers one
         docker_container:
-          name: 7f62bb59c4e5
+          name: ea330f261717
           state: started
           comparisons:
             '*': ignore  # by default, ignore *all* options (including image)
