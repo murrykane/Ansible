@@ -8,12 +8,19 @@
         shell: docker ps -aq
         register: container_list
   
-      - name: Start containers
+      #- name: Start containers
+      #  docker_container:
+      #    name: "{{ item }}"
+      #    state: started
+      #    comparisons:
+      #      '*': ignore  # by default, ignore *all* options (including image)
+      #  loop: "{{ container_list.stdout_lines }}"
+      - name: Start containers one
         docker_container:
-          name: "{{ item }}"
+          name: 7f62bb59c4e5
           state: started
           comparisons:
             '*': ignore  # by default, ignore *all* options (including image)
-        loop: "{{ container_list.stdout_lines }}"
+      
     when:
       - inventory_hostname == 'mkserver.kane.mk'
