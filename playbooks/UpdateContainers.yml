@@ -11,7 +11,8 @@
         register: container_list
 
       - name: List found containers docker compose files 
-        debug: container_list
+        ansible.builtin.debug: 
+          var: container_list
   
       # - name: Start containers
       #   docker_container:
