@@ -31,12 +31,12 @@
           msg: "Directory for compose file is: {{ item.path }}"
         loop: "{{ compose_dirs.files }}"
 
-      # - name: Update containers
-      #   docker_compose:
-      #     project_src: "{{ item.path }}"
-      #     pull: yes
-      #     recreate: always
-      #   loop: "{{ compose_dirs.files }}"
+      - name: Update containers
+        docker_compose:
+          project_src: "{{ item.path }}"
+          pull: yes
+          recreate: always
+        loop: "{{ compose_dirs.files }}"
       
       
     when:
