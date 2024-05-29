@@ -18,6 +18,8 @@
         ansible.builtin.find:
           paths: "{{ container_home }}"
           file_type: directory
+          use_regex: true
+          patterns: 'unboun.*'
         register: compose_dirs
 
       - name: List found containers docker compose file directories
@@ -31,10 +33,10 @@
 
       # - name: Update containers
       #   docker_compose:
-      #     project_src: "{{ item }}"
+      #     project_src: "{{ item.path }}"
       #     pull: yes
       #     recreate: always
-      #   loop: "{{ compose_dirs.files.path }}"
+      #   loop: "{{ compose_dirs.files }}"
       
       
     when:
