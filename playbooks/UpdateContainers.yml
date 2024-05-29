@@ -27,14 +27,14 @@
       - name: List containers
         ansible.builtin.debug:
           var: "Directory: {{ item }}"
-        loop: "{{ compose_dirs.path }}"
+        loop: "{{ compose_dirs.files.path }}"
 
       # - name: Update containers
       #   docker_compose:
       #     project_src: "{{ item }}"
       #     pull: yes
       #     recreate: always
-      #   loop: "{{ compose_dirs.path }}"
+      #   loop: "{{ compose_dirs.files.path }}"
       
       
     when:
