@@ -19,7 +19,7 @@
           paths: "{{ container_home }}"
           file_type: directory
           use_regex: true
-          patterns: 'unboun.*'
+          #patterns: 'unboun.*'  #force to only 1 container
         register: compose_dirs
 
       - name: List found containers docker compose file directories
