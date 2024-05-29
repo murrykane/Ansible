@@ -34,8 +34,9 @@
       - name: Update containers
         docker_compose:
           project_src: "{{ item.path }}"
-          pull: yes
+          pull: true
           recreate: always
+          restarted: true
         loop: "{{ compose_dirs.files }}"
       
       
