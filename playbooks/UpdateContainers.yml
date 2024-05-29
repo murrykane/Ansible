@@ -26,7 +26,7 @@
 
       - name: List containers
         ansible.builtin.debug:
-          var: "Directory: {{ item.path }}"
+          msg: "Directory for compose file is: {{ item.path }}"
         loop: "{{ compose_dirs.files }}"
 
       # - name: Update containers
