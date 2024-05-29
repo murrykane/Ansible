@@ -22,15 +22,19 @@
 
       - name: List found containers docker compose file directories
         ansible.builtin.debug: 
-          var: container_dirs
+          var: compose_dirs
+
+      - name: List containers
+        ansible.builtin.debug:
+          var: "Directory: {{ item }}"
+        loop: "{{ compose_dirs.path }}"
 
       # - name: Update containers
       #   docker_compose:
       #     project_src: "{{ item }}"
       #     pull: yes
       #     recreate: always
-      #     state: started
-      #   loop: "{{ container_dirs }}"
+      #   loop: "{{ compose_dirs.path }}"
       
       
     when:
