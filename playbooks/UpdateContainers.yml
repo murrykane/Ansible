@@ -18,7 +18,7 @@
         ansible.builtin.find:
           paths: "{{ container_home }}"
           file_type: directory
-          use_regex: true
+          #use_regex: true
           #patterns: 'unboun.*'  #force to only 1 container
         register: compose_dirs
 
