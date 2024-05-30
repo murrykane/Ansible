@@ -1,0 +1,34 @@
+---
+- hosts: mkserver.kane.mk
+  become: yes
+  vars:
+    container_home: '/home/murry/containers/'
+  tasks:
+
+  - name: Stop Monitoring to avoid noise
+    docker_compose:
+      project_src: "{{ container_home }}/kuma"
+      state: present
+      stopped: true
+
+
+  # - name: remove container 
+  #   docker_compose:
+  #     project_src: "{{ item.path }}"
+  #     state: absent
+  #   loop: "{{ compose_dirs.files }}"
+
+  # - name: Update containers
+  #   docker_compose:
+  #     project_src: "{{ item.path }}"
+  #     pull: true
+  #     recreate: always
+  #     restarted: true
+  #     debug: true  
+  #   loop: "{{ compose_dirs.files }}"
+
+  - name: Start Monitoring 
+    docker_compose:
+      project_src: "{{ container_home }}/kuma"
+      state: present
+      restarted: true  
