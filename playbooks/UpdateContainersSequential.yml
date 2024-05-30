@@ -44,12 +44,14 @@
       project_src: "{{container_home}}/{{item}}"
       state: present
       stopped: true
+      timeout: 200
     loop: "{{ stop_order }}"
 
   - name: Down all the containers (docker-compose down)
     docker_compose:
       project_src: "{{ item.path }}"
       state: absent
+      timeout: 200
     loop: "{{ compose_dirs.files }}"
 
   - name: Update containers to latest version
@@ -59,12 +61,14 @@
       recreate: always
       restarted: false
       debug: true  
+      timeout: 200
     loop: "{{ compose_dirs.files }}"
 
   - name: Start all Containers
     docker_compose:
       project_src: "{{container_home}}/{{item}}"
       state: present
+      timeout: 200
       #restarted: true
     loop: "{{ start_order }}"
 
@@ -72,6 +76,7 @@
     docker_compose:
       project_src: "{{ item.path }}"
       state: present
+      timeout: 200
     loop: "{{ compose_dirs.files }}"
 
 
