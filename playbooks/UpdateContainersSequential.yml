@@ -33,21 +33,6 @@
 
   tasks:
 
-  # - name: Stop Monitoring to avoid noise
-  #   block:
-  #     - name: Stop Uptime Kuma
-  #       docker_compose:
-  #         project_src: "{{ container_home }}/kuma"
-  #         state: present
-  #         stopped: true
-  #     - name: Stop Grafana Monitoring
-  #       docker_compose:
-  #         project_src: "{{ container_home }}/grafana-monitoring"
-  #         state: present
-  #         stopped: true
-  #   when:
-  #     - inventory_hostname == 'mkserver.kane.mk'
-
   - name: Iterate over Docker Compose directories
     ansible.builtin.find:
       paths: "{{ container_home }}"
@@ -61,27 +46,34 @@
       stopped: true
     loop: "{{ stop_order }}"
 
-  # - name: Down all the containers (docker-compose down)
-  #   docker_compose:
-  #     project_src: "{{ item.path }}"
-  #     state: absent
-  #   loop: "{{ compose_dirs.files }}"
+  - name: Down all the containers (docker-compose down)
+    docker_compose:
+      project_src: "{{ item.path }}"
+      state: absent
+    loop: "{{ compose_dirs.files }}"
 
-  # - name: Update containers to latest version
-  #   docker_compose:
-  #     project_src: "{{ item.path }}"
-  #     pull: true
-  #     recreate: always
-  #     restarted: false
-  #     debug: true  
-  #   loop: "{{ compose_dirs.files }}"
+  - name: Update containers to latest version
+    docker_compose:
+      project_src: "{{ item.path }}"
+      pull: true
+      recreate: always
+      restarted: false
+      debug: true  
+    loop: "{{ compose_dirs.files }}"
 
   - name: Start all Containers
     docker_compose:
       project_src: "{{container_home}}/{{item}}"
       state: present
-      restarted: true
+      #restarted: true
     loop: "{{ start_order }}"
+
+  - name: Start any leftover/missed containers
+    docker_compose:
+      project_src: "{{ item.path }}"
+      state: present
+    loop: "{{ compose_dirs.files }}"
+
 
 ######################## START ALL Containers #######################################
   # - name: Start Grafana Monitoring 
