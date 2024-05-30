@@ -4,7 +4,7 @@
   vars:
     container_home: '/home/murry/containers/'
     start_order:
-      - "portainer"
+      #- "portainer"
       - "unifi"
       - "speedtest-tracker"
       - "homepage"
@@ -20,7 +20,7 @@
     stop_order:
       - "kuma"
       - "grafana-monitoring"
-      - "portainer"
+      #- "portainer"
       - "unifi"
       - "speedtest-tracker"
       - "homepage"
