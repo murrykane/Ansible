@@ -19,7 +19,7 @@
 
     stop_order:
       - "kuma"
-      - "grafana-monitoring"
+      #- "grafana-monitoring"
       #- "portainer"
       - "unifi"
       - "speedtest-tracker"
