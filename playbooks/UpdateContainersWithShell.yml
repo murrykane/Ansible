@@ -49,14 +49,14 @@
 
   - name: Stop all Containers
     command:
-      cmd: docker-compose stop
+      cmd: docker-compose ps
     args:
       chdir: "{{container_home}}{{item}}"
     loop: "{{stop_order}}"
 
   - name: Start all Containers
     command:
-      cmd: docker-compose start
+      cmd: docker-compose ps
     args:
       chdir: "{{container_home}}{{item}}"
     loop: "{{start_order}}"
