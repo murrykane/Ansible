@@ -4,7 +4,7 @@
   vars:
     container_home: '/home/murry/containers/'
     start_order:
-      #- "portainer"
+      - "portainer"
       - "unifi"
       - "speedtest-tracker"
       - "homepage"
@@ -20,7 +20,6 @@
     stop_order:
       - "kuma"
       #- "grafana-monitoring"
-      #- "portainer"
       - "unifi"
       - "speedtest-tracker"
       - "homepage"
@@ -29,7 +28,8 @@
       - "orbital-sync"
       - "cadvisor"
       - "unbound"
-      - "traefik"    
+      - "traefik"
+      #- "portainer"    
 
   tasks:
 
@@ -49,20 +49,20 @@
 
   - name: Down all the containers (docker-compose down)
     docker_compose:
-      project_src: "{{ item.path }}"
+      project_src: "{{container_home}}/{{item}}"
       state: absent
       timeout: 200
-    loop: "{{ compose_dirs.files }}"
+    loop: "{{ stop_order }}"
 
   - name: Update containers to latest version
     docker_compose:
-      project_src: "{{ item.path }}"
+      project_src: "{{container_home}}/{{item}}"
       pull: true
       recreate: always
       restarted: false
       debug: true  
       timeout: 200
-    loop: "{{ compose_dirs.files }}"
+    loop: "{{ stop_order }}"
 
   - name: Start all Containers
     docker_compose:
