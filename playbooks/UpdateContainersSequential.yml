@@ -39,21 +39,21 @@
       file_type: directory
     register: compose_dirs
 
-  - name: stop containers hard with force kill
-    docker_container:
-      force_kill: true
-      state: stopped
-      name: "{{item}}"
-      timeout: 100
-    loop: "{{ stop_order }}"
+  # - name: stop containers hard with force kill
+  #   docker_container:
+  #     force_kill: true
+  #     state: stopped
+  #     name: "{{item}}"
+  #     timeout: 100
+  #   loop: "{{ stop_order }}"
 
-  - name: Stop all Containers
-    docker_compose:
-      project_src: "{{container_home}}{{item}}"
-      state: present
-      stopped: true
-      timeout: 200
-    loop: "{{ stop_order }}"
+  # - name: Stop all Containers
+  #   docker_compose:
+  #     project_src: "{{container_home}}{{item}}"
+  #     state: present
+  #     stopped: true
+  #     timeout: 200
+  #   loop: "{{ stop_order }}"
 
   - name: Down all the containers (docker-compose down)
     docker_compose:
