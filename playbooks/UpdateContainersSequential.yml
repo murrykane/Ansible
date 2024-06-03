@@ -19,7 +19,7 @@
 
     stop_order:
       - "kuma"
-      #- "grafana-monitoring"
+      - "grafana-monitoring"
       - "unifi"
       - "speedtest-tracker"
       - "homepage"
@@ -29,7 +29,7 @@
       - "cadvisor"
       - "unbound"
       - "traefik"
-      #- "portainer"    
+      - "portainer"    
 
   tasks:
 
@@ -78,83 +78,3 @@
       state: present
       timeout: 200
     loop: "{{ compose_dirs.files }}"
-
-
-######################## START ALL Containers #######################################
-  # - name: Start Grafana Monitoring 
-  #   docker_compose:
-  #     project_src: "{{ container_home }}grafana-monitoring"
-  #     state: present
-  #     restarted: true    
-
-  # - name: Start Portainer
-  #   docker_compose:
-  #     project_src: "{{ container_home }}portainer"
-  #     state: present
-  #     restarted: true  
-
-  # - name: Start unifi controller
-  #   docker_compose:
-  #     project_src: "{{ container_home }}unifi"
-  #     state: present
-  #     restarted: true  
-
-  # - name: Start speedtest-tracker
-  #   docker_compose:
-  #     project_src: "{{ container_home }}speedtest-tracker"
-  #     state: present
-  #     restarted: true  
-
-  # - name: Start HomePage
-  #   docker_compose:
-  #     project_src: "{{ container_home }}homepage"
-  #     state: present
-  #     restarted: true  
-
-  # - name: Start node_exporter 
-  #   docker_compose:
-  #     project_src: "{{ container_home }}node_exporter"
-  #     state: present
-  #     restarted: true  
-
-  # - name: Start flask
-  #   docker_compose:
-  #     project_src: "{{ container_home }}flask"
-  #     state: present
-  #     restarted: true  
-
-  # - name: Start orbital sync
-  #   docker_compose:
-  #     project_src: "{{ container_home }}orbital-sync"
-  #     state: present
-  #     restarted: true  
-
-  # - name: Start cadvisor
-  #   docker_compose:
-  #     project_src: "{{ container_home }}cadvisor"
-  #     state: present
-  #     restarted: true 
-
-  # - name: Start PiHole and Unbound
-  #   docker_compose:
-  #     project_src: "{{ container_home }}unbound"
-  #     state: present
-  #     restarted: true 
-
-  # - name: Start traefik
-  #   docker_compose:
-  #     project_src: "{{ container_home }}traefik"
-  #     state: present
-  #     restarted: true  
-
-  # - name: Start Grafana Monitoring 
-  #   docker_compose:
-  #     project_src: "{{ container_home }}grafana-monitoring"
-  #     state: present
-  #     restarted: true  
-
-  # - name: Start Update Kuma Monitoring 
-  #   docker_compose:
-  #     project_src: "{{ container_home }}kuma"
-  #     state: present
-  #     restarted: true  
