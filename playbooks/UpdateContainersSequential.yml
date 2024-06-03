@@ -53,7 +53,7 @@
   #     project_src: "{{container_home}}{{item}}"
   #     state: present
   #     stopped: true
-  #     timeout: 200
+  #     timeout: 100
   #   loop: "{{ stop_order }}"
   #   ignore_errors: true
 
@@ -61,7 +61,7 @@
     docker_compose:
       project_src: "{{container_home}}{{item}}"
       state: absent
-      timeout: 200
+      timeout: 100
     loop: "{{ stop_order }}"
     ignore_errors: true
 
@@ -72,14 +72,14 @@
       recreate: always
       restarted: false
       debug: true  
-      timeout: 200
+      timeout: 100
     loop: "{{ stop_order }}"
 
   - name: Start all Containers
     docker_compose:
       project_src: "{{container_home}}{{item}}"
       state: present
-      timeout: 200
+      timeout: 100
       #restarted: true
     loop: "{{ start_order }}"
     ignore_errors: true
@@ -88,5 +88,5 @@
     docker_compose:
       project_src: "{{ item.path }}"
       state: present
-      timeout: 200
+      timeout: 100
     loop: "{{ compose_dirs.files }}"
