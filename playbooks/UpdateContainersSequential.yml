@@ -61,13 +61,14 @@
     docker_compose:
       project_src: "{{container_home}}{{item}}"
       state: absent
-      timeout: 100
+      timeout: 30
     loop: "{{ stop_order }}"
     ignore_errors: true
 
 
   - name: restart docker
     service:
+      name: docker
       state: restarted
       enabled: yes
 
