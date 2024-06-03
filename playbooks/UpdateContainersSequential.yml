@@ -45,6 +45,7 @@
   #     state: stopped
   #     name: "{{item}}"
   #     timeout: 100
+  #   ignore_errors: true
   #   loop: "{{ stop_order }}"
 
   # - name: Stop all Containers
@@ -54,6 +55,7 @@
   #     stopped: true
   #     timeout: 200
   #   loop: "{{ stop_order }}"
+  #   ignore_errors: true
 
   - name: Down all the containers (docker-compose down)
     docker_compose:
@@ -61,6 +63,7 @@
       state: absent
       timeout: 200
     loop: "{{ stop_order }}"
+    ignore_errors: true
 
   - name: Update containers to latest version
     docker_compose:
@@ -79,6 +82,7 @@
       timeout: 200
       #restarted: true
     loop: "{{ start_order }}"
+    ignore_errors: true
 
   - name: Start any leftover/missed containers
     docker_compose:
