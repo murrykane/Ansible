@@ -1,4 +1,5 @@
 ---
+# docker ps -a | awk -F' ' '{print $NF}' | grep -v NAMES
 - hosts: 'mkserver.kane.mk'
   become: yes
   tasks:
