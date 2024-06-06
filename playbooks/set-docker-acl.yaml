@@ -1,10 +1,17 @@
 ---
-- hosts: ubuntu
+- hosts: 'mkserver.kane.mk'
   become: yes
   tasks:
   - name: make sure ACL's are in place for Docker and Telegraf
     ansible.builtin.systemd:
       name: set-docker-acl
       state: restarted
-    when:
-      - inventory_hostname == 'mkserver.kane.mk'
+  
+  - name: restart telegraf container
+    docker_container:
+      name: telegraf
+      state: started
+      restart: true
+      comparisons:
+        '*': ignore  # by default, ignore *all* options (including image)
+
