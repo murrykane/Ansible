@@ -40,9 +40,9 @@
     register: compose_dirs
 
   - name: stop Kuma to stop the monitoring noise
-    docker_compose:
+    community.docker.docker_compose_v2:
       state: stopped
-      project_src: "{{container_home}}/kuma"
+      project_src: "{{container_home}}kuma"
 
 
   # - name: stop Grafana to stop the monitoring noise
