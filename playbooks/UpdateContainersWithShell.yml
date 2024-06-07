@@ -39,6 +39,19 @@
       file_type: directory
     register: compose_dirs
 
+  - name: stop Kuma to stop the monitoring noise
+    docker_container:
+      name: kuma
+      stopped: true
+      comparisons:
+        '*': ignore  # by default, ignore *all* options (including image)
+
+  # - name: stop Grafana to stop the monitoring noise
+  #   docker_container:
+  #     name: grafana-monitoring
+  #     stopped: true
+  #     comparisons:
+  #       '*': ignore  # by default, ignore *all* options (including image)
 
   - name: Check PS status of all Containers
     command:
@@ -47,23 +60,23 @@
       chdir: "{{container_home}}{{item}}"
     loop: "{{stop_order}}"
 
-  - name: Stop all Containers
-    command:
-      cmd: docker-compose stop
-    args:
-      chdir: "{{container_home}}{{item}}"
-    loop: "{{stop_order}}"
+  # - name: Stop all Containers
+  #   command:
+  #     cmd: docker-compose stop
+  #   args:
+  #     chdir: "{{container_home}}{{item}}"
+  #   loop: "{{stop_order}}"
 
-  - name: Pull all Containers
-    command:
-      cmd: docker-compose pull
-    args:
-      chdir: "{{container_home}}{{item}}"
-    loop: "{{stop_order}}"
+  # - name: Pull all Containers
+  #   command:
+  #     cmd: docker-compose pull
+  #   args:
+  #     chdir: "{{container_home}}{{item}}"
+  #   loop: "{{stop_order}}"
 
-  - name: Start all Containers
-    command:
-      cmd: docker-compose up -d
-    args:
-      chdir: "{{container_home}}{{item}}"
-    loop: "{{start_order}}"
+  # - name: Start all Containers
+  #   command:
+  #     cmd: docker-compose up -d
+  #   args:
+  #     chdir: "{{container_home}}{{item}}"
+  #   loop: "{{start_order}}"
