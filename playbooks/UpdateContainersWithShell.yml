@@ -40,13 +40,10 @@
     register: compose_dirs
 
   - name: stop Kuma to stop the monitoring noise
-    docker_container:
-      name: kuma
+    docker_compose:
       state: stopped
-      image: latest
-      #force_kill: true
-      comparisons:
-        '*': ignore  # by default, ignore *all* options (including image)
+      project_src: "{{container_home}}/kuma"
+
 
   # - name: stop Grafana to stop the monitoring noise
   #   docker_container:
