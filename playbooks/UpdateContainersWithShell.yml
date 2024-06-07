@@ -43,6 +43,7 @@
     docker_container:
       name: kuma
       state: stopped
+      image: latest
       #force_kill: true
       comparisons:
         '*': ignore  # by default, ignore *all* options (including image)
