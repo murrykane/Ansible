@@ -40,8 +40,10 @@
     register: compose_dirs
 
   - name: stop Kuma to stop the monitoring noise
-    community.docker.docker_compose_v2:
-      state: stopped
+    ccommunity.docker.docker_compose:
+      stopped: true
+      build: false
+      timeout: 60
       project_src: "{{container_home}}kuma"
 
 
