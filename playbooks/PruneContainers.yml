@@ -1,0 +1,27 @@
+---
+- hosts: ubuntu
+  become: yes
+  tasks:
+  - name: Prune all containers images for Docker
+    block:
+      - name: Get list of all containers
+        shell: docker ps -aq
+        register: container_list
+  
+      - name: Start containers
+        docker_container:
+          name: "{{ item }}"
+          state: started
+          comparisons:
+            '*': ignore  # by default, ignore *all* options (including image)
+        loop: "{{ container_list.stdout_lines }}"
+      
+      #- name: Start containers one
+      #  docker_container:
+      #    name: 8af569599399
+      #    state: started
+      #    comparisons:
+      #      '*': ignore  # by default, ignore *all* options (including image)
+      
+    when:
+      - inventory_hostname == 'mkserver.kane.mk'
