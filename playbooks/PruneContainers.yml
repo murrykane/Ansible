@@ -5,9 +5,9 @@
   tasks:
     - name: Prune Docker images
       docker_prune:
-        images: false
+        images: true
         containers: false
-        networks: false
+        networks: true
         volumes: true
         images_filters:
           dangling: true
