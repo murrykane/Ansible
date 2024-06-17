@@ -3,33 +3,40 @@
   become: yes
   vars:
     container_home: '/home/murry/containers/'
+    # start_order:
+    #   - "portainer"
+    #   - "unifi"
+    #   - "speedtest-tracker"
+    #   - "homepage"
+    #   - "node_exporter"
+    #   - "flask"
+    #   - "orbital-sync"
+    #   - "cadvisor"
+    #   - "unbound"
+    #   - "traefik"
+    #   - "grafana-monitoring"
+    #   - "kuma"
+
+    # stop_order:
+    #   - "kuma"
+    #   - "grafana-monitoring"
+    #   - "unifi"
+    #   - "speedtest-tracker"
+    #   - "homepage"
+    #   - "node_exporter"
+    #   - "flask"
+    #   - "orbital-sync"
+    #   - "cadvisor"
+    #   - "unbound"
+    #   - "traefik"
+    #   - "portainer"    
+
     start_order:
-      - "portainer"
-      - "unifi"
-      - "speedtest-tracker"
-      - "homepage"
-      - "node_exporter"
-      - "flask"
-      - "orbital-sync"
-      - "cadvisor"
-      - "unbound"
-      - "traefik"
       - "grafana-monitoring"
-      - "kuma"
+
 
     stop_order:
-      - "kuma"
       - "grafana-monitoring"
-      - "unifi"
-      - "speedtest-tracker"
-      - "homepage"
-      - "node_exporter"
-      - "flask"
-      - "orbital-sync"
-      - "cadvisor"
-      - "unbound"
-      - "traefik"
-      - "portainer"    
 
   tasks:
 
@@ -39,15 +46,34 @@
       file_type: directory
     register: compose_dirs
 
-  - name: Stop all Containers
+  - name: Stop and rebuild all Containers
     docker_compose:
-      project_src: "{{container_home}}kuma"
-      state: present
+      project_src: "{{container_home}}{{item}}"
+      state: absent
       stopped: true
       timeout: 60
       build: false
-    #loop: "{{ stop_order }}"
+      pull: true
+    loop: "{{ stop_order }}"
     #ignore_errors: true
+
+  - name: Start and recreate all Containers
+    docker_compose:
+      project_src: "{{container_home}}{{item}}"
+      state: present
+      stopped: false
+      timeout: 60
+    loop: "{{ start_order }}"  
+
+  # - name: Stop all Containers
+  #   docker_compose:
+  #     project_src: "{{container_home}}kuma"
+  #     state: present
+  #     stopped: true
+  #     timeout: 60
+  #     build: false
+  #   #loop: "{{ stop_order }}"
+  #   #ignore_errors: true
 
   # - name: stop Kuma to stop the monitoring noise
   #   community.docker.docker_compose:
@@ -64,12 +90,12 @@
   #     comparisons:
   #       '*': ignore  # by default, ignore *all* options (including image)
 
-  - name: Check PS status of all Containers
-    command:
-      cmd: docker-compose ps
-    args:
-      chdir: "{{container_home}}{{item}}"
-    loop: "{{stop_order}}"
+  # - name: Check PS status of all Containers
+  #   command:
+  #     cmd: docker-compose ps
+  #   args:
+  #     chdir: "{{container_home}}{{item}}"
+  #   loop: "{{stop_order}}"
 
   # - name: Stop all Containers
   #   command:
