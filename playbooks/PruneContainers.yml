@@ -4,11 +4,13 @@
   become: yes
   tasks:
     - name: Prune Docker images
-      docker_image_prune:
-        dangling: yes
-        # filters:
-        #   label:
-        #     - my_custom_label  # Optionally, filter by a specific label
+      community.docker.docker_prune:
+        images: false
+        containers: false
+        networks: false
+        volumes: true
+        images_filters:
+          dangling: true
       register: prune_output
 
     - name: Show pruned images output
