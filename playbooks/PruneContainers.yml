@@ -4,7 +4,7 @@
   become: yes
   tasks:
     - name: Prune Docker images
-      community.docker.docker_prune:
+      docker_prune:
         images: false
         containers: false
         networks: false
