@@ -32,11 +32,11 @@
     #   - "portainer"    
 
     start_order:
-      - "grafana-monitoring"
+      - "flask"
 
 
     stop_order:
-      - "grafana-monitoring"
+      - "flask"
 
   tasks:
 
