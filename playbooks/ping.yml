@@ -1,6 +1,6 @@
 ---
 - name: Test connectivity to hosts
-  hosts: all
+  hosts: all:!Windows
   gather_facts: no
   tasks:
     - name: Ping the host
