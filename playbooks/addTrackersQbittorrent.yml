@@ -8,8 +8,8 @@
         path: /home/murry/scripts/AddqBittorrentTrackers.sh
         mode: '0755'
     
-    - name: Run the AddqBittorrentTrackers.sh script with -a option
-      ansible.builtin.shell: /home/murry/scripts/AddqBittorrentTrackers.sh -a
+    - name: Run the AddqBittorrentTrackers.sh script with -l option
+      ansible.builtin.shell: /home/murry/scripts/AddqBittorrentTrackers.sh -l
       args:
         chdir: /home/murry/scripts  # Optional: Change to the directory where the script is located
       register: script_output
