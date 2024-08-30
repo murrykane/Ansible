@@ -11,6 +11,9 @@
     - name: Run the AddqBittorrentTrackers.sh script with -l option
       ansible.builtin.shell: 
         cmd: "/home/murry/scripts/AddqBittorrentTrackers.sh -l"
+      environment:
+        PATH: "{{ ansible_env.PATH }}"
+        HOME: "{{ ansible_env.HOME }}"
       register: script_output
     
     - name: Display the output of the script
