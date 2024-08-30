@@ -1,0 +1,19 @@
+---
+- name: Run AddqBittorrentTrackers.sh script
+  hosts: mkserver.kane.mk
+  #become: yes  # Use 'yes' if you need to run the script with sudo privileges
+  tasks:
+    - name: Ensure the script is executable
+      ansible.builtin.file:
+        path: /home/murry/scripts/AddqBittorrentTrackers.sh
+        mode: '0755'
+    
+    - name: Run the AddqBittorrentTrackers.sh script with -a option
+      ansible.builtin.shell: /home/murry/scripts/AddqBittorrentTrackers.sh -a
+      args:
+        chdir: /home/murry/scripts  # Optional: Change to the directory where the script is located
+      register: script_output
+    
+    - name: Display the output of the script
+      ansible.builtin.debug:
+        var: script_output.stdout
