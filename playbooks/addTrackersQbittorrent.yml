@@ -9,11 +9,10 @@
         mode: '0755'
     
     - name: Run the AddqBittorrentTrackers.sh script with -l option
-      ansible.builtin.shell: /home/murry/scripts/AddqBittorrentTrackers.sh
-      args:
-        chdir: /home/murry/scripts  # Optional: Change to the directory where the script is located
-      argv:
-        - "-l"
+      ansible.builtin.shell: 
+        cmd: "/home/murry/scripts/AddqBittorrentTrackers.sh"
+        argv:
+          - "-l"
       register: script_output
     
     - name: Display the output of the script
