@@ -14,6 +14,8 @@
       environment:
         PATH: "{{ ansible_env.PATH }}"
         HOME: "{{ ansible_env.HOME }}"
+      become: yes
+      become_user: murry
       register: script_output
     
     - name: Display the output of the script
