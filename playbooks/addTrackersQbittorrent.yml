@@ -15,7 +15,8 @@
     
     - name: Run the script "{{ script_cmd }}" and capture output
       ansible.builtin.shell: 
-        cmd: "bash -i -c '{{ script_cmd }} -l'"
+        cmd: "{{ script_cmd }} -l"
+        #cmd: "bash -i -c '{{ script_cmd }} -l'"
       # environment:
       #   PATH: "{{ ansible_env.PATH }}"
       #   HOME: "{{ ansible_env.HOME }}"
