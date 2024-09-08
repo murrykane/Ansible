@@ -1,0 +1,9 @@
+---
+# docker ps -a | awk -F' ' '{print $NF}' | grep -v NAMES
+- hosts: 'mkserver.kane.mk'
+  become: yes
+  tasks:
+  - name: Insert Trackers for Qbittorrent active downloads
+    ansible.builtin.systemd:
+      name: qbittorrent_injectTrackers
+      state: started
