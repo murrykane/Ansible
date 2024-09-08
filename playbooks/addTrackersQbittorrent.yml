@@ -5,7 +5,8 @@
   #become: yes  # Use 'yes' if you need to run the script with sudo privileges
   vars:
     #script_cmd: "/mnt/user/appdata/scripts/AddqBittorrentTrackers.sh"
-    script_cmd: "/home/murry/scripts/AddqBittorrentTrackers.sh"
+    #script_cmd: "/home/murry/scripts/AddqBittorrentTrackers.sh"
+    script_cmd: "/home/murry/scripts/AddqBittorrentTrackers.py"
 
 
   tasks:
@@ -16,7 +17,7 @@
     
     - name: Run the script "{{ script_cmd }}" and capture output
       ansible.builtin.shell: 
-        cmd: "{{ script_cmd }} -a"
+        cmd: "python3 {{ script_cmd }}"
         #cmd: "bash -i -c '{{ script_cmd }} -l'"
       # environment:
       #   PATH: "{{ ansible_env.PATH }}"
