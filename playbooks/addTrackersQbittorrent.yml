@@ -1,11 +1,12 @@
 ---
 - name: Run AddqBittorrentTrackers.sh script
-  #hosts: mkserver.kane.mk
-  hosts: kaneserver.kane.mk
+  hosts: mkserver.kane.mk
+  #hosts: kaneserver.kane.mk
   #become: yes  # Use 'yes' if you need to run the script with sudo privileges
   vars:
-    script_cmd: "/mnt/user/appdata/scripts/AddqBittorrentTrackers.sh"
-    #script_cmd: "/home/murry/scripts/AddqBittorrentTrackers.sh"
+    #script_cmd: "/mnt/user/appdata/scripts/AddqBittorrentTrackers.sh"
+    script_cmd: "/home/murry/scripts/AddqBittorrentTrackers.sh"
+
 
   tasks:
     - name: Ensure the script is executable
@@ -15,7 +16,7 @@
     
     - name: Run the script "{{ script_cmd }}" and capture output
       ansible.builtin.shell: 
-        cmd: "{{ script_cmd }} -l"
+        cmd: "{{ script_cmd }} -a"
         #cmd: "bash -i -c '{{ script_cmd }} -l'"
       # environment:
       #   PATH: "{{ ansible_env.PATH }}"
