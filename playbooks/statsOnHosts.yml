@@ -1,0 +1,47 @@
+---
+- name: Collect system stats from hosts
+  hosts: all
+  gather_facts: yes  # This collects system facts by default
+
+  tasks:
+    - name: Collect basic system facts
+      debug:
+        msg:
+          - "Hostname: {{ ansible_facts['hostname'] }}"
+          - "Operating System: {{ ansible_facts['os_family'] }} {{ ansible_facts['distribution_version'] }}"
+          - "CPU Cores: {{ ansible_facts['processor_cores'] }}"
+          - "Total RAM: {{ ansible_facts['memtotal_mb'] }} MB"
+          - "Free RAM: {{ ansible_facts['memfree_mb'] }} MB"
+          - "Disk Space (Root): {{ ansible_facts['ansible_mounts'][0].size_total | human_readable }}"
+          - "Disk Space (Used): {{ ansible_facts['ansible_mounts'][0].size_used | human_readable }}"
+          - "Disk Space (Free): {{ ansible_facts['ansible_mounts'][0].size_available | human_readable }}"
+          - "IP Address: {{ ansible_facts['default_ipv4']['address'] }}"
+    
+    - name: Collect CPU usage stats
+      shell: "top -bn1 | grep 'Cpu(s)'"
+      register: cpu_usage
+      changed_when: false
+    - debug:
+        var: cpu_usage.stdout_lines
+
+    - name: Collect memory usage stats
+      shell: "free -h"
+      register: memory_usage
+      changed_when: false
+    - debug:
+        var: memory_usage.stdout_lines
+
+    - name: Collect disk usage stats
+      shell: "df -h"
+      register: disk_usage
+      changed_when: false
+    - debug:
+        var: disk_usage.stdout_lines
+
+    - name: Collect network usage stats
+      shell: "netstat -i"
+      register: network_stats
+      changed_when: false
+    - debug:
+        var: network_stats.stdout_lines
+
