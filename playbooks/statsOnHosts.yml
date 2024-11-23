@@ -16,7 +16,18 @@
           #- "Disk Space (Used): {{ ansible_facts['ansible_mounts'][0].size_used | human_readable }}"
           #- "Disk Space (Free): {{ ansible_facts['ansible_mounts'][0].size_available | human_readable }}"
           - "IP Address: {{ ansible_facts['default_ipv4']['address'] }}"
-    
+      when: ansible_facts['os_family'] != "Windows"  # Skip if the OS is Windows
+
+    - name: Collect basic system facts
+      debug:
+        msg:
+          - "Hostname: {{ ansible_facts['hostname'] }}"
+          - "Operating System: {{ ansible_facts['os_family'] }} {{ ansible_facts['distribution_version'] }}"
+          - "CPU Cores: {{ ansible_facts['processor_cores'] }}"
+          - "Total RAM: {{ ansible_facts['memtotal_mb'] }} MB"
+          - "IP Address: {{ ansible_facts['default_ipv4']['address'] }}"
+      when: ansible_facts['os_family'] == "Windows"  # Skip if the OS is Windows
+
     - name: Collect CPU usage stats
       shell: "top -bn1 | grep 'Cpu(s)'"
       register: cpu_usage
