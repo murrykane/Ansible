@@ -4,7 +4,7 @@
   gather_facts: yes  # This collects system facts by default
 
   tasks:
-    - name: Collect basic system facts
+    - name: Collect basic system facts fpr linux hosts
       debug:
         msg:
           - "Hostname: {{ ansible_facts['hostname'] }}"
@@ -18,14 +18,13 @@
           - "IP Address: {{ ansible_facts['default_ipv4']['address'] }}"
       when: ansible_facts['os_family'] != "Windows"  # Skip if the OS is Windows
 
-    - name: Collect basic system facts
+    - name: Collect basic system facts for windows hosts
       debug:
         msg:
           - "Hostname: {{ ansible_facts['hostname'] }}"
           - "Operating System: {{ ansible_facts['os_family'] }} {{ ansible_facts['distribution_version'] }}"
           - "CPU Cores: {{ ansible_facts['processor_cores'] }}"
           - "Total RAM: {{ ansible_facts['memtotal_mb'] }} MB"
-          - "IP Address: {{ ansible_facts['default_ipv4']['address'] }}"
       when: ansible_facts['os_family'] == "Windows"  # Skip if the OS is Windows
 
     - name: Collect CPU usage stats
@@ -36,11 +35,20 @@
         var: cpu_usage.stdout_lines
 
     - name: Collect memory usage stats
-      shell: "free -h"
+      shell: "free -m"
       register: memory_usage
       changed_when: false
+      #when: ansible_facts['ansible_distribution'] != "QTS"  # Skip if the OS is Windows
     - debug:
         var: memory_usage.stdout_lines
+
+    # - name: Collect memory usage stats
+    #   shell: "free -m"
+    #   register: memory_usage
+    #   changed_when: false
+    #   when: ansible_facts['ansible_distribution'] == "QTS"  # Skip if the OS is Windows
+    # - debug:
+    #     var: memory_usage.stdout_lines
 
     - name: Collect disk usage stats
       shell: "df -h"
