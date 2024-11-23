@@ -1,6 +1,6 @@
 ---
 - name: Collect system stats from hosts
-  hosts: all
+  hosts: "{{ scriptinventory }}"
   gather_facts: yes  # This collects system facts by default
 
   tasks:
