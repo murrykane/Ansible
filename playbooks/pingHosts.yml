@@ -1,0 +1,10 @@
+---
+- name: Test connectivity to hosts
+- hosts: ubuntu:prox
+
+  tasks:
+    - name: Ping the host
+      ping:
+
+
+
