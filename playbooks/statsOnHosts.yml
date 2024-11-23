@@ -62,7 +62,7 @@
       shell: "netstat -i"
       register: network_stats
       changed_when: false
-      when: ansible_facts['ansible_distribution'] != "QTS"  #skip it for QNAP
+      #when: ansible_facts['ansible_distribution'] != "QTS"  #skip it for QNAP
     - debug:
         var: network_stats.stdout_lines
 
