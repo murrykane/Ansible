@@ -12,9 +12,9 @@
           - "CPU Cores: {{ ansible_facts['processor_cores'] }}"
           - "Total RAM: {{ ansible_facts['memtotal_mb'] }} MB"
           - "Free RAM: {{ ansible_facts['memfree_mb'] }} MB"
-          - "Disk Space (Root): {{ ansible_facts['ansible_mounts'][0].size_total | human_readable }}"
-          - "Disk Space (Used): {{ ansible_facts['ansible_mounts'][0].size_used | human_readable }}"
-          - "Disk Space (Free): {{ ansible_facts['ansible_mounts'][0].size_available | human_readable }}"
+          #- "Disk Space (Root): {{ ansible_facts['ansible_mounts'][0].size_total | human_readable }}"
+          #- "Disk Space (Used): {{ ansible_facts['ansible_mounts'][0].size_used | human_readable }}"
+          #- "Disk Space (Free): {{ ansible_facts['ansible_mounts'][0].size_available | human_readable }}"
           - "IP Address: {{ ansible_facts['default_ipv4']['address'] }}"
     
     - name: Collect CPU usage stats
