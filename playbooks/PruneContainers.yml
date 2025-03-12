@@ -1,6 +1,6 @@
 ---
 # docker ps -a | awk -F' ' '{print $NF}' | grep -v NAMES
-- hosts: 'mkserver.kane.mk'
+- hosts: mkserver.kane.mk:utilserver.kane.mk
   become: yes
   tasks:
     - name: Prune Docker images
