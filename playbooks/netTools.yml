@@ -1,5 +1,6 @@
 ---
-- hosts: ubuntu:prox
+#- hosts: ubuntu:prox
+- hosts: ubuntu
   become: yes
   tasks:
   - name: make sure net-tools are installed on all nodes
