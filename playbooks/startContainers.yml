@@ -24,4 +24,4 @@
       #      '*': ignore  # by default, ignore *all* options (including image)
       
     when:
-      - inventory_hostname == 'mkserver.kane.mk' or inventory_hostname == 'utilserver.kane.mk'
+      - inventory_hostname == 'mkserver.kane.mk' or inventory_hostname == 'utilserver.kane.mk' or inventory_hostname == "cyborg.kane.mk"
