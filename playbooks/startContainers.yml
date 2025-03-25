@@ -1,5 +1,6 @@
 ---
-- hosts: docker:qnap
+#- hosts: docker:qnap
+- hosts: docker
   #become: yes
   tasks:
   - name: Start all containers for Docker
