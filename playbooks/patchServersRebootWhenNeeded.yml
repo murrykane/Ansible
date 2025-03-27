@@ -2,8 +2,8 @@
 - name: Update Windows, Arch Linux, and Ubuntu
   hosts: all
   tasks:
-    - name: Gather facts
-      ansible.builtin.setup:
+    # - name: Gather facts
+    #   ansible.builtin.setup:
 
     - name: Update Windows
       when: ansible_facts['os_family'] == 'Windows'
