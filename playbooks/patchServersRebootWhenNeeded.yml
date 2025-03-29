@@ -55,3 +55,23 @@
       when: ubuntu_reboot_required.stat.exists | default(false)
       ansible.builtin.reboot:
         reboot_timeout: 600
+
+    - name: Reboot Check
+      block:
+
+        - name: Perform Discord Notify
+          community.general.discord:
+            webhook_id: "{{ webhook_id }}"
+            webhook_token: "{{ webhook_token }}"
+            content: "{{ discord_message }}"
+            username: Ansible
+            avatar_url: "https://pantheon.tech/wp-content/uploads/2019/04/ansible.png"
+        
+        - name: Discord message has been sent 
+          debug:
+            msg: "Reboot message sent to discord"
+
+      when: reboot_flag.stat.exists  
+
+  vars:
+    discord_message: "A reboot is required on [{{ inventory_hostname }}] after patches have been applied"
