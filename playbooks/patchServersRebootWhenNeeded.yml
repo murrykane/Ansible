@@ -2,6 +2,8 @@
 - name: Update Windows, Arch Linux, and Ubuntu
   hosts: all
   tasks:
+    
+    # since gather faces is default by playbook no need for it here.....
     # - name: Gather facts
     #   ansible.builtin.setup:
 
@@ -16,10 +18,28 @@
       register: win_update_result
 
     - name: Check if Windows requires a reboot
+      block: 
+        - name: Set fact for Discord message
+          set_fact:
+            discord_message: "Server {{ inventory_hostname }} was rebooted after updates."
+
+        - name: Reboot needed for Windows Host
+          ansible.windows.win_reboot:
+            reboot_timeout: 600
+          register: win_reboot_result
+
+        - name: Perform Discord Notify
+          community.general.discord:
+            webhook_id: "{{ webhook_id }}"
+            webhook_token: "{{ webhook_token }}"
+            content: "{{ discord_message }}"
+            username: Ansible
+            avatar_url: "https://pantheon.tech/wp-content/uploads/2019/04/ansible.png"
+        
+        - name: Discord message has been sent 
+          debug:
+            msg: "{{ discord_message }}"
       when: win_update_result.changed and win_update_result.reboot_required | default(false)
-      ansible.windows.win_reboot:
-        reboot_timeout: 600
-      register: win_reboot_result
 
     - name: Update Arch Linux
       when: ansible_facts['os_family'] == 'Arch'
@@ -52,12 +72,14 @@
       register: ubuntu_reboot_required
 
     - name: Reboot Ubuntu if required
-      when: ubuntu_reboot_required.stat.exists | default(false)
-      ansible.builtin.reboot:
-        reboot_timeout: 600
-
-    - name: Reboot Check
       block:
+        - name: Set fact for Discord message
+          set_fact:
+            discord_message: "Server {{ inventory_hostname }} was rebooted after updates."
+
+        - name: Reboot needed for Windows Host
+          ansible.builtin.reboot:
+            reboot_timeout: 600
 
         - name: Perform Discord Notify
           community.general.discord:
@@ -69,9 +91,6 @@
         
         - name: Discord message has been sent 
           debug:
-            msg: "Reboot message sent to discord"
+            msg: "{{ discord_message }}"        
+      when: ubuntu_reboot_required.stat.exists | default(false)
 
-      when: reboot_flag.stat.exists  
-
-  vars:
-    discord_message: "A reboot is required on [{{ inventory_hostname }}] after patches have been applied"
