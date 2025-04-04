@@ -1,0 +1,316 @@
+---
+#Auther        Date       Reason
+#Murry Kane    02/16/2023 This is to manage Member Portal for operational activities 
+#Murry Kane    10/11/2023 Added scriptinventory 
+#
+
+- name: Member Portal NGINX service started/stopped/restart/validate/restart_bg/restart_ha/restart_canary
+  #hosts: all
+  hosts: "{{scriptinventory}}"
+  become: true
+  gather_facts: false
+  #remote_user: svcsre
+  #state is a variable that should be passed in values can be: started/stopped/restart/validate/restart_bg/restart_ha/restart_canary
+  #state: started
+  vars:
+    def_state: validate  #this will be the default if its not passed
+    def_url: 
+      main: "https://my.CareSource.com"
+      web1: "https://dayprdweblin01.extranet.extcaresource.corp/"
+      web2: "https://dayprdweblin02.extranet.extcaresource.corp/"
+      web3: "https://cinprdweblin01.extranet.extcaresource.corp/"
+      web4: "https://cinprdweblin02.extranet.extcaresource.corp/"
+      web5: "https://int-cert-my.CareSource.com"  #to test broken url....
+
+    prod_url:
+      main: "https://my.CareSource.com"
+      web1: "https://dayprdweblin01.extranet.extcaresource.corp/"
+      web2: "https://dayprdweblin02.extranet.extcaresource.corp/"
+      web3: "https://cinprdweblin01.extranet.extcaresource.corp/"
+      web4: "https://cinprdweblin02.extranet.extcaresource.corp/"   
+
+    crt_url:
+      main: "https://cert-my.CareSource.com"
+      web1: "https://daycrtweblin01.extranet.extcaresource.corp/"
+      web2: "https://daycrtweblin02.extranet.extcaresource.corp/"
+
+    int_url:
+      main: "https://int-cert-my.CareSource.com"
+      web1: "https://dayintweblin01.caresource.corp/"
+      web2: "https://dayintweblin02.caresource.corp/"
+
+    state: "{{ cmd_state if cmd_state is defined else def_state }}"
+    #the_url: "{{ validate_url if validate_url is defined else def_url }}"
+    the_url: "{{ def_url if urls_validate is not defined else ( prod_url if urls_validate == 'prod' else ( crt_url if urls_validate == 'crt' else int_url ) ) }}"
+    #int_url: "https://int-my.CareSource.com"
+    #crt_url: "https://cert-my.CareSource.com"
+    #prd_url: "https://my.CareSource.com"
+    snow_url: 'https://{{snow_instance}}.service-now.com/api/now/table/incident_task/'
+    # snow_user: mkane01
+    # snow_pass: "{{ snow_pass }}"
+    snow_task: 3
+    snow_status: "Success"
+    snow_msg: "Succesfully completed Ansible PlayBook"
+    url_check: 200
+    #thycotic_id: 15109
+    #my_secret: "{{ lookup('thycotic', 15109) }}"
+    #my_secret: '{{ hostvars[scriptinventory].thycotic_user }}'
+    thycotic_user: '{{ hostvars[inventory_hostname].thycotic_user }}'
+    snow_thycotic_user: '{{ hostvars[inventory_hostname].snow_thycotic_user }}'
+    # - name: Get secret from servicenow Secret Server
+    #   set_fact:
+    delinia_snow_user: '{{thycotic_dynamic_username}}'
+    delinia_snow_pass: '{{thycotic_dynamic_password}}' 
+    
+  tasks:
+
+    #MBK validate we have passed an environment variable into the playbook  #note: handled with default value
+    #- name: Fail when 'state' variable is not passed
+    #  ansible.builtin.fail: msg="Required parameter missing for 'state', existing!"
+    #  when: state is undefined
+
+
+    - name: Provide the variable passed into playbook
+      ansible.builtin.debug:
+        #msg: "Value passed for state is [ {{ state }} ] with thycotic account [ {{thycotic_user}} ] snow thycotic user [ {{ snow_thycotic_user }} ]"
+        msg: "Value passed for state is [ {{ state }} ]"
+      #register: all_output
+
+    - name: SNOW Credential lookups to be used in the playbook
+      ansible.builtin.debug:
+        #msg: "SNOW user is [ {{delinia_snow_user}} ] SNOW Password [ {{ delinia_snow_pass }} ]"
+        msg: "SNOW user is [ {{delinia_snow_user}} ] SNOW Password [ ************ ]"
+      no_log: true  # never log output of passwords.....
+
+    - name: Test for running NGINX
+      ansible.builtin.shell: ps axuf|grep 'nginx'|grep -v "grep" | tr -d "\n" | cat
+      register: test_running_nginx
+      changed_when: False
+      tags: restart-nginx
+
+       
+    - name: check the NGINX configuration
+      ansible.builtin.shell: /usr/sbin/nginx -t
+      register: test_nginx_config
+      #when: test_running_nginx.stdout != ""  #we will test always....
+      changed_when: False
+      ignore_errors: True
+      tags: restart-nginx
+
+    - name: Make sure NGINX is started and enabled when state = started
+      block:
+        - name: Start NGINX for Member Portal
+          ansible.builtin.systemd:
+            name: nginx
+            state: started
+            enabled: true
+          #become: true
+          #become_method: dzdo
+          #sudo: yes
+          register: result_start
+          ignore_errors: yes
+
+        - name: Validate Started NGINX Service
+          fail: 
+            msg: "The check for started and enabled of service NGINX failed."
+          when:           
+            - result_start.state != 'started'
+
+      when: 
+          #- test_running_nginx.stdout != ""   #ignoring as systemd and running process can get out of sync
+          - test_nginx_config.rc == 0
+          - state == 'started'
+
+    - name: Make sure NGINX is stopped and enabled when requested with stopped state
+      block:
+        - name: Stop NGINX for Member Portal
+          ansible.builtin.systemd:
+            name: nginx
+            state: stopped
+            enabled: true
+          #become: true
+          #become_method: dzdo
+          #sudo: yes
+          register: result_stop
+          ignore_errors: yes
+
+        - name: Validate on Stopped NGINX Service 
+          fail: 
+            msg: "The check for stopped and enabled of service NGINX failed."
+          when: 
+            - result_stop.state != 'stopped'  
+      when: 
+        - test_running_nginx.stdout != ""
+        - test_nginx_config.rc == 0 
+        - state == 'stopped'
+
+
+    - name: Make sure NGINX is restarted and enabled when state = restart
+      block:
+        - name: Restart Member Portal NGINX
+          ansible.builtin.systemd:
+            name: nginx
+            state: restarted
+            enabled: true
+          #become: true
+          #become_method: dzdo
+          #sudo: yes
+          register: result_restart
+          ignore_errors: yes
+
+        - name: Report return code on restarted NGINX Service
+          fail: 
+            msg: "The check for restarted and enabled of service NGINX failed."
+          when: 
+            - result_restart.state != 'started'  
+
+      when: 
+        - test_running_nginx.stdout != ""
+        - test_nginx_config.rc == 0 
+        - state == 'restart'
+
+    - name: Check URL's when validate Member Portal is requested
+      block:
+
+        - name: URL's to check
+          ansible.builtin.debug:
+            msg: "Using the following URL's to validate: {{ the_url }}"
+          #  msg: "key={{ item.0.key }} value={{ item.1 }}"
+          #loop: "{{ prod_url | dict2items }}"
+
+        - name: All URLS to check as follows
+          ansible.builtin.debug:
+            msg: "key={{ item.key }} value={{item.value}}"
+          loop: "{{ the_url | dict2items }}"
+    
+        - name: URL Check Load Balanced URL
+          ansible.builtin.uri:
+            url: "{{ item.value }}"
+            method: GET
+            timeout: 30
+            return_content: yes
+          loop: "{{ the_url | dict2items }}"
+          register: urlchk_out
+          #failed_when: "'CareSource' not in out.content"
+          failed_when: urlchk_out.status != 200
+          ignore_errors: yes
+
+        - name: Print the URL check results
+          debug:
+            msg: "{{ urlchk_out }}"
+
+        - name: Set Return Codes for any failures
+          ansible.builtin.set_fact:
+            #snow_task: "{{'4' if item.status != 200 }}"
+            #snow_status: "{{'Failure' if item.status != 200 }}"
+            #snow_msg: "{{item.msg if item.status != 200 }}"
+            #url_check: "{{ item.status if item.status != 200 else item.status}}"
+            snow_task: "{{ '3' if item.status == 200 else '4' }}"
+            snow_status: "{{ 'Success' if item.status == 200 else 'Failure' }}"
+            snow_msg: "{{ item.msg }}"
+            url_check: "{{ item.status }}"
+          loop: "{{urlchk_out.results }}"
+          #when: url_check == 200 or url_check == "200"
+          when: url_check in [ 200, "200" ]
+
+      when:
+        - test_running_nginx.stdout != ""
+        - test_nginx_config.rc == 0
+        - state == 'validate'
+
+    - name: Set URL status if URL validate was NOT ran
+      ansible.builtin.set_fact:
+        #url_check: "{{'200' if urlchk_out.status is not defined else urlchk_out.status}}"
+        url_check: "{{'200' if urlchk_out.status is not defined else '200'}}"
+      when:
+        - test_nginx_config.rc == 0
+
+    - name: Print the results if any changes where made by Ansible for desired state based on passed in value
+      ansible.builtin.debug:
+        msg: "Action [ {{ state }} ] had a changed state for: RESTART {{ result_restart.changed }} STOP {{ result_stop.changed }} START {{ result_start.changed }} URL Returned {{url_check}}"
+      when:
+        - test_nginx_config.rc == 0   
+        - result_stop.changed or result_start.changed or result_restart.changed or url_check != "200" 
+      register: bad_state
+
+    - name: Set facts based on started state
+      ansible.builtin.set_fact:
+        snow_task: "{{ '3' if result_start.changed else '4' }}"
+        snow_status: "{{'Success' if result_start.changed else 'Failure' }}"
+        snow_msg: "{{'Successfully Started' if result_start.changed else 'Failure with start of Member Portal' }}"
+      when:
+        - test_nginx_config.rc == 0
+        - result_start.changed
+
+    - name: Set facts based on started stopped
+      ansible.builtin.set_fact:
+        snow_task: "{{ '3' if result_stop.changed else '4' }}"
+        snow_status: "{{'Success' if result_stop.changed else 'Failure' }}"
+        snow_msg: "{{'Successfully Stopped' if result_stop.changed else 'Failure with stop of Member Portal' }}"
+      when:
+        - test_nginx_config.rc == 0
+        - result_stop.changed
+
+    - name: Set facts based on restarted state
+      ansible.builtin.set_fact:
+        snow_task: "{{ '3' if result_restart.changed else '4' }}"
+        snow_status: "{{'Success' if result_restart.changed else 'Failure' }}"
+        snow_msg: "{{'Successfully Restarted' if result_restart.changed else 'Failure with restart of Member Portal' }}"
+      when:
+        - test_nginx_config.rc == 0
+        - result_restart.changed
+
+    - name: Set facts based on url validate
+      ansible.builtin.set_fact:
+        snow_task: "{{ '3' if urlchk_out.status == 200 else '4' }}"
+        #snow_status: "{{urlchk_out.msg if urlchk_out.status == 200 else urlchk_out.msg }}"
+        snow_status: "{{ urlchk_out.status }}"
+        #snow_msg: "{{'Successfully Validated Member Portals' if urlchk_out.status == 200 else urlchk_out.msg }}"
+        snow_msg: "{{ urlchk_out.msg }}"
+      when:
+        - test_nginx_config.rc == 0
+        - urlck_out.status is defined and urlchk_out.status != 200
+        #- url_check != 200
+
+
+    - name: Validate update to SNOW needed
+      #ansible.builtin.debug:
+      ansible.builtin.command: echo "We will need to update SNOW for ITASK"
+      when:
+        - self_heal == true
+        - snow_task_sysid != ""
+        - inventory_hostname == ansible_play_batch[0]
+      notify: 
+      - Update ServiceNow ITASK
+      register: all_output
+      #run_once: true
+      #delegate_to: play_hosts[0]
+      #when: inventory_hostname == play_hosts[play_hosts|length - 1|int]
+
+    - name: Output all variables/facts known for hosts
+      debug:
+        var: hostvars[inventory_hostname]
+      tags: debug_info
+
+  handlers:
+
+    - name: Update ServiceNow ITASK
+      ansible.builtin.uri:
+        url: "{{snow_url}}{{snow_task_sysid}}"
+        # user: "{{snow_user}}"
+        # password: "{{snow_pass}}"
+        user: "{{ delinia_snow_user }}"
+        password: "{{ delinia_snow_pass }}"
+        method: PUT
+        body_format: json
+        status_code: [200,201,203,302,301]
+        validate_certs: false
+        force_basic_auth: true
+        headers: 
+          Content-Type: application/json
+          Accept: application/json
+        body: 
+          state: "{{snow_task}}"
+          #work_notes: "testing 123, by murry kane from ansible: detail {{all_output}}"
+          work_notes: "Ansible Playbook for Member Portal: Result [ {{snow_status}} ] with Message: [ {{snow_msg}} ]"
+      #no_log: true 
