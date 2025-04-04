@@ -1,0 +1,23 @@
+---
+- hosts: "{{scriptinventory}}"
+  become: yes
+
+  vars:
+    def_state: started  #this will be the default if its not passed
+    desired_state: "{{ docker_state if docker_state is defined else def_state }}"
+
+  tasks:
+  - name: Start all containers for Docker
+    block:
+      - name: Get list of all containers
+        shell: docker ps -aq
+        register: container_list
+  
+      - name: Put containers to desired state
+        docker_container:
+          name: "{{ item }}"
+          state: "{{ desired_state }}"
+          comparisons:
+            '*': ignore  # by default, ignore *all* options (including image)
+        loop: "{{ container_list.stdout_lines }}"
+      
