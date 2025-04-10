@@ -1,0 +1,9 @@
+server time.cloudflare.com iburst
+server time.google.com iburst
+server time1.facebook.com iburst
+server time.apple.com iburst
+
+driftfile /var/lib/chrony/chrony.drift
+makestep 1.0 3
+rtcsync
+logdir /var/log/chrony
