@@ -1,6 +1,6 @@
 ---
 - name: Ensure NTP is installed and time is synchronized
-  hosts: all
+  hosts: ubuntu:prox
   become: yes
 
   tasks:
