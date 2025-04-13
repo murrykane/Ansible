@@ -1,7 +1,7 @@
-server time.cloudflare.com iburst
-server time.google.com iburst
-server time1.facebook.com iburst
-server time.apple.com iburst
+server time.cloudflare.com iburst minpoll 5 maxpoll 5
+server time.google.com iburst minpoll 5 maxpoll 5
+server time1.facebook.com iburst minpoll 5 maxpoll 5
+server time.apple.com iburst minpoll 5 maxpoll 5
 
 driftfile /var/lib/chrony/chrony.drift
 makestep 1.0 3
