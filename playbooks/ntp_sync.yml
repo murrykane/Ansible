@@ -1,6 +1,6 @@
 ---
 - name: Ensure NTP is installed and time is synchronized
-  hosts: ubuntu:prox
+  hosts: ubuntu:prox:debian
   become: yes
 
   tasks:
@@ -24,7 +24,8 @@
         group: root
         mode: '0644'
       notify: Restart chrony
-      when: "'ubuntu' in group_names" 
+      when: 
+        - "'ubuntu' in group_names" or "'debian' in group_names"
 
     - name: Configure chrony with custom NTP servers for ProxMox Server Hosts
       ansible.builtin.template:
@@ -34,7 +35,8 @@
         group: root
         mode: '0644'
       notify: Restart chrony
-      when: "'prox' in group_names" 
+      when: 
+        - "'prox' in group_names"
 
     # - name: Force time sync now
     #   ansible.builtin.command: chronyc makestep
