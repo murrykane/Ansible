@@ -19,7 +19,7 @@
     - name: Configure chrony with custom NTP servers for Ubuntu Client Hosts
       ansible.builtin.template:
         src: chrony-client.conf.j2
-        dest: /etc/chrony.conf
+        dest: /etc/chrony/chrony.conf
         owner: root
         group: root
         mode: '0644'
@@ -29,7 +29,7 @@
     - name: Configure chrony with custom NTP servers for ProxMox Server Hosts
       ansible.builtin.template:
         src: chrony-server.conf.j2
-        dest: /etc/chrony.conf
+        dest: /etc/chrony/chrony.conf
         owner: root
         group: root
         mode: '0644'
