@@ -36,10 +36,9 @@
       notify: Restart chrony
       when: "'prox' in group_names" 
 
-
-    - name: Force time sync now
-      ansible.builtin.command: chronyc makestep
-      when: ansible_facts['distribution'] != "Debian"
+    # - name: Force time sync now
+    #   ansible.builtin.command: chronyc makestep
+    #   when: ansible_facts['distribution'] != "Debian"
 
   handlers:
     - name: Restart chrony
