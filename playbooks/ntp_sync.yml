@@ -16,14 +16,26 @@
         enabled: yes
         state: started
 
-    - name: Configure chrony with custom NTP servers
+    - name: Configure chrony with custom NTP servers for Ubuntu Client Hosts
       ansible.builtin.template:
-        src: chrony.conf.j2
+        src: chrony-client.conf.j2
         dest: /etc/chrony.conf
         owner: root
         group: root
         mode: '0644'
       notify: Restart chrony
+      when: "'ubuntu' in group_names" 
+
+    - name: Configure chrony with custom NTP servers for ProxMox Server Hosts
+      ansible.builtin.template:
+        src: chrony-server.conf.j2
+        dest: /etc/chrony.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart chrony
+      when: "'prox' in group_names" 
+
 
     - name: Force time sync now
       ansible.builtin.command: chronyc makestep
