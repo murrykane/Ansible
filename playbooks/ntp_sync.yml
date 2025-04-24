@@ -24,8 +24,7 @@
         group: root
         mode: '0644'
       notify: Restart chrony
-      when: 
-        - "'ubuntu' in group_names" or "'debian' in group_names"
+      when: "'ubuntu' in group_names or 'debian' in group_names"
 
     - name: Configure chrony with custom NTP servers for ProxMox Server Hosts
       ansible.builtin.template:
