@@ -31,7 +31,7 @@
       when: loki_container is defined 
 
     - name: Check if Loki plugin is installed
-      shell: docker exec {{ loki_container.stdout }} grafana-cli plugins ls
+      shell: docker plugin ls
       register: loki_plugins
       when: 
         - loki_container is defined 
@@ -44,13 +44,14 @@
         var: loki_plugins
       when: loki_plugins is defined 
 
-
+    # docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
     - name: Install Grafana Loki plugin
-      shell: docker exec {{ loki_container.stdout }} grafana-cli plugins install grafana-loki-datasource
+      #shell: docker exec {{ loki_container.stdout }} grafana-cli plugins install grafana-loki-datasource
+      shell: docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
       when:
         - loki_container is defined 
         - loki_container.stdout != ""
-        - "'grafana-loki-datasource' not in loki_plugins.stdout"
+        - "'loki' not in loki_plugins.stdout"
 
     - name: Configure docker to forward logs to Loki
       ansible.builtin.template:
