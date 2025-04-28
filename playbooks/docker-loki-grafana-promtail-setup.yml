@@ -17,7 +17,7 @@
     #     state: started
 
     - name: Find Loki container by docker ps
-      shell: docker ps --format '{{.Names}}' | grep loki | head -n 1
+      shell: docker ps --format '{{.Names}}' | grep -i loki | head -n 1
       register: loki_container
       ignore_errors: yes
       changed_when: false
@@ -43,7 +43,7 @@
         group: root
         mode: '0644'
       notify: Restart docker
-      when: "'docker' in group_names"
+      when: "'docker' in group_names and loki_container.stdout != \"\"" 
 
     # - name: Install Grafana Loki plugin (if Grafana container exists)
     #   shell: docker exec grafana grafana-cli plugins install grafana-loki-datasource
