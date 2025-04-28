@@ -1,6 +1,6 @@
 ---
 - name: Ensure Loki/promtail/grafana setup for Docker is setup and configured
-  hosts: docker
+  hosts: minidocker.kane.mk
   become: yes
 
   tasks:
@@ -16,25 +16,33 @@
     #     enabled: yes
     #     state: started
 
-    # - name: Check if Grafana container is running
-    #   community.docker.docker_container_info:
-    #     name: grafana
-    #   register: grafana_info
-    #   ignore_errors: yes
+    - name: List all Docker containers
+      community.docker.docker_container_info:
+        gather_facts: yes
+      register: all_containers
+      ignore_errors: yes
 
-    # - name: Check if Grafana Loki plugin is already installed
-    #   shell: docker exec grafana grafana-cli plugins ls
-    #   register: grafana_plugins
-    #   when: grafana_info.container is defined
-    #   changed_when: false
-    #   ignore_errors: yes
+    - name: Find first container with 'loki' in its name
+      set_fact:
+        loki_container: "{{ item.Name }}"
+      loop: "{{ all_containers.containers }}"
+      when: "'loki' in item.Name"
+      register: loki_container_found
+      ignore_errors: yes
 
-    # - name: Install Grafana Loki plugin
-    #   shell: docker exec grafana grafana-cli plugins install grafana-loki-datasource
-    #   when:
-    #     - grafana_info.container is defined
-    #     - "'grafana-loki-datasource' not in grafana_plugins.stdout"
+    - name: Check if Loki plugin is already installed
+      shell: docker exec {{ loki_container }} grafana-cli plugins ls
+      register: loki_plugins
+      when: loki_container_found is defined and loki_container is defined
+      changed_when: false
+      ignore_errors: yes
 
+    - name: Install Grafana Loki plugin
+      shell: docker exec {{ loki_container }} grafana-cli plugins install grafana-loki-datasource
+      when:
+        - loki_container_found is defined
+        - loki_container is defined
+        - "'grafana-loki-datasource' not in loki_plugins.stdout"
 
     - name: Configure docker to forward logs to Loki
       ansible.builtin.template:
