@@ -1,6 +1,7 @@
 ---
 - name: Ensure Loki/promtail/grafana setup for Docker is setup and configured
-  hosts: minidocker.kane.mk
+  #hosts: minidocker.kane.mk
+  hosts: docker
   become: yes
 
   tasks:
