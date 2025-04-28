@@ -52,7 +52,7 @@
       when: 
         - loki_container
         - "'docker' in group_names"
-        - loki_container.stdout != \"\"" 
+        - loki_container.stdout != ""
 
     # - name: Install Grafana Loki plugin (if Grafana container exists)
     #   shell: docker exec grafana grafana-cli plugins install grafana-loki-datasource
