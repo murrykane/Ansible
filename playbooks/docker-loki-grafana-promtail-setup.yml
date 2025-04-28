@@ -5,35 +5,35 @@
 
   tasks:
 
-    - name: Make sure Docker is present
-      ansible.builtin.package:
-        name: docker
-        state: present
+    # - name: Make sure Docker is present
+    #   ansible.builtin.package:
+    #     name: docker
+    #     state: present
 
-    - name: Enable and start docker service
-      ansible.builtin.service:
-        name: docker
-        enabled: yes
-        state: started
+    # - name: Enable and start docker service
+    #   ansible.builtin.service:
+    #     name: docker
+    #     enabled: yes
+    #     state: started
 
-    - name: Check if Grafana container is running
-      community.docker.docker_container_info:
-        name: grafana
-      register: grafana_info
-      ignore_errors: yes
+    # - name: Check if Grafana container is running
+    #   community.docker.docker_container_info:
+    #     name: grafana
+    #   register: grafana_info
+    #   ignore_errors: yes
 
-    - name: Check if Grafana Loki plugin is already installed
-      shell: docker exec grafana grafana-cli plugins ls
-      register: grafana_plugins
-      when: grafana_info.container is defined
-      changed_when: false
-      ignore_errors: yes
+    # - name: Check if Grafana Loki plugin is already installed
+    #   shell: docker exec grafana grafana-cli plugins ls
+    #   register: grafana_plugins
+    #   when: grafana_info.container is defined
+    #   changed_when: false
+    #   ignore_errors: yes
 
-    - name: Install Grafana Loki plugin
-      shell: docker exec grafana grafana-cli plugins install grafana-loki-datasource
-      when:
-        - grafana_info.container is defined
-        - "'grafana-loki-datasource' not in grafana_plugins.stdout"
+    # - name: Install Grafana Loki plugin
+    #   shell: docker exec grafana grafana-cli plugins install grafana-loki-datasource
+    #   when:
+    #     - grafana_info.container is defined
+    #     - "'grafana-loki-datasource' not in grafana_plugins.stdout"
 
 
     - name: Configure docker to forward logs to Loki
