@@ -25,19 +25,30 @@
       ignore_errors: yes
       changed_when: false
 
+    - name: Ouptut for Loki container
+      ansible.builtin.debug:
+        var: loki_container 
+      when: loki_container is defined 
+
     - name: Check if Loki plugin is installed
       shell: docker exec {{ loki_container.stdout }} grafana-cli plugins ls
       register: loki_plugins
       when: 
-        - loki_container
+        - loki_container is defined 
         - loki_container.stdout != ""
       changed_when: false
       ignore_errors: yes
 
+    - name: Ouptut for Loki container
+      ansible.builtin.debug:
+        var: loki_plugins
+      when: loki_plugins is defined 
+
+
     - name: Install Grafana Loki plugin
       shell: docker exec {{ loki_container.stdout }} grafana-cli plugins install grafana-loki-datasource
       when:
-        - loki_container
+        - loki_container is defined 
         - loki_container.stdout != ""
         - "'grafana-loki-datasource' not in loki_plugins.stdout"
 
@@ -50,7 +61,7 @@
         mode: '0644'
       notify: Restart docker
       when: 
-        - loki_container
+        - loki_container is defined 
         - "'docker' in group_names"
         - loki_container.stdout != ""
 
