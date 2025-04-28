@@ -17,32 +17,33 @@
     #     state: started
 
     - name: List all Docker containers
-      community.docker.docker_container_info:
-        gather_facts: yes
+      community.docker.docker_container_ls:
+        all: true
       register: all_containers
       ignore_errors: yes
 
     - name: Find first container with 'loki' in its name
       set_fact:
-        loki_container: "{{ item.Name }}"
+        loki_container: "{{ item.Names[0] }}"
       loop: "{{ all_containers.containers }}"
-      when: "'loki' in item.Name"
+      when: "'loki' in item.Names[0]"
       register: loki_container_found
       ignore_errors: yes
 
     - name: Check if Loki plugin is already installed
-      shell: docker exec {{ loki_container }} grafana-cli plugins ls
+      shell: docker exec {{ loki_container | regex_replace('^/', '') }} grafana-cli plugins ls
       register: loki_plugins
       when: loki_container_found is defined and loki_container is defined
       changed_when: false
       ignore_errors: yes
 
     - name: Install Grafana Loki plugin
-      shell: docker exec {{ loki_container }} grafana-cli plugins install grafana-loki-datasource
+      shell: docker exec {{ loki_container | regex_replace('^/', '') }} grafana-cli plugins install grafana-loki-datasource
       when:
         - loki_container_found is defined
         - loki_container is defined
         - "'grafana-loki-datasource' not in loki_plugins.stdout"
+
 
     - name: Configure docker to forward logs to Loki
       ansible.builtin.template:
