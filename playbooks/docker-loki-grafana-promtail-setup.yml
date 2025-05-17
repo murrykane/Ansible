@@ -17,10 +17,19 @@
     #     enabled: yes
     #     state: started
 
-    - name: Find Loki container by docker ps
+    # - name: Find Loki container by docker ps
+    #   shell: | 
+    #     {% raw %}
+    #     docker ps --format '{{.Names}}' | grep -i loki | head -n 1
+    #     {% endraw %}
+    #   register: loki_container
+    #   ignore_errors: yes
+    #   changed_when: false
+
+    - name: Find Promtail container by docker ps
       shell: | 
         {% raw %}
-        docker ps --format '{{.Names}}' | grep -i loki | head -n 1
+        docker ps --format '{{.Names}}' | grep -i promtail | head -n 1
         {% endraw %}
       register: loki_container
       ignore_errors: yes
