@@ -12,7 +12,7 @@ loki.relabel "journal" {
   }*/
   rule {
     source_labels = ["__journal__hostname"]
-    target_label  = "hostname"
+    target_label  = "server"
   }
 }
 
