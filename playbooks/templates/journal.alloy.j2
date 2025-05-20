@@ -10,6 +10,10 @@ loki.relabel "journal" {
     action = "keep"
     regex = "ntp.service"
   }*/
+  rule {
+    source_labels = ["__journal__hostname"]
+    target_label  = "hostname"
+  }
 }
 
 loki.source.journal "journal"  {
