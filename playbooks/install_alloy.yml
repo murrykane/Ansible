@@ -1,0 +1,80 @@
+---
+- name: Install Grafana Alloy via APT
+  #hosts: minidocker.kane.mk:pihole3.kane.mk:pihole6.kane.mk
+  hosts: pihole3.kane.mk
+  become: true
+  tasks:
+
+    - name: Create Alloy directory
+      file:
+        path: /opt/alloy
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'  
+
+    - name: Ensure keyrings directory exists
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Download and add Grafana GPG key
+      ansible.builtin.get_url:
+        url: https://apt.grafana.com/gpg.key
+        dest: /tmp/grafana.gpg
+        mode: '0644'
+
+    - name: Convert GPG key to dearmored format
+      ansible.builtin.command: "gpg --dearmor -o /etc/apt/keyrings/grafana.gpg /tmp/grafana.gpg"
+      args:
+        creates: /etc/apt/keyrings/grafana.gpg
+
+    - name: Add Grafana APT repository
+      copy:
+        dest: /etc/apt/sources.list.d/grafana.list
+        content: |
+          deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main
+        mode: '0644'
+
+    - name: Update APT cache
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install Grafana Alloy
+      apt:
+        name: alloy
+        state: present
+
+    - name: Configure allow for custom log directory
+      ansible.builtin.template:
+        src: default_alloy.j2
+        dest: /etc/default/alloy
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart alloy
+
+    - name: Configure allow for journald
+      ansible.builtin.template:
+        src: journal.alloy.j2
+        dest: /opt/alloy/journal.alloy
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart alloy
+
+    - name: Configure allow for varlogs
+      ansible.builtin.template:
+        src: varlogs.alloy.j2
+        dest: /opt/alloy/varlogs.alloy
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart alloy
+
+  handlers:
+    - name: Restart alloy
+      ansible.builtin.service:
+        name: alloy
+        state: restarted
