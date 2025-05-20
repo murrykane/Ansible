@@ -16,6 +16,10 @@ loki.source.file "local" {
     initial_delay = "10s"
     format        = "gz"
   } */
+
+  attributes = {
+     instance = "${HOSTNAME}"  # this uses the machine hostname
+  }
   forward_to = [loki.write.local.receiver]
 }
 
