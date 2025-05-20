@@ -13,6 +13,11 @@
         group: root
         mode: '0755'  
 
+    - name: Install gpg if not present
+      apt:
+        name: gpg
+        state: present
+
     - name: Ensure keyrings directory exists
       file:
         path: /etc/apt/keyrings
