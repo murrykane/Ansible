@@ -1,0 +1,25 @@
+- name: Check if {{ item }} is a mount
+  command: mountpoint -q {{ item }}
+  register: mount_check
+  failed_when: false
+  changed_when: false
+
+- name: Run tree -L 1 on {{ item }}
+  command: tree -L 1 {{ item }}
+  register: tree_output
+  when: 
+    - mount_check is defined 
+    - mount_check.rc == 0
+  failed_when: false
+  changed_when: false
+
+- name: Send Discord alert for mount issue
+  community.general.discord:
+    webhook_id: "{{ discord_webhook_id }}"
+    webhook_token: "{{ discord_webhook_token }}"
+    username: "{{ discord_user }}"
+    avatar_url: "{{ discord_avator }}"
+    content: ":warning: NFS Share issue on {{ inventory_hostname }} for `{{ item }}` - either not mounted or empty."
+  when: 
+    - tree_output is defined
+    - tree_output.stdout_lines | length <= 1
