@@ -13,6 +13,18 @@
   failed_when: false
   changed_when: false
 
+- name: Output of Mount on {{ mount_point }}
+  debug:
+    var: mount_check
+  when: 
+    - mount_check is defined
+
+- name: Output of Tree on {{ mount_point }}
+  debug:
+    var: tree_output
+  when: 
+    - tree_output is defined
+
 - name: Send Discord alert for mount issue
   community.general.discord:
     webhook_id: "{{ discord_webhook_id }}"
@@ -21,5 +33,6 @@
     avatar_url: "{{ discord_avator }}"
     content: ":warning: NFS Share issue on {{ inventory_hostname }} for `{{ mount_point }}` - either not mounted or empty."
   when: 
+    - mount_check is defined
     - tree_output is defined
     - tree_output.stdout_lines | length <= 1
