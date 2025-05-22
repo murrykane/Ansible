@@ -30,7 +30,7 @@
     tree_summary_found: "{{ tree_output.stdout_lines | select('search', '^\\d+ directories?, \\d+ files?$') | list | length > 0 }}"
   when:
     - tree_output is defined
-    - 'stdout_lines' in tree_output
+    - ""'stdout_lines' in tree_output"
 
 
 - name: Output of Summary of Tree command {{ mount_point }}
