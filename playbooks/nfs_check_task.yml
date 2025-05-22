@@ -25,15 +25,31 @@
   when: 
     - tree_output is defined
 
-- name: Send Discord alert for mount issue
+- name: Set fact if tree output contains directory/file summary
+  set_fact:
+    tree_summary_found: "{{ tree_output.stdout_lines | select('search', '^\\d+ directories?, \\d+ files?$') | list | length > 0 }}"
+  when:
+    - tree_output is defined
+    - 'stdout_lines' in tree_output
+
+
+- name: Output of Summary of Tree command {{ mount_point }}
+  debug:
+    var: tree_summary_found
+  when: 
+    - tree_summary_found is defined
+
+- name: Send Discord alert for mount issue {{ mount_point }}
   community.general.discord:
     webhook_id: "{{ discord_webhook_id }}"
     webhook_token: "{{ discord_webhook_token }}"
     username: "{{ discord_user }}"
     avatar_url: "{{ discord_avator }}"
     content: ":warning: NFS Share issue on {{ inventory_hostname }} for `{{ mount_point }}` - either not mounted or empty."
-  when: 
+  when:   
     - mount_check is defined
     - tree_output is defined
     - "'stdout_lines' in tree_output"
-    - tree_output.stdout_lines | length <= 1
+    - tree_output.stdout_lines | length <= 4
+    - tree_summary_found is defined
+    - not tree_summary_found
