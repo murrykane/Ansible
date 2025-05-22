@@ -35,4 +35,5 @@
   when: 
     - mount_check is defined
     - tree_output is defined
+    - "'stdout_lines' in tree_output"
     - tree_output.stdout_lines | length <= 1
