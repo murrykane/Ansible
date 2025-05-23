@@ -25,13 +25,16 @@
     - "'stdout_lines' in tree_output"
 
 - name: Debug mount check
-  debug: var: mount_check
+  debug: 
+    var: mount_check
 
 - name: Debug tree output
-  debug: var: tree_output
+  debug: 
+    var: tree_output
 
 - name: Debug tree summary detection
-  debug: var: tree_summary_found
+  debug: 
+    var: tree_summary_found
 
 
 - name: Send Discord alert for mount issue {{ mount_point }}
