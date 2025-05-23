@@ -52,4 +52,64 @@
     - (mount_check is not defined or (mount_check.rc | default(1)) != 0) or
       (tree_summary_found is defined and not tree_summary_found)
 
+- name: Lets fix a broken mount point when needed for {{ mount_point }}
+  block:
 
+    - name: Attempt to unmount {{ mount_point }} if it's in a bad state
+      ansible.builtin.command: umount {{ mount_point }}
+      become: true
+      ignore_errors: true
+
+    - name: Run mount -a to remount fstab entries
+      ansible.builtin.command: mount -a
+      become: true
+
+    - name: Re-check if {{ mount_point }} is now mounted
+      ansible.builtin.command: mountpoint -q {{ mount_point }}
+      register: remount_check
+      failed_when: false
+      changed_when: false
+
+    - name: Re-run tree -L 1 on {{ mount_point }}
+      ansible.builtin.command: tree -L 1 {{ mount_point }}
+      register: retried_tree_output
+      when:
+        - remount_check is defined
+        - (remount_check.rc | default(1)) == 0
+      failed_when: false
+      changed_when: false
+
+    - name: Set fact if retried tree output has files/directories
+      ansible.builtin.set_fact:
+        retried_tree_summary_found: "{{ retried_tree_output.stdout_lines | select('search', '^\\d+ directories?, \\d+ files?$') | list | length > 0 }}"
+      when:
+        - "'stdout_lines' in retried_tree_output"
+
+    - name: Send Discord alert if remount did not fix the issue
+      community.general.discord:
+        webhook_id: "{{ discord_webhook_id }}"
+        webhook_token: "{{ discord_webhook_token }}"
+        username: "{{ discord_user }}"
+        avatar_url: "{{ discord_avatar }}"
+        content: ":x: Auto-remount failed on {{ inventory_hostname }} for `{{ mount_point }}`. Manual intervention may be required."
+      when:
+        - fstab_check.rc == 0
+        - (remount_check is not defined or (remount_check.rc | default(1)) != 0) or
+          (retried_tree_summary_found is defined and not retried_tree_summary_found)
+
+    - name: Send Discord alert if remount did fix the issue
+      community.general.discord:
+        webhook_id: "{{ discord_webhook_id }}"
+        webhook_token: "{{ discord_webhook_token }}"
+        username: "{{ discord_user }}"
+        avatar_url: "{{ discord_avatar }}"
+        content: ":x: Auto-remount worked on {{ inventory_hostname }} for `{{ mount_point }}`. Its been fixed and can be ignored."
+      when:
+        - fstab_check.rc == 0
+        - (remount_check is not defined or (remount_check.rc | default(1)) != 0) or
+          (retried_tree_summary_found is defined and retried_tree_summary_found)
+
+  when:
+    - fstab_check is defined
+    - fstab_check.rc == 0
+    - (mount_check is not defined or (mount_check.rc | default(1)) != 0)
