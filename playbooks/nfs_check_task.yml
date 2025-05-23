@@ -1,55 +1,46 @@
-- name: Check if {{ mount_point  }} is a mount
-  command: mountpoint -q {{ mount_point  }}
+- name: Check if {{ mount_point }} is in /etc/fstab
+  ansible.builtin.shell: grep -w "{{ mount_point }}" /etc/fstab
+  register: fstab_check
+  ignore_errors: true
+
+- name: Check if {{ mount_point }} is a mount
+  ansible.builtin.command: mountpoint -q {{ mount_point }}
   register: mount_check
   failed_when: false
   changed_when: false
+  when: fstab_check.rc == 0
 
 - name: Run tree -L 1 on {{ mount_point }}
-  command: tree -L 1 {{ mount_point }}
+  ansible.builtin.command: tree -L 1 {{ mount_point }}
   register: tree_output
-  when: 
-    - mount_check is defined 
+  when:
     - mount_check.rc == 0
   failed_when: false
   changed_when: false
 
-- name: Output of Mount on {{ mount_point }}
-  debug:
-    var: mount_check
-  when: 
-    - mount_check is defined
-
-- name: Output of Tree on {{ mount_point }}
-  debug:
-    var: tree_output
-  when: 
-    - tree_output is defined
-
 - name: Set fact if tree output contains directory/file summary
-  set_fact:
+  ansible.builtin.set_fact:
     tree_summary_found: "{{ tree_output.stdout_lines | select('search', '^\\d+ directories?, \\d+ files?$') | list | length > 0 }}"
   when:
-    - tree_output is defined
     - "'stdout_lines' in tree_output"
 
+- name: Debug mount check
+  debug: var: mount_check
 
-- name: Output of Summary of Tree command {{ mount_point }}
-  debug:
-    var: tree_summary_found
-  when: 
-    - tree_summary_found is defined
+- name: Debug tree output
+  debug: var: tree_output
+
+- name: Debug tree summary detection
+  debug: var: tree_summary_found
+
 
 - name: Send Discord alert for mount issue {{ mount_point }}
   community.general.discord:
     webhook_id: "{{ discord_webhook_id }}"
     webhook_token: "{{ discord_webhook_token }}"
     username: "{{ discord_user }}"
-    avatar_url: "{{ discord_avator }}"
-    content: ":warning: NFS Share issue on {{ inventory_hostname }} for `{{ mount_point }}` - either not mounted or empty."
-  when:   
-    - mount_check is defined
-    - tree_output is defined
-    - "'stdout_lines' in tree_output"
-    - tree_output.stdout_lines | length <= 4
-    - tree_summary_found is defined
-    - not tree_summary_found
+    avatar_url: "{{ discord_avatar }}"
+    content: ":warning: NFS Share issue on {{ inventory_hostname }} for `{{ mount_point }}` - either not mounted or appears empty."
+  when:
+    - fstab_check.rc == 0
+    - mount_check.rc != 0 or not tree_summary_found | default(false)
