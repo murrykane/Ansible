@@ -15,9 +15,10 @@
   register: tree_output
   when:
     - mount_check is defined
-    - mount_check.rc == 0
+    - (mount_check.rc | default(1)) == 0
   failed_when: false
   changed_when: false
+
 
 - name: Set fact if tree output contains directory/file summary
   ansible.builtin.set_fact:
@@ -48,6 +49,7 @@
   when:
     - fstab_check is defined
     - fstab_check.rc == 0
-    - (mount_check is not defined or mount_check.rc != 0) or
+    - (mount_check is not defined or (mount_check.rc | default(1)) != 0) or
       (tree_summary_found is defined and not tree_summary_found)
+
 
