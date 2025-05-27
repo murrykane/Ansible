@@ -103,7 +103,7 @@
         webhook_token: "{{ discord_webhook_token }}"
         username: "{{ discord_user }}"
         avatar_url: "{{ discord_avatar }}"
-        content: ":x: Auto-remount worked on {{ inventory_hostname }} for `{{ mount_point }}`. Its been fixed and can be ignored."
+        content: ":heavy_check_mark: Auto-remount worked on {{ inventory_hostname }} for `{{ mount_point }}`. Its been fixed and can be ignored."
       when:
         - fstab_check.rc == 0
         - (remount_check is not defined or (remount_check.rc | default(1)) != 0) or
