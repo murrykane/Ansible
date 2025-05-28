@@ -1,7 +1,7 @@
 ---
 - name: Install Grafana Alloy via APT
   #hosts: minidocker.kane.mk:pihole3.kane.mk:pihole6.kane.mk
-  hosts: pihole3.kane.mk:pihole6.kane.mk:authentik.kane.mk
+  hosts: pihole3.kane.mk:pihole6.kane.mk:authentik.kane.mk:hahome.kane.mk:pbs.kane.mk:minijellyfin.kane.mk
   become: true
   tasks:
 
