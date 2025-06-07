@@ -2,7 +2,7 @@
   hosts: localhost
   gather_facts: no
   vars_files:
-    - /vars/pihole.yml
+    - playbooks/vars/pihole.yml
 
   tasks:
 
