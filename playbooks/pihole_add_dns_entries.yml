@@ -72,9 +72,11 @@
             | map('split', ' ')
             | selectattr(0, 'defined')
             | selectattr(1, 'defined')
-            | map('combine', ['ip', 'domain'])
+            | map('zip', [['ip', 'domain']])
+            | map('items2dict')
             | list
           }}
+
 
     # - name: Convert existing DNS records into dictionaries safely
     #   set_fact:
