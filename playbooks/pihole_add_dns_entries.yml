@@ -95,18 +95,23 @@
       debug:
         var: dns_entries_to_add
 
-    # - name: Add missing DNS entries
-    #   uri:
-    #     #url: '{{ pihole_api_url }}/config/dns/hosts/{{ item.ip }} {{ item.domain }}'
-    #     url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
-    #     method: PUT
-    #     headers:
-    #       sid: "{{ auth_response.json.session.sid }}"
-    #     status_code: [200, 201]
-    #     validate_certs: no
-    #   loop: "{{ dns_entries_to_add }}"
-    #   when: dns_entries_to_add | length > 0
-    #   register: post_results
+    - name: Add missing DNS entries
+      uri:
+        #url: '{{ pihole_api_url }}/config/dns/hosts/{{ item.ip }} {{ item.domain }}'
+        url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
+        method: PUT
+        headers:
+          sid: "{{ auth_response.json.session.sid }}"
+        status_code: [200, 201]
+        validate_certs: no
+      loop: "{{ dns_entries_to_add }}"
+      when: dns_entries_to_add | length > 0
+      register: post_results
+
+    - name: Result from adding DNS entries
+      debug:
+        var: post_results
+      when: post_results is defined 
 
     - name: Show results
       debug:
