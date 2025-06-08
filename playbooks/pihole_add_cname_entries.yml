@@ -95,18 +95,18 @@
       debug:
         var: cname_entries_to_add
 
-    # - name: Add missing cname entries
-    #   uri:
-    #     #url: '{{ pihole_api_url }}/config/cname/hosts/{{ cname }} {{ item.domain }}'
-    #     url: "{{ pihole_api_url }}/config/dns/cnameRecords/{{ (item.domain + ',' + item.target + ',60') | urlencode }}"
-    #     method: PUT
-    #     headers:
-    #       sid: "{{ auth_response.json.session.sid }}"
-    #     status_code: [200, 201]
-    #     validate_certs: no
-    #   loop: "{{ cname_entries_to_add }}"
-    #   when: cname_entries_to_add | length > 0
-    #   register: post_results
+    - name: Add missing cname entries
+      uri:
+        #url: '{{ pihole_api_url }}/config/cname/hosts/{{ cname }} {{ item.domain }}'
+        url: "{{ pihole_api_url }}/config/dns/cnameRecords/{{ (item.domain + ',' + item.target + ',60') | urlencode }}"
+        method: PUT
+        headers:
+          sid: "{{ auth_response.json.session.sid }}"
+        status_code: [200, 201]
+        validate_certs: no
+      loop: "{{ cname_entries_to_add }}"
+      when: cname_entries_to_add | length > 0
+      register: post_results
 
     - name: Result from adding cname entries
       debug:
