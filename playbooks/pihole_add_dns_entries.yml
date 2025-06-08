@@ -62,8 +62,6 @@
       loop_control:
         loop_var: item
 
-    # This task splits strings like "IP domain" into dictionaries,
-    # and filters out anything that doesn't have exactly two parts.
     - name: Convert existing DNS records into dictionaries
       set_fact:
         existing_dns_structured: >-
@@ -72,10 +70,11 @@
             | map('split', ' ')
             | selectattr(0, 'defined')
             | selectattr(1, 'defined')
-            | map('zip', [['ip', 'domain']])
+            | map('zip', ['ip', 'domain'])
             | map('items2dict')
             | list
           }}
+
 
 
     # - name: Convert existing DNS records into dictionaries safely
