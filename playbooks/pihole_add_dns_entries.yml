@@ -18,6 +18,10 @@
         validate_certs: no  # Disable SSL verification if needed
       register: auth_response
 
+    - name: Show SID retrieved
+      debug: 
+        msg: "Sid retrieved is {{ auth_response.json.session.sid }}"
+        
     - name: Fetch existing Pi-hole DNS records
       uri:
         url: "{{ pihole_api_url }}/config/dns/hosts"
