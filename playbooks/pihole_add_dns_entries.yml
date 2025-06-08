@@ -62,17 +62,15 @@
     #   loop_control:
     #     loop_var: item
 
-    - name: Convert existing DNS records into dictionaries
+    - name: Convert existing DNS records into dictionaries (simple loop)
       set_fact:
-        existing_dns_structured: >-
-          {{
-            existing_dns
-            | map('split', ' ')
-            | selectattr(0, 'defined')
-            | selectattr(1, 'defined')
-            | map('community.general.dict_kv', ['ip', 'domain'])
-            | list
-          }}
+        existing_dns_structured: []
+    - name: Populate structured dns records
+      set_fact:
+        existing_dns_structured: "{{ existing_dns_structured + [ {'ip': item.split()[0], 'domain': item.split()[1]} ] }}"
+      loop: "{{ existing_dns }}"
+      when: item.split() | length == 2
+
 
 
 
