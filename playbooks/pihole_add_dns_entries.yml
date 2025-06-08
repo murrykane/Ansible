@@ -36,31 +36,31 @@
           sid: "{{ auth_response.json.session.sid }}"
       register: existing_dns_response
 
-    - name: Debug raw existing DNS response
-      debug:
-        var: existing_dns_response.json
+    # - name: Debug raw existing DNS response
+    #   debug:
+    #     var: existing_dns_response.json
 
-    - name: Show HOSTS retrieved
-      debug: 
-        msg: "Hosts retrieved is {{ existing_dns_response.json.config.dns.hosts }}"
+    # - name: Show HOSTS retrieved
+    #   debug: 
+    #     msg: "Hosts retrieved is {{ existing_dns_response.json.config.dns.hosts }}"
 
     - name: Set fact for existing records
       set_fact:
         existing_dns: "{{ existing_dns_response.json.config.dns.hosts | default([]) }}"
 
-    - name: Show HOSTS retrieved
-      debug: 
-        msg: "DNS record is [{{ item }}]"
-      with_items: "{{ existing_dns }}"
-      loop_control:
-        loop_var: item
+    # - name: Show HOSTS retrieved
+    #   debug: 
+    #     msg: "DNS record is [{{ item }}]"
+    #   with_items: "{{ existing_dns }}"
+    #   loop_control:
+    #     loop_var: item
 
-    - name: Split IP and hostname
-      debug:
-        msg: "IP: {{ item.split(' ')[0] }}, Hostname: {{ item.split(' ')[1] }}"
-      with_items: "{{ existing_dns }}"
-      loop_control:
-        loop_var: item
+    # - name: Split IP and hostname
+    #   debug:
+    #     msg: "IP: {{ item.split(' ')[0] }}, Hostname: {{ item.split(' ')[1] }}"
+    #   with_items: "{{ existing_dns }}"
+    #   loop_control:
+    #     loop_var: item
 
     - name: Convert existing DNS records into dictionaries
       set_fact:
@@ -70,10 +70,11 @@
             | map('split', ' ')
             | selectattr(0, 'defined')
             | selectattr(1, 'defined')
-            | map('zip', ['ip', 'domain'])
+            | map('zip', [['ip', 'domain']])
             | map('items2dict')
             | list
           }}
+
 
 
 
