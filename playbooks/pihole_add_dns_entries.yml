@@ -93,30 +93,24 @@
             | list
           }}
 
-
-    # - name: Filter out DNS records that already exist
-    #   set_fact:
-    #     dns_entries_to_add: >-
-    #       {{ pihole_dns_entries | reject('in', existing_dns | map(attribute='domain') | list) | list }}
-
-    # - name: Add missing DNS entries
-    #   uri:
-    #     url: "{{ pihole_api_url }}/config/dns/hosts/{{ item.ip }} {{ item.domain }}"
-    #     method: PUT
-    #     headers:
-    #       sid: "{{ auth_response.json.session.sid }}"
-    #       #Content-Type: "application/json"
-    #     # body_format: json
-    #     # body:
-    #     #   "{{ item.ip }} {{ item.domain }}"
-    #     #   # domain: "{{ item.domain }}"
-    #     #   # ip: "{{ item.ip }}"
-    #     #   # type: "A"
-    #     status_code: [200, 201]
-    #     validate_certs: no
-    #   loop: "{{ dns_entries_to_add }}"
-    #   when: dns_entries_to_add | length > 0
-    #   register: post_results
+    - name: Add missing DNS entries
+      uri:
+        url: "'{{ pihole_api_url }}/config/dns/hosts/{{ item.ip }} {{ item.domain }}'"
+        method: PUT
+        headers:
+          sid: "{{ auth_response.json.session.sid }}"
+          #Content-Type: "application/json"
+        # body_format: json
+        # body:
+        #   "{{ item.ip }} {{ item.domain }}"
+        #   # domain: "{{ item.domain }}"
+        #   # ip: "{{ item.ip }}"
+        #   # type: "A"
+        status_code: [200, 201]
+        validate_certs: no
+      loop: "{{ dns_entries_to_add }}"
+      when: dns_entries_to_add | length > 0
+      register: post_results
 
     - name: Show results
       debug:
