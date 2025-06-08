@@ -62,20 +62,19 @@
       loop_control:
         loop_var: item
 
+    # This task splits strings like "IP domain" into dictionaries,
+    # and filters out anything that doesn't have exactly two parts.
     - name: Convert existing DNS records into dictionaries
       set_fact:
         existing_dns_structured: >-
           {{
             existing_dns
             | map('split', ' ')
-            | selectattr(0, 'defined')  # makes sure split returns something
-            | selectattr(1, 'defined')  # ensures at least 2 items exist
+            | selectattr(0, 'defined')
+            | selectattr(1, 'defined')
             | map('combine', ['ip', 'domain'])
             | list
           }}
-
-
-
 
     # - name: Convert existing DNS records into dictionaries safely
     #   set_fact:
