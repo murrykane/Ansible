@@ -75,7 +75,7 @@
       set_fact:
         existing_cname_structured: "{{ existing_cname_structured + [ {'domain': item.split(',')[0] | lower, 'target': item.split(',')[1] | lower} ] }}"
       loop: "{{ existing_cname }}"
-      when: item.split() | length == 2
+      when: item.split(',') | length == 2
 
 
     - name: Show structured existing cname
