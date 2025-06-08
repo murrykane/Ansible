@@ -18,18 +18,22 @@
         validate_certs: no  # Disable SSL verification if needed
       register: auth_response
 
-    - name: Show SID retrieved
-      debug: 
-        msg: "Sid retrieved is {{ auth_response.json.session.sid }}"
-        
+    # - name: Show SID retrieved
+    #   debug: 
+    #     msg: "Sid retrieved is {{ auth_response.json.session.sid }}"
+
     - name: Fetch existing Pi-hole DNS records
       uri:
         url: "{{ pihole_api_url }}/config/dns/hosts"
         method: GET
         headers:
           Authorization: "sid {{ auth_response.json.session.sid }}"
-        return_content: true
+        # return_content: true
       register: existing_dns_response
+
+    - name: Show HOSTS retrieved
+      debug: 
+        msg: "Hosts retrieved is {{ existing_dns_response.json.config.dns.hosts }}"
 
     - name: Set fact for existing records
       set_fact:
