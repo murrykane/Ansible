@@ -1,0 +1,131 @@
+- name: Add CNAME records to Pi-hole idempotently
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vars/pihole_cname.yml
+
+  tasks:
+
+    - name: Normalize pihole_cname_entries (lowercase domains)
+      set_fact:
+        pihole_cname_entries_normalized: "{{ pihole_cname_entries_normalized | default([]) + [ { 'target': cname, 'domain': item.domain | lower } ] }}"
+      loop: "{{ pihole_cname_entries }}"
+      loop_control:
+        loop_var: item
+
+    - name: Replace original with normalized
+      set_fact:
+        pihole_cname_entries: "{{ pihole_cname_entries_normalized }}"
+
+    - name: Obtain session ID from Pi-hole
+      uri:
+        url: "{{ pihole_api_url }}/auth"
+        method: POST
+        body: "{{ {'password': pihole_api_token } | to_json }}"
+        headers:
+          Content-Type: "application/json"
+        return_content: yes
+        status_code: 200
+        validate_certs: no  # Disable SSL verification if needed
+      register: auth_response
+
+    # - name: Show SID retrieved
+    #   debug: 
+    #     msg: "Sid retrieved is {{ auth_response.json.session.sid }}"
+
+    - name: Fetch existing Pi-hole cname records
+      uri:
+        url: "{{ pihole_api_url }}/config/dns/cnameRecords"
+        method: GET
+        headers:
+          sid: "{{ auth_response.json.session.sid }}"
+      register: existing_cname_response
+
+    - name: Debug raw existing cname response
+      debug:
+        var: existing_cname_response.json
+
+    # - name: Show HOSTS retrieved
+    #   debug: 
+    #     msg: "Hosts retrieved is {{ existing_cname_response.json.config.cname.hosts }}"
+
+    - name: Set fact for existing records
+      set_fact:
+        existing_cname: "{{ existing_cname_response.json.config.dns.cnameRecords | default([]) }}"
+
+    # - name: Show HOSTS retrieved
+    #   debug: 
+    #     msg: "cname record is [{{ item }}]"
+    #   with_items: "{{ existing_cname }}"
+    #   loop_control:
+    #     loop_var: item
+
+    # - name: Split IP and hostname
+    #   debug:
+    #     msg: "IP: {{ item.split(' ')[0] }}, Hostname: {{ item.split(' ')[1] }}"
+    #   with_items: "{{ existing_cname }}"
+    #   loop_control:
+    #     loop_var: item
+
+    - name: Convert existing cname records into dictionaries (simple loop)
+      set_fact:
+        existing_cname_structured: []
+
+    - name: Populate structured cname records
+      set_fact:
+        existing_cname_structured: "{{ existing_cname_structured + [ {'domain': item.split(',')[0] | lower, 'target': item.split(',')[1] | lower} ] }}"
+      loop: "{{ existing_cname }}"
+      when: item.split() | length == 2
+
+
+    - name: Show structured existing cname
+      debug:
+        var: existing_cname_structured
+
+    - name: Filter out cname records that already exist
+      set_fact:
+        cname_entries_to_add: >-
+          {{
+            pihole_cname_entries |
+            rejectattr('domain', 'in', existing_cname_structured | map(attribute='domain') | list)
+            | list
+          }}
+
+    - name: Show needed cname entries
+      debug:
+        var: cname_entries_to_add
+
+    # - name: Add missing cname entries
+    #   uri:
+    #     #url: '{{ pihole_api_url }}/config/cname/hosts/{{ cname }} {{ item.domain }}'
+    #     url: "{{ pihole_api_url }}/config/dns/cnameRecords/{{ (item.domain + ',' + item.target + ',60') | urlencode }}"
+    #     method: PUT
+    #     headers:
+    #       sid: "{{ auth_response.json.session.sid }}"
+    #     status_code: [200, 201]
+    #     validate_certs: no
+    #   loop: "{{ cname_entries_to_add }}"
+    #   when: cname_entries_to_add | length > 0
+    #   register: post_results
+
+    - name: Result from adding cname entries
+      debug:
+        var: post_results
+      when: post_results is defined 
+
+    - name: Show results
+      debug:
+        msg: >
+          {% if cname_entries_to_add | length == 0 %}
+            All cname entries already exist. Nothing to add.
+          {% else %}
+            Added entries: {{ cname_entries_to_add }}
+          {% endif %}
+
+    - name: Logout from Pi-hole session
+      uri:
+        url: "{{ pihole_api_url }}/auth?sid={{ auth_response.json.session.sid }}"
+        method: DELETE
+        status_code: 204
+        validate_certs: no
+
