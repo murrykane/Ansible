@@ -68,10 +68,11 @@
           {{
             existing_dns
             | map('split', ' ')
-            | selectattr('length', 'equalto', 2)
+            | select(lambda x: x | length == 2)
             | map('combine', ['ip', 'domain'])
             | list
           }}
+
 
 
     # - name: Convert existing DNS records into dictionaries safely
