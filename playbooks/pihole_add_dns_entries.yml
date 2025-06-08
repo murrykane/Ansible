@@ -58,22 +58,31 @@
       loop_control:
         loop_var: item
 
-    - name: Convert existing DNS records into dictionaries
+    - name: Convert existing DNS records into dictionaries safely
       set_fact:
         existing_dns_structured: >-
           {{
-            existing_dns | map('regex_search', '^(\\S+)\\s+(\\S+)$') |
-            map('list') |
-            map('combine', ['ip', 'domain']) |
-            list
+            existing_dns
+            | map('regex_findall', '^(\\S+)\\s+(\\S+)$')
+            | map('first')
+            | select('defined')
+            | map('combine', ['ip', 'domain'])
+            | list
           }}
+
+    - name: Show structured existing DNS
+      debug:
+        var: existing_dns_structured
 
     - name: Filter out DNS records that already exist
       set_fact:
         dns_entries_to_add: >-
-          {{ pihole_dns_entries |
+          {{
+            pihole_dns_entries |
             rejectattr('domain', 'in', existing_dns_structured | map(attribute='domain') | list)
-            | list }}
+            | list
+          }}
+
 
     # - name: Filter out DNS records that already exist
     #   set_fact:
