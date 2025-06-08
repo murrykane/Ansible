@@ -36,9 +36,9 @@
           sid: "{{ auth_response.json.session.sid }}"
       register: existing_dns_response
 
-    # - name: Debug raw existing DNS response
-    #   debug:
-    #     var: existing_dns_response.json
+    - name: Debug raw existing DNS response
+      debug:
+        var: existing_dns_response.json
 
     # - name: Show HOSTS retrieved
     #   debug: 
@@ -70,10 +70,10 @@
             | map('split', ' ')
             | selectattr(0, 'defined')
             | selectattr(1, 'defined')
-            | map('zip', [['ip', 'domain']])
-            | map('items2dict')
+            | map('community.general.dict_kv', ['ip', 'domain'])
             | list
           }}
+
 
 
 
