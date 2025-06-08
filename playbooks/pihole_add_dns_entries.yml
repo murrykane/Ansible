@@ -46,22 +46,46 @@
 
     - name: Show HOSTS retrieved
       debug: 
-        msg: "Host retrieved is {{ item }}"
+        msg: "DNS record is [{{ item }}]"
       with_items: "{{ existing_dns }}"
       loop_control:
         loop_var: item
 
+    - name: Split IP and hostname
+      debug:
+        msg: "IP: {{ item.split(' ')[0] }}, Hostname: {{ item.split(' ')[1] }}"
+      with_items: "{{ existing_dns }}"
+      loop_control:
+        loop_var: item
+
+    - name: Convert existing DNS records into dictionaries
+      set_fact:
+        existing_dns_structured: >-
+          {{
+            existing_dns | map('regex_search', '^(\\S+)\\s+(\\S+)$') |
+            map('list') |
+            map('combine', ['ip', 'domain']) |
+            list
+          }}
+
     - name: Filter out DNS records that already exist
       set_fact:
         dns_entries_to_add: >-
-          {{ pihole_dns_entries | reject('in', existing_dns | map(attribute='domain') | list) | list }}
+          {{ pihole_dns_entries |
+            rejectattr('domain', 'in', existing_dns_structured | map(attribute='domain') | list)
+            | list }}
+
+    # - name: Filter out DNS records that already exist
+    #   set_fact:
+    #     dns_entries_to_add: >-
+    #       {{ pihole_dns_entries | reject('in', existing_dns | map(attribute='domain') | list) | list }}
 
     - name: Add missing DNS entries
       uri:
         url: "{{ pihole_api_url }}/config/dns/hosts/"
         method: POST
         headers:
-          Authorization: "Bearer {{ pihole_api_token }}"
+          sid: "{{ auth_response.json.session.sid }}"
           Content-Type: "application/json"
         body_format: json
         body:
