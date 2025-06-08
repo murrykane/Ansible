@@ -8,16 +8,14 @@
 
     - name: Normalize pihole_dns_entries (lowercase domains)
       set_fact:
-        pihole_dns_entries: >-
-          {{
-            pihole_dns_entries
-            | map('combine', {'domain': item.domain | lower})
-            | list
-          }}
+        pihole_dns_entries_normalized: "{{ pihole_dns_entries_normalized | default([]) + [ { 'ip': item.ip, 'domain': item.domain | lower } ] }}"
       loop: "{{ pihole_dns_entries }}"
       loop_control:
         loop_var: item
 
+    - name: Replace original with normalized
+      set_fact:
+        pihole_dns_entries: "{{ pihole_dns_entries_normalized }}"
 
     - name: Obtain session ID from Pi-hole
       uri:
@@ -97,18 +95,18 @@
       debug:
         var: dns_entries_to_add
 
-    - name: Add missing DNS entries
-      uri:
-        #url: '{{ pihole_api_url }}/config/dns/hosts/{{ item.ip }} {{ item.domain }}'
-        url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
-        method: PUT
-        headers:
-          sid: "{{ auth_response.json.session.sid }}"
-        status_code: [200, 201]
-        validate_certs: no
-      loop: "{{ dns_entries_to_add }}"
-      when: dns_entries_to_add | length > 0
-      register: post_results
+    # - name: Add missing DNS entries
+    #   uri:
+    #     #url: '{{ pihole_api_url }}/config/dns/hosts/{{ item.ip }} {{ item.domain }}'
+    #     url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
+    #     method: PUT
+    #     headers:
+    #       sid: "{{ auth_response.json.session.sid }}"
+    #     status_code: [200, 201]
+    #     validate_certs: no
+    #   loop: "{{ dns_entries_to_add }}"
+    #   when: dns_entries_to_add | length > 0
+    #   register: post_results
 
     - name: Show results
       debug:
