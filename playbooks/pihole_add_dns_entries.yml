@@ -36,6 +36,10 @@
           sid: "{{ auth_response.json.session.sid }}"
       register: existing_dns_response
 
+    - name: Debug raw existing DNS response
+      debug:
+        var: existing_dns_response.json
+
     - name: Show HOSTS retrieved
       debug: 
         msg: "Hosts retrieved is {{ existing_dns_response.json.config.dns.hosts }}"
@@ -91,18 +95,19 @@
 
     - name: Add missing DNS entries
       uri:
-        url: "{{ pihole_api_url }}/config/dns/hosts/"
-        method: POST
+        url: "{{ pihole_api_url }}/config/dns/hosts/{{ item.ip }} {{ item.domain }}"
+        method: PUT
         headers:
           sid: "{{ auth_response.json.session.sid }}"
-          Content-Type: "application/json"
-        body_format: json
-        body:
-          record: "{{ item.ip }} {{ item.domain }}"
-          # domain: "{{ item.domain }}"
-          # ip: "{{ item.ip }}"
-          # type: "A"
+          #Content-Type: "application/json"
+        # body_format: json
+        # body:
+        #   "{{ item.ip }} {{ item.domain }}"
+        #   # domain: "{{ item.domain }}"
+        #   # ip: "{{ item.ip }}"
+        #   # type: "A"
         status_code: [200, 201]
+        validate_certs: no
       loop: "{{ dns_entries_to_add }}"
       when: dns_entries_to_add | length > 0
       register: post_results
