@@ -8,7 +8,7 @@
 
     - name: Fetch existing Pi-hole DNS records
       uri:
-        url: "{{ pihole_api_url }}/dns/entries"
+        url: "{{ pihole_api_url }}/config/dns/hosts"
         method: GET
         headers:
           Authorization: "Bearer {{ pihole_api_token }}"
@@ -26,16 +26,17 @@
 
     - name: Add missing DNS entries
       uri:
-        url: "{{ pihole_api_url }}/dns/entries"
+        url: "{{ pihole_api_url }}/config/dns/hosts/"
         method: POST
         headers:
           Authorization: "Bearer {{ pihole_api_token }}"
           Content-Type: "application/json"
         body_format: json
         body:
-          domain: "{{ item.domain }}"
-          ip: "{{ item.ip }}"
-          type: "A"
+          record: "{{ item.ip }} {{ item.domain }}"
+          # domain: "{{ item.domain }}"
+          # ip: "{{ item.ip }}"
+          # type: "A"
         status_code: [200, 201]
       loop: "{{ dns_entries_to_add }}"
       when: dns_entries_to_add | length > 0
