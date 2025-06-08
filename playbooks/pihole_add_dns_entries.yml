@@ -68,10 +68,12 @@
           {{
             existing_dns
             | map('split', ' ')
-            | select(lambda x: x | length == 2)
+            | selectattr(0, 'defined')  # makes sure split returns something
+            | selectattr(1, 'defined')  # ensures at least 2 items exist
             | map('combine', ['ip', 'domain'])
             | list
           }}
+
 
 
 
