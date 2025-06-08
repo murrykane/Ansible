@@ -4,13 +4,20 @@
   vars_files:
     - vars/pihole.yml
 
-
-
-# curl --location 'https://pihole3.local.kaneworld.org/api/config/dns/hosts' \
-# --header        'sid: v4iacIh/ORqmtf0lIKPTWQ=' \
-# --header 'Cookie: sid=v4iacIh/ORqmtf0lIKPTWQ='
-
   tasks:
+
+    - name: Normalize pihole_dns_entries (lowercase domains)
+      set_fact:
+        pihole_dns_entries: >-
+          {{
+            pihole_dns_entries
+            | map('combine', {'domain': item.domain | lower})
+            | list
+          }}
+      loop: "{{ pihole_dns_entries }}"
+      loop_control:
+        loop_var: item
+
 
     - name: Obtain session ID from Pi-hole
       uri:
@@ -65,32 +72,24 @@
     - name: Convert existing DNS records into dictionaries (simple loop)
       set_fact:
         existing_dns_structured: []
+
     - name: Populate structured dns records
       set_fact:
-        existing_dns_structured: "{{ existing_dns_structured + [ {'ip': item.split()[0], 'domain': item.split()[1]} ] }}"
+        existing_dns_structured: "{{ existing_dns_structured + [ {'ip': item.split()[0], 'domain': item.split()[1] | lower} ] }}"
       loop: "{{ existing_dns }}"
       when: item.split() | length == 2
+
 
     - name: Show structured existing DNS
       debug:
         var: existing_dns_structured
 
-    # - name: Filter out DNS records that already exist
-    #   set_fact:
-    #     dns_entries_to_add: >-
-    #       {{
-    #         pihole_dns_entries |
-    #         rejectattr('domain', 'in', existing_dns_structured | map(attribute='domain') | list)
-    #         | list
-    #       }}
-
-    - name: Filter out DNS records that already exist (case-insensitive)
+    - name: Filter out DNS records that already exist
       set_fact:
-        existing_domains_lower: "{{ existing_dns_structured | map(attribute='domain') | map('lower') | list }}"
         dns_entries_to_add: >-
           {{
-            pihole_dns_entries
-            | reject(lambda x: x.domain | lower in existing_domains_lower)
+            pihole_dns_entries |
+            rejectattr('domain', 'in', existing_dns_structured | map(attribute='domain') | list)
             | list
           }}
 
