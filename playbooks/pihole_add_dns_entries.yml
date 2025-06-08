@@ -93,9 +93,13 @@
             | list
           }}
 
+    - name: Show needed DNS entries
+      debug:
+        var: dns_entries_to_add
+
     - name: Add missing DNS entries
       uri:
-        url: "'{{ pihole_api_url }}/config/dns/hosts/{{ item.ip }} {{ item.domain }}'"
+        url: '{{ pihole_api_url }}/config/dns/hosts/{{ item.ip }} {{ item.domain }}'
         method: PUT
         headers:
           sid: "{{ auth_response.json.session.sid }}"
