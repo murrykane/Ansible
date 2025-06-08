@@ -34,7 +34,6 @@
         method: GET
         headers:
           sid: "{{ auth_response.json.session.sid }}"
-          #Cookie: "sid={{ auth_response.json.session.sid }}"
       register: existing_dns_response
 
     - name: Show HOSTS retrieved
@@ -44,6 +43,13 @@
     - name: Set fact for existing records
       set_fact:
         existing_dns: "{{ existing_dns_response.json.config.dns.hosts | default([]) }}"
+
+    - name: Show HOSTS retrieved
+      debug: 
+        msg: "Host retrieved is {{ item }}"
+      with_items: "{{ existing_dns }}"
+      loop_control:
+        loop_var: item
 
     - name: Filter out DNS records that already exist
       set_fact:
