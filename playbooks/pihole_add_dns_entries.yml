@@ -71,33 +71,26 @@
       loop: "{{ existing_dns }}"
       when: item.split() | length == 2
 
-
-
-
-
-
-    # - name: Convert existing DNS records into dictionaries safely
-    #   set_fact:
-    #     existing_dns_structured: >-
-    #       {{
-    #         existing_dns
-    #         | map('regex_findall', '^(\\S+)\\s+(\\S+)$')
-    #         | map('first')
-    #         | select('defined')
-    #         | map('combine', ['ip', 'domain'])
-    #         | list
-    #       }}
-
     - name: Show structured existing DNS
       debug:
         var: existing_dns_structured
 
-    - name: Filter out DNS records that already exist
+    # - name: Filter out DNS records that already exist
+    #   set_fact:
+    #     dns_entries_to_add: >-
+    #       {{
+    #         pihole_dns_entries |
+    #         rejectattr('domain', 'in', existing_dns_structured | map(attribute='domain') | list)
+    #         | list
+    #       }}
+
+    - name: Filter out DNS records that already exist (case-insensitive)
       set_fact:
+        existing_domains_lower: "{{ existing_dns_structured | map(attribute='domain') | map('lower') | list }}"
         dns_entries_to_add: >-
           {{
-            pihole_dns_entries |
-            rejectattr('domain', 'in', existing_dns_structured | map(attribute='domain') | list)
+            pihole_dns_entries
+            | reject(lambda x: x.domain | lower in existing_domains_lower)
             | list
           }}
 
