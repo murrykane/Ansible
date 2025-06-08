@@ -6,18 +6,30 @@
 
   tasks:
 
+    - name: Obtain session ID from Pi-hole
+      uri:
+        url: "{{ pihole_api_url }}/auth"
+        method: POST
+        body: "{{ {'password': pihole_api_token } | to_json }}"
+        headers:
+          Content-Type: "application/json"
+        return_content: yes
+        status_code: 200
+        validate_certs: no  # Disable SSL verification if needed
+      register: auth_response
+
     - name: Fetch existing Pi-hole DNS records
       uri:
         url: "{{ pihole_api_url }}/config/dns/hosts"
         method: GET
         headers:
-          Authorization: "Bearer {{ pihole_api_token }}"
+          Authorization: "sid {{ auth_response.json.session.sid }}"
         return_content: true
       register: existing_dns_response
 
     - name: Set fact for existing records
       set_fact:
-        existing_dns: "{{ existing_dns_response.json.entries | default([]) }}"
+        existing_dns: "{{ existing_dns_response.json.config.dns.hosts | default([]) }}"
 
     - name: Filter out DNS records that already exist
       set_fact:
