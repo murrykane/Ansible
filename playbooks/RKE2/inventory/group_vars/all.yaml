@@ -2,10 +2,11 @@
 os: "linux"
 arch: "amd64"
 
-vip: 192.168.3.50
+vip: 192.168.1.24
 
-metallb_version: v0.13.12
-lb_range: 192.168.3.80-192.168.3.90
+#metallb_version: v0.13.12
+metallb_version: v0.15.2
+lb_range: 192.168.1.25-192.168.1.35
 lb_pool_name: first-pool
 
 ansible_become: true

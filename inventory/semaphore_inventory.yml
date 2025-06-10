@@ -66,12 +66,16 @@ all:
         mkserver.kane.mk: 
         utilserver.kane.mk:
         cyborg.kane.mk:
-    servers:
-      hosts: 
-        rke2-prod-1.kane.mk:
-        rke2-prod-2.kane.mk:
-        rke2-prod-3.kane.mk:
-    agents:
-      hosts:
-        rke2-prod-4.kane.mk:
-        rke2-prod-5.kane.mk:
+    rke2:
+      vars:
+        ansible_user: semaphore
+      children:
+        servers:
+          hosts: 
+            rke2-prod-1.kane.mk:
+            rke2-prod-2.kane.mk:
+            rke2-prod-3.kane.mk:
+        agents:
+          hosts:
+            rke2-prod-4.kane.mk:
+            rke2-prod-5.kane.mk:
