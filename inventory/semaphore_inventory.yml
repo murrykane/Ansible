@@ -66,3 +66,6 @@ all:
         mkserver.kane.mk: 
         utilserver.kane.mk:
         cyborg.kane.mk:
+    servers:
+      hosts: 
+        
