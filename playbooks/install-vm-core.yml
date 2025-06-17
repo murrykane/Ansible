@@ -21,7 +21,7 @@
 
     - name: Create group
       group:
-        name: "{{ admin_group }}"
+        name: "sudo"
         state: present
 
     - name: Create Users Task
