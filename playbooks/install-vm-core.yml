@@ -1,6 +1,7 @@
 ---
 - name: Install core packages for virtual machines
-  hosts: "{{ my_hosts | d([]) }}"
+  #hosts: "{{ my_hosts | d([]) }}"
+  hosts: ubuntu:debian
   become: true
 
   tasks:
@@ -17,3 +18,19 @@
         name: qemu-guest-agent
         state: started
         enabled: true
+
+    - name: Add User Semaphore
+      ansible.builtin.user:
+        name: semaphore
+        shell: /bin/bash
+        create_home: yes
+        group: admin, sudo
+      become: yes
+
+    - name: Add User Murry
+      ansible.builtin.user:
+        name: murry
+        shell: /bin/bash
+        create_home: yes
+        group: admin, sudo
+      become: yes
