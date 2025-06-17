@@ -12,6 +12,11 @@ all:
         utilserver.kane.mk:
         minidocker.kane.mk:
         minijellyfin.kane.mk:
+        rke2-prod-1.kane.mk:
+        rke2-prod-2.kane.mk:
+        rke2-prod-3.kane.mk:
+        rke2-prod-4.kane.mk:
+        rke2-prod-5.kane.mk:
       vars:
         #ansible_python_interpreter: auto_silent
         ansible_python_interpreter: /usr/bin/python3

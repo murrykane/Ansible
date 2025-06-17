@@ -1,7 +1,7 @@
 ---
 - name: Install core packages for virtual machines
   #hosts: "{{ my_hosts | d([]) }}"
-  hosts: ubuntu:debian
+  hosts: "{{ scriptinventory }}"
   become: true
 
   tasks:
