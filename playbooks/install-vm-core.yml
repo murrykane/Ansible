@@ -19,18 +19,36 @@
     #     state: started
     #     enabled: true
 
-    - name: Add User Semaphore
-      ansible.builtin.user:
-        name: semaphore
-        shell: /bin/bash
-        create_home: yes
-        group: admin, sudo
-      become: yes
+    - name: Create group
+      group:
+        name: "{{ admin_group }}"
+        state: present
 
-    - name: Add User Murry
-      ansible.builtin.user:
-        name: murry
+    - name: Create Users Task
+      user:
+        name: "{{ item }}"
+        create_home: true
+        append: true
+        state: present
+        generate_ssh_key: true
         shell: /bin/bash
-        create_home: yes
-        group: admin, sudo
-      become: yes
+        groups: admin, sudo
+      loop:
+        - semaphore
+        - murry
+
+    # - name: Add User Semaphore
+    #   ansible.builtin.user:
+    #     name: semaphore
+    #     shell: /bin/bash
+    #     create_home: yes
+    #     group: admin, sudo
+    #   become: yes
+
+    # - name: Add User Murry
+    #   ansible.builtin.user:
+    #     name: murry
+    #     shell: /bin/bash
+    #     create_home: yes
+    #     group: admin, sudo
+    #   become: yes
