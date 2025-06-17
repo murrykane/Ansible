@@ -73,7 +73,7 @@ all:
         cyborg.kane.mk:
     rke2:
       vars:
-        ansible_user: semaphore
+        ansible_user: murry
       children:
         servers:
           hosts: 
