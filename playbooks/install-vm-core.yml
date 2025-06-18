@@ -1,7 +1,7 @@
 ---
 
 - name: Read public key locally on Semaphore host
-  hosts: all
+  hosts: "{{ scriptinventory }}"
   gather_facts: false
   tasks:
     # - name: Read shared public key from files/id_rsa.pub
