@@ -114,12 +114,12 @@
         mode: '0600'
       loop: "{{ users }}"
 
-    - name: Create sudoers file for no password prometheus-node-exporter
+    - name: Create sudoers file for no password 
       ansible.builtin.file:
-      path: /etc/sudoers.d/90-kane-init
-      mode: '0660'
-      owner: root
-      group: root
+        path: /etc/sudoers.d/90-kane-init
+        mode: '0660'
+        owner: root
+        group: root
 
     - name: Append shared public key to sudoers allowed list
       ansible.builtin.lineinfile:
