@@ -4,14 +4,14 @@
   hosts: all
   gather_facts: false
   tasks:
-    - name: Read shared public key from files/id_rsa.pub
-      slurp:
-        src: "files/id_rsa.pub"
-      register: pubkey_contents
-      delegate_to: 127.0.0.1
-      vars:
-        ansible_connection: local
-        ansible_become: false
+    # - name: Read shared public key from files/id_rsa.pub
+    #   slurp:
+    #     src: "files/id_rsa.pub"
+    #   register: pubkey_contents
+    #   delegate_to: 127.0.0.1
+    #   vars:
+    #     ansible_connection: local
+    #     ansible_become: false
     - name: Print current user and host
       command: whoami
       delegate_to: 127.0.0.1
