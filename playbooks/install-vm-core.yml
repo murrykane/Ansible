@@ -90,9 +90,9 @@
         mode: '0700'
       loop: "{{ users }}"
 
-    - name: Get public key for semaphore
+    - name: copy public key for accounts
       ansible.builtin.copy:
-        path: files/{{ item }}_id.pub
+        src: files/{{ item }}_id.pub
         dest: /home/{{ item }}/.ssh/{{ item }}_id.pub
         owner: "{{ item }}"
         group: "{{ item }}"
