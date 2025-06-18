@@ -51,6 +51,7 @@
 
     - name: Read public key from local file
       delegate_to: localhost
+      become: false
       slurp:
         src: "/home/{{ username }}/.ssh/id_rsa.pub"
       register: pubkey_contents
