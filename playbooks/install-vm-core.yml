@@ -4,6 +4,9 @@
   hosts: "{{ scriptinventory }}"
   become: true
 
+  vars:
+    username: semaphore
+
   tasks:
     - name: Install packages
       ansible.builtin.apt:
@@ -37,18 +40,27 @@
         - semaphore
         - murry
 
-    # - name: Add User Semaphore
-    #   ansible.builtin.user:
-    #     name: semaphore
-    #     shell: /bin/bash
-    #     create_home: yes
-    #     group: admin, sudo
-    #   become: yes
 
-    # - name: Add User Murry
-    #   ansible.builtin.user:
-    #     name: murry
-    #     shell: /bin/bash
-    #     create_home: yes
-    #     group: admin, sudo
-    #   become: yes
+    - name: Ensure .ssh directory exists for user
+      file:
+        path: "/home/{{ username }}/.ssh"
+        state: directory
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: '0700'
+
+    - name: Read public key from local file
+      delegate_to: localhost
+      slurp:
+        src: "/home/{{ username }}/.ssh/id_rsa.pub"
+      register: pubkey_contents
+
+    - name: Set authorized_keys with public key
+      copy:
+        content: "{{ pubkey_contents.content | b64decode }}"
+        dest: "/home/{{ username }}/.ssh/authorized_keys"
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: '0600'
+
+
