@@ -49,11 +49,11 @@
         group: "{{ username }}"
         mode: '0700'
 
-    - name: Read public key from local file
+    - name: Read shared public key from files/id_rsa.pub
       delegate_to: localhost
       become: false
       slurp:
-        src: "/home/{{ username }}/.ssh/id_rsa.pub"
+        src: "files/id_rsa.pub"
       register: pubkey_contents
 
     - name: Set authorized_keys with public key
