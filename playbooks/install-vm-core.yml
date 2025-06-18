@@ -57,29 +57,29 @@
       - murry
   tasks:
 
-    # - name: Install packages
-    #   ansible.builtin.apt:
-    #     name:
-    #       - prometheus-node-exporter
-    #       - nfs-common
-    #       - qemu-guest-agent
-    #     update_cache: true
+    - name: Install packages
+      ansible.builtin.apt:
+        name:
+          - prometheus-node-exporter
+          - nfs-common
+          - qemu-guest-agent
+        update_cache: true
 
-    # - name: Create group
-    #   group:
-    #     name: "sudo"
-    #     state: present
+    - name: Create group
+      group:
+        name: "sudo"
+        state: present
 
-    # - name: Create users
-    #   user:
-    #     name: "{{ item }}"
-    #     create_home: true
-    #     append: true
-    #     state: present
-    #     generate_ssh_key: true
-    #     shell: /bin/bash
-    #     groups: admin, sudo
-    #   loop: "{{ users }}"
+    - name: Create users
+      user:
+        name: "{{ item }}"
+        create_home: true
+        append: true
+        state: present
+        generate_ssh_key: true
+        shell: /bin/bash
+        groups: admin, sudo
+      loop: "{{ users }}"
 
     - name: Ensure .ssh directory exists for each user
       file:
@@ -113,3 +113,23 @@
         group: "{{ item }}"
         mode: '0600'
       loop: "{{ users }}"
+
+    - name: Create sudoers file for no password prometheus-node-exporter
+      ansible.builtin.file:
+      path: /etc/sudoers.d/90-kane-init
+      mode: '0660'
+      owner: root
+      group: root
+
+    - name: Append shared public key to sudoers allowed list
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers.d/90-kane-init
+        line: "{{ item }} ALL=(ALL) NOPASSWD:ALL"
+      loop: "{{ users }}"
+
+# Created by cloud-init v. 25.1.2-0ubuntu0~24.04.1 on Tue, 17 Jun 2025 22:45:16 +0000
+
+# User rules for murry
+murry ALL=(ALL) NOPASSWD:ALL
+
+
