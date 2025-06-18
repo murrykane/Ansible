@@ -19,6 +19,18 @@
         ansible_connection: local
         ansible_become: false
 
+    - name: Print current working directory (Semaphore host)
+      command: pwd
+      register: cwd_check
+      delegate_to: 127.0.0.1
+      vars:
+        ansible_connection: local
+        ansible_become: false
+
+    - debug:
+        var: cwd_check.stdout
+
+
     # - name: Check if pub file exists for Semaphore
     #   stat:
     #     path: "files/semaphore_id.pub"
