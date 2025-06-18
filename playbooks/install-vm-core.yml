@@ -1,16 +1,21 @@
 ---
+- name: Read shared public key (on localhost)
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Read shared public key from files/id_rsa.pub
+      slurp:
+        src: "files/semaphore_id.pub"
+      register: pubkey_contents
+
 - name: Install core packages for virtual machines
-  #hosts: "{{ my_hosts | d([]) }}"
   hosts: "{{ scriptinventory }}"
   become: true
-
   vars:
-    users: 
+    users:
       - semaphore
       - murry
-
   tasks:
-
     - name: Install packages
       ansible.builtin.apt:
         name:
@@ -18,12 +23,6 @@
           - nfs-common
           - qemu-guest-agent
         update_cache: true
-
-    # - name: Start guest qemu-guest-agent
-    #   ansible.builtin.service:
-    #     name: qemu-guest-agent
-    #     state: started
-    #     enabled: true
 
     - name: Create group
       group:
@@ -41,13 +40,6 @@
         groups: admin, sudo
       loop: "{{ users }}"
 
-    - name: Read shared public key from files/id_rsa.pub
-      delegate_to: localhost
-      become: false
-      slurp:
-        src: "files/semaphore_id.pub"
-      register: pubkey_contents
-
     - name: Ensure .ssh directory exists for each user
       file:
         path: "/home/{{ item }}/.ssh"
@@ -57,15 +49,16 @@
         mode: '0700'
       loop: "{{ users }}"
 
-    - name: Append shared public key to authorized_keys if not present
+    - name: Append shared public key to authorized_keys
       ansible.builtin.lineinfile:
         path: "/home/{{ item }}/.ssh/authorized_keys"
-        line: "{{ pubkey_contents.content | b64decode | trim }}"
+        line: "{{ hostvars['localhost']['pubkey_contents'].content | b64decode | trim }}"
         create: yes
         owner: "{{ item }}"
         group: "{{ item }}"
         mode: '0600'
       loop: "{{ users }}"
+
 
 
 
