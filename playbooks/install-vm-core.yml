@@ -1,29 +1,39 @@
 ---
-- name: Read shared public key (on localhost)
-  hosts: localhost
+
+- name: Read public key locally on Semaphore host
+  hosts: all
   gather_facts: false
-  become: false  
-  vars:
-    ansible_connection: local 
-    ansible_become: false
-
   tasks:
-
-    - name: Check if pub file exists for Semaphore
-      stat:
-        path: "files/semaphore_id.pub"
-      register: pubkey_file
-
-    - name: Fail if pub is missing for semaphore
-      fail:
-        msg: "PUB file not found on control node (Semaphore)"
-      when: not pubkey_file.stat.exists
-
-
     - name: Read shared public key from files/id_rsa.pub
       slurp:
-        src: "files/semaphore_id.pub"
+        src: "files/id_rsa.pub"
       register: pubkey_contents
+      delegate_to: 127.0.0.1
+      vars:
+        ansible_connection: local
+        ansible_become: false
+    - name: Print current user and host
+      command: whoami
+      delegate_to: 127.0.0.1
+      vars:
+        ansible_connection: local
+        ansible_become: false
+
+    # - name: Check if pub file exists for Semaphore
+    #   stat:
+    #     path: "files/semaphore_id.pub"
+    #   register: pubkey_file
+
+    # - name: Fail if pub is missing for semaphore
+    #   fail:
+    #     msg: "PUB file not found on control node (Semaphore)"
+    #   when: not pubkey_file.stat.exists
+
+
+    # - name: Read shared public key from files/id_rsa.pub
+    #   slurp:
+    #     src: "files/semaphore_id.pub"
+    #   register: pubkey_contents
 
 - name: Install core packages for virtual machines
   hosts: "{{ scriptinventory }}"
