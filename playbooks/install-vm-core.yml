@@ -53,7 +53,7 @@
       delegate_to: localhost
       become: false
       slurp:
-        src: "files/id_rsa.pub"
+        src: "files/semaphore_id.pub"
       register: pubkey_contents
 
     - name: Set authorized_keys with public key
