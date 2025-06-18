@@ -1,34 +1,34 @@
 ---
 
-- name: Read public key locally on Semaphore host
-  hosts: "{{ scriptinventory }}"
-  gather_facts: false
-  tasks:
-    # - name: Read shared public key from files/id_rsa.pub
-    #   slurp:
-    #     src: "files/id_rsa.pub"
-    #   register: pubkey_contents
-    #   delegate_to: 127.0.0.1
-    #   vars:
-    #     ansible_connection: local
-    #     ansible_become: false
-    - name: Print current user and host
-      command: whoami
-      delegate_to: 127.0.0.1
-      vars:
-        ansible_connection: local
-        ansible_become: false
+# - name: Read public key locally on Semaphore host
+#   hosts: "{{ scriptinventory }}"
+#   gather_facts: false
+#   tasks:
+#     # - name: Read shared public key from files/id_rsa.pub
+#     #   slurp:
+#     #     src: "files/id_rsa.pub"
+#     #   register: pubkey_contents
+#     #   delegate_to: 127.0.0.1
+#     #   vars:
+#     #     ansible_connection: local
+#     #     ansible_become: false
+#     - name: Print current user and host
+#       command: whoami
+#       delegate_to: 127.0.0.1
+#       vars:
+#         ansible_connection: local
+#         ansible_become: false
 
-    - name: Print current working directory (Semaphore host)
-      command: pwd
-      register: cwd_check
-      delegate_to: 127.0.0.1
-      vars:
-        ansible_connection: local
-        ansible_become: false
+#     - name: Print current working directory (Semaphore host)
+#       command: pwd
+#       register: cwd_check
+#       delegate_to: 127.0.0.1
+#       vars:
+#         ansible_connection: local
+#         ansible_become: false
 
-    - debug:
-        var: cwd_check.stdout
+#     - debug:
+#         var: cwd_check.stdout
 
 
     # - name: Check if pub file exists for Semaphore
@@ -50,34 +50,36 @@
 - name: Install core packages for virtual machines
   hosts: "{{ scriptinventory }}"
   become: true
+  gather_facts: true
   vars:
     users:
       - semaphore
       - murry
   tasks:
-    - name: Install packages
-      ansible.builtin.apt:
-        name:
-          - prometheus-node-exporter
-          - nfs-common
-          - qemu-guest-agent
-        update_cache: true
 
-    - name: Create group
-      group:
-        name: "sudo"
-        state: present
+    # - name: Install packages
+    #   ansible.builtin.apt:
+    #     name:
+    #       - prometheus-node-exporter
+    #       - nfs-common
+    #       - qemu-guest-agent
+    #     update_cache: true
 
-    - name: Create users
-      user:
-        name: "{{ item }}"
-        create_home: true
-        append: true
-        state: present
-        generate_ssh_key: true
-        shell: /bin/bash
-        groups: admin, sudo
-      loop: "{{ users }}"
+    # - name: Create group
+    #   group:
+    #     name: "sudo"
+    #     state: present
+
+    # - name: Create users
+    #   user:
+    #     name: "{{ item }}"
+    #     create_home: true
+    #     append: true
+    #     state: present
+    #     generate_ssh_key: true
+    #     shell: /bin/bash
+    #     groups: admin, sudo
+    #   loop: "{{ users }}"
 
     - name: Ensure .ssh directory exists for each user
       file:
@@ -88,10 +90,24 @@
         mode: '0700'
       loop: "{{ users }}"
 
+    - name: Get public key for semaphore
+      ansible.builtin.copy:
+        path: files/{{ item }}_id.pub
+        dest: /home/{{ item }}/.ssh/{{ item }}_id.pub
+        owner: "{{ item }}"
+        group: "{{ item }}"
+        mode: '0600'
+      loop: "{{ users }}"
+
+    - name: Read shared public key from PUB
+      slurp:
+        src: "/home/semaphore/.ssh/semaphore_id.pub"
+      register: pubkey_contents
+
     - name: Append shared public key to authorized_keys
       ansible.builtin.lineinfile:
         path: "/home/{{ item }}/.ssh/authorized_keys"
-        line: "{{ hostvars['localhost']['pubkey_contents'].content | b64decode | trim }}"
+        line: "{{ pubkey_contents.content | b64decode | trim }}"
         create: yes
         owner: "{{ item }}"
         group: "{{ item }}"
