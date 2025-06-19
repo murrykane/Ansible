@@ -84,3 +84,10 @@ all:
           hosts:
             rke2-prod-4.kane.mk:
             rke2-prod-5.kane.mk:
+    longhorn:
+      vars:
+        ansible_user: murry
+      hosts:
+        longhorn-prod-1.kane.mk:
+        longhorn-prod-2.kane.mk:
+        longhorn-prod-3.kane.mk:
