@@ -1,5 +1,11 @@
 ---
 rke2_install_dir: "/usr/local/bin"
 #rke2_version: "v1.29.4+rke2r1"
-rke2_version: "v1.33.1+rke2r1"
+#rke2_version: "v1.33.1+rke2r1"   #not supported get the following: semaphore@mini-docker:~$ helm install rancher rancher-latest/rancher \
+#  --namespace cattle-system \
+#  --set hostname=rancher.local.kaneworld.org \
+#  --set bootstrapPassword=admin \
+#  --disable-openapi-validation
+#Error: INSTALLATION FAILED: chart requires kubeVersion: < 1.33.0-0 which is incompatible with Kubernetes v1.33.1+rke2r1
+rke2_version: "v1.32.5+rke2r1"
 
