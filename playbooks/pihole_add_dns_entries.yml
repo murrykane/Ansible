@@ -8,7 +8,7 @@
 
     - name: Normalize pihole_dns_entries (lowercase domains)
       set_fact:
-        pihole_dns_entries_normalized: "{{ pihole_dns_entries_normalized | default([]) + [ { 'ip': item.ip, 'domain': item.domain | lower }, 'add': item.add ] }}"
+        pihole_dns_entries_normalized: "{{ pihole_dns_entries_normalized | default([]) + [ { 'ip': item.ip, 'domain': item.domain | lower, 'add': item.add } ] }}"
       loop: "{{ pihole_dns_entries }}"
       loop_control:
         loop_var: item
