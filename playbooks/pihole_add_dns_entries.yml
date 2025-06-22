@@ -180,8 +180,8 @@
 
     - name: Append delete URLs with original domain casing
       set_fact:
-        #dns_delete_urls: "{{ dns_delete_urls + [ (item.ip + ' ' + original_domain_map[(item.ip, item.domain | lower)]) | urlencode ] }}"
-        dns_delete_urls: "{{ dns_delete_urls + [ (item.ip + ' ' + original_domain_map[(item.ip, item.domain | lower)]) ] }}"    # uncoding not needed here
+        dns_delete_urls: "{{ dns_delete_urls + [ (item.ip + ' ' + original_domain_map[(item.ip, item.domain | lower)]) | urlencode ] }}"
+        #dns_delete_urls: "{{ dns_delete_urls + [ (item.ip + ' ' + original_domain_map[(item.ip, item.domain | lower)]) ] }}"    # uncoding not needed here
       loop: "{{ dns_entries_to_remove }}"
       when: (item.ip, item.domain | lower) in original_domain_map
 
