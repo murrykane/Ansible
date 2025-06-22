@@ -75,6 +75,7 @@
     - name: Convert existing DNS records into dictionaries (simple loop)
       set_fact:
         existing_dns_structured: []
+        existing_dns_structured_lowercase: []
 
     - name: Populate structured dns records original case
       set_fact:
