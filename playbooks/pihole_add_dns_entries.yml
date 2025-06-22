@@ -113,23 +113,23 @@
       debug:
         var: dns_entries_to_add
 
-    # - name: Add missing DNS entries
-    #   uri:
-    #     #url: '{{ pihole_api_url }}/config/dns/hosts/{{ item.ip }} {{ item.domain }}'
-    #     url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
-    #     method: PUT
-    #     headers:
-    #       sid: "{{ auth_response.json.session.sid }}"
-    #     status_code: [200, 201]
-    #     validate_certs: no
-    #   loop: "{{ dns_entries_to_add }}"
-    #   when: dns_entries_to_add | length > 0
-    #   register: post_results
+    - name: Add missing DNS entries
+      uri:
+        #url: '{{ pihole_api_url }}/config/dns/hosts/{{ item.ip }} {{ item.domain }}'
+        url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
+        method: PUT
+        headers:
+          sid: "{{ auth_response.json.session.sid }}"
+        status_code: [200, 201]
+        validate_certs: no
+      loop: "{{ dns_entries_to_add }}"
+      when: dns_entries_to_add | length > 0
+      register: post_results
 
-    # - name: Result from adding DNS entries
-    #   debug:
-    #     var: post_results
-    #   when: post_results is defined 
+    - name: Result from adding DNS entries
+      debug:
+        var: post_results
+      when: post_results is defined 
 
     - name: Show results
       debug:
@@ -160,6 +160,32 @@
     - name: Show DNS entries to remove
       debug:
         var: dns_entries_to_remove
+
+    - name: Build lookup map for original domain casing
+      set_fact:
+        original_domain_map: >-
+          {{
+            original_domain_map | default({}) |
+            combine({
+              (item.ip, item.domain | lower): item.domain
+            })
+          }}
+      loop: "{{ existing_dns_structured }}"
+
+    - name: Initialize list for delete URLs
+      set_fact:
+        dns_delete_urls: []
+
+    - name: Append delete URLs with original domain casing
+      set_fact:
+        dns_delete_urls: "{{ dns_delete_urls + [ (item.ip + ' ' + original_domain_map[(item.ip, item.domain | lower)]) | urlencode ] }}"
+      loop: "{{ dns_entries_to_remove }}"
+      when: (item.ip, item.domain | lower) in original_domain_map
+
+    - name: Show DNS entries to remove by original case
+      debug:
+        var: dns_delete_urls
+
 
     # - name: Remove DNS entries
     #   uri:
