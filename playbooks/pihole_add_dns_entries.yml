@@ -157,7 +157,7 @@
 
     - name: Remove DNS entries
       uri:
-        url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.domain) | urlencode }}"
+        url: "{{ pihole_api_url }}/config/dns/hosts/{{ item.domain | urlencode }}"
         method: DELETE
         headers:
           sid: "{{ auth_response.json.session.sid }}"
