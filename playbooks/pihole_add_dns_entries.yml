@@ -240,6 +240,7 @@
     - name: Show DNS entries to remove for updates by original case
       debug:
         var: dns_delete_urls_for_updates
+      when: dns_delete_urls_for_updates is defined
 
     - name: Remove DNS entries from Pi-hole
       uri:
@@ -251,6 +252,9 @@
         validate_certs: no
       loop: "{{ dns_delete_urls_for_updates }}"
       register: post_delete_forupdates_results
+      when: 
+        - dns_delete_urls_for_updates is defined
+        - dns_delete_urls_for_updates | length > 0
 
     - name: Show deletion for updates results
       debug:
