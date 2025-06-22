@@ -140,7 +140,7 @@
           {% endif %}
 
 ######## anything to remove flagged with 'false' for Exists
-    - name: Filter entries to remove
+    - name: Filter entries to remove that actually exist
       set_fact:
         dns_entries_to_remove: >-
           {{
@@ -148,8 +148,13 @@
             selectattr('exists', 'defined') |
             rejectattr('exists') |
             selectattr('domain', 'in', existing_dns_structured | map(attribute='domain') | list) |
-            list
+            selectattr('ip', 'in',
+              existing_dns_structured |
+              selectattr('domain', 'in', pihole_dns_entries | map(attribute='domain') | list) |
+              map(attribute='ip') | list
+            ) | list
           }}
+
 
     - name: Show DNS entries to remove
       debug:
@@ -157,7 +162,7 @@
 
     - name: Remove DNS entries
       uri:
-        url: "{{ pihole_api_url }}/config/dns/hosts/{{ item.domain | urlencode }}"
+        url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
         method: DELETE
         headers:
           sid: "{{ auth_response.json.session.sid }}"
@@ -166,6 +171,7 @@
       loop: "{{ dns_entries_to_remove }}"
       when: dns_entries_to_remove | length > 0
       register: delete_results
+
 
     - name: Show deletion results
       debug:
