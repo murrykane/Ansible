@@ -187,23 +187,23 @@
         var: dns_delete_urls
 
 
-    # - name: Remove DNS entries
-    #   uri:
-    #     url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
-    #     method: DELETE
-    #     headers:
-    #       sid: "{{ auth_response.json.session.sid }}"
-    #     status_code: [200, 204]
-    #     validate_certs: no
-    #   loop: "{{ dns_entries_to_remove }}"
-    #   when: dns_entries_to_remove | length > 0
-    #   register: delete_results
+    - name: Remove DNS entries
+      uri:
+        url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
+        method: DELETE
+        headers:
+          sid: "{{ auth_response.json.session.sid }}"
+        status_code: [200, 204]
+        validate_certs: no
+      loop: "{{ dns_delete_urls }}"
+      when: dns_delete_urls | length > 0
+      register: delete_results
 
 
-    # - name: Show deletion results
-    #   debug:
-    #     var: delete_results
-    #   when: delete_results is defined
+    - name: Show deletion results
+      debug:
+        var: delete_results
+      when: delete_results is defined
 ################### done with removes........
 
 
@@ -230,7 +230,7 @@
         var: dns_entries_to_update
 
 #####
-# update doesnt update it adds another duplicate record!!!! 
+# update doesnt update, rather it adds another duplicate record!!!! 
 # should just send a notificaiton to manually fix in this case....
 #####
 
