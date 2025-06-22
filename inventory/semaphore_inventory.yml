@@ -80,7 +80,9 @@ all:
             rke2-prod-1.kane.mk:
             rke2-prod-2.kane.mk:
             rke2-prod-3.kane.mk:
+            rke2-prod-6.kane.mk:
         agents:
           hosts:
             rke2-prod-4.kane.mk:
             rke2-prod-5.kane.mk:
+            rke2-prod-7.kane.mk:

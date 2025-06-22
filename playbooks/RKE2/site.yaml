@@ -7,6 +7,9 @@
 # 5) Optimise flow logic
 # 6) Clean up
 
+#######
+# command:  ansible-playbook site.yaml -i inventory/hosts.ini --key-file ~/.ssh/{key}
+#
 ###############################################################
 # MAKE SURE YOU CHANGE group_vars/all.yaml VARIABLES!!!!!!!!!!!
 ###############################################################

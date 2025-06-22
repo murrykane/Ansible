@@ -8,10 +8,15 @@
 
     - name: Normalize pihole_dns_entries (lowercase domains)
       set_fact:
-        pihole_dns_entries_normalized: "{{ pihole_dns_entries_normalized | default([]) + [ { 'ip': item.ip, 'domain': item.domain | lower } ] }}"
+        pihole_dns_entries_normalized: >-
+          {{
+            pihole_dns_entries_normalized | default([]) +
+            [ { 'ip': item.ip, 'domain': item.domain | lower, 'exists': item.exists | default(true) } ]
+          }}
       loop: "{{ pihole_dns_entries }}"
       loop_control:
         loop_var: item
+
 
     - name: Replace original with normalized
       set_fact:
@@ -82,14 +87,26 @@
       debug:
         var: existing_dns_structured
 
-    - name: Filter out DNS records that already exist
+    # - name: Filter out DNS records that already exist
+    #   set_fact:
+    #     dns_entries_to_add: >-
+    #       {{
+    #         pihole_dns_entries |
+    #         rejectattr('domain', 'in', existing_dns_structured | map(attribute='domain') | list)
+    #         | list
+    #       }}
+
+    - name: Filter entries to add
       set_fact:
         dns_entries_to_add: >-
           {{
             pihole_dns_entries |
-            rejectattr('domain', 'in', existing_dns_structured | map(attribute='domain') | list)
-            | list
+            selectattr('exists', 'defined') |
+            selectattr('exists') |
+            rejectattr('domain', 'in', existing_dns_structured | map(attribute='domain') | list) |
+            list
           }}
+
 
     - name: Show needed DNS entries
       debug:
@@ -121,6 +138,77 @@
           {% else %}
             Added entries: {{ dns_entries_to_add }}
           {% endif %}
+
+######## anything to remove flagged with 'false' for Exists
+    - name: Filter entries to remove
+      set_fact:
+        dns_entries_to_remove: >-
+          {{
+            pihole_dns_entries |
+            selectattr('exists', 'defined') |
+            rejectattr('exists') |
+            selectattr('domain', 'in', existing_dns_structured | map(attribute='domain') | list) |
+            list
+          }}
+
+    - name: Show DNS entries to remove
+      debug:
+        var: dns_entries_to_remove
+
+    - name: Remove DNS entries
+      uri:
+        url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
+        method: DELETE
+        headers:
+          sid: "{{ auth_response.json.session.sid }}"
+        status_code: [200, 204]
+        validate_certs: no
+      loop: "{{ dns_entries_to_remove }}"
+      when: dns_entries_to_remove | length > 0
+      register: delete_results
+
+    - name: Show deletion results
+      debug:
+        var: delete_results
+      when: delete_results is defined
+################### done with removes........
+
+
+#### updates to existing with different IP address
+
+    - name: Detect DNS records with changed IPs
+      set_fact:
+        dns_entries_to_update: >-
+          {{
+            pihole_dns_entries |
+            selectattr('exists', 'defined') |
+            selectattr('exists') |
+            selectattr('domain', 'in', existing_dns_structured | map(attribute='domain') | list) |
+            rejectattr('domain', 'in',
+              existing_dns_structured |
+              selectattr('ip', 'defined') |
+              selectattr('ip', 'in', pihole_dns_entries | map(attribute='ip') | list) |
+              map(attribute='domain') | list
+            ) | list
+          }}
+
+    - name: Update changed DNS entries
+      uri:
+        url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
+        method: PUT
+        headers:
+          sid: "{{ auth_response.json.session.sid }}"
+        status_code: [200, 201]
+        validate_certs: no
+      loop: "{{ dns_entries_to_update }}"
+      when: dns_entries_to_update | length > 0
+      register: update_results
+
+    - name: Show updated DNS entries
+      debug:
+        var: update_results
+      when: update_results is defined
+##### done with updates for existing with new IP
 
     - name: Logout from Pi-hole session
       uri:
