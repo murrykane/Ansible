@@ -148,9 +148,9 @@
             pihole_dns_entries |
             selectattr('exists', 'defined') |
             rejectattr('exists') |
-            selectattr('domain', 'in', existing_dns_structured | map(attribute='domain') | list) |
+            selectattr('domain', 'in', existing_dns_structured_lowercase | map(attribute='domain') | list) |
             selectattr('ip', 'in',
-              existing_dns_structured |
+              existing_dns_structured_lowercase |
               selectattr('domain', 'in', pihole_dns_entries | map(attribute='domain') | list) |
               map(attribute='ip') | list
             ) | list
