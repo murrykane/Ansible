@@ -108,23 +108,23 @@
       debug:
         var: dns_entries_to_add
 
-    - name: Add missing DNS entries
-      uri:
-        #url: '{{ pihole_api_url }}/config/dns/hosts/{{ item.ip }} {{ item.domain }}'
-        url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
-        method: PUT
-        headers:
-          sid: "{{ auth_response.json.session.sid }}"
-        status_code: [200, 201]
-        validate_certs: no
-      loop: "{{ dns_entries_to_add }}"
-      when: dns_entries_to_add | length > 0
-      register: post_results
+    # - name: Add missing DNS entries
+    #   uri:
+    #     #url: '{{ pihole_api_url }}/config/dns/hosts/{{ item.ip }} {{ item.domain }}'
+    #     url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
+    #     method: PUT
+    #     headers:
+    #       sid: "{{ auth_response.json.session.sid }}"
+    #     status_code: [200, 201]
+    #     validate_certs: no
+    #   loop: "{{ dns_entries_to_add }}"
+    #   when: dns_entries_to_add | length > 0
+    #   register: post_results
 
-    - name: Result from adding DNS entries
-      debug:
-        var: post_results
-      when: post_results is defined 
+    # - name: Result from adding DNS entries
+    #   debug:
+    #     var: post_results
+    #   when: post_results is defined 
 
     - name: Show results
       debug:
@@ -156,23 +156,23 @@
       debug:
         var: dns_entries_to_remove
 
-    - name: Remove DNS entries
-      uri:
-        url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
-        method: DELETE
-        headers:
-          sid: "{{ auth_response.json.session.sid }}"
-        status_code: [200, 204]
-        validate_certs: no
-      loop: "{{ dns_entries_to_remove }}"
-      when: dns_entries_to_remove | length > 0
-      register: delete_results
+    # - name: Remove DNS entries
+    #   uri:
+    #     url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
+    #     method: DELETE
+    #     headers:
+    #       sid: "{{ auth_response.json.session.sid }}"
+    #     status_code: [200, 204]
+    #     validate_certs: no
+    #   loop: "{{ dns_entries_to_remove }}"
+    #   when: dns_entries_to_remove | length > 0
+    #   register: delete_results
 
 
-    - name: Show deletion results
-      debug:
-        var: delete_results
-      when: delete_results is defined
+    # - name: Show deletion results
+    #   debug:
+    #     var: delete_results
+    #   when: delete_results is defined
 ################### done with removes........
 
 
@@ -194,22 +194,27 @@
             ) | list
           }}
 
-    - name: Update changed DNS entries
-      uri:
-        url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
-        method: PUT
-        headers:
-          sid: "{{ auth_response.json.session.sid }}"
-        status_code: [200, 201]
-        validate_certs: no
-      loop: "{{ dns_entries_to_update }}"
-      when: dns_entries_to_update | length > 0
-      register: update_results
-
-    - name: Show updated DNS entries
+    - name: Show DNS entries to update
       debug:
-        var: update_results
-      when: update_results is defined
+        var: dns_entries_to_update
+
+    # - name: Update changed DNS entries
+    #   uri:
+    #     url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
+    #     method: PUT
+    #     headers:
+    #       sid: "{{ auth_response.json.session.sid }}"
+    #     status_code: [200, 201]
+    #     validate_certs: no
+    #   loop: "{{ dns_entries_to_update }}"
+    #   when: dns_entries_to_update | length > 0
+    #   register: update_results
+
+    # - name: Show updated DNS entries
+    #   debug:
+    #     var: update_results
+    #   when: update_results is defined
+
 ##### done with updates for existing with new IP
 
     - name: Logout from Pi-hole session
