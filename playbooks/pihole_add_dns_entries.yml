@@ -89,6 +89,17 @@
       loop: "{{ existing_dns }}"
       when: item.split() | length == 2
 
+    - name: Build lookup map for original domain casing
+      set_fact:
+        original_domain_map: >-
+          {{
+            original_domain_map | default({}) |
+            combine({
+              (item.ip, item.domain | lower): item.domain
+            })
+          }}
+      loop: "{{ existing_dns_structured }}"
+
     - name: Show structured existing DNS Original
       debug:
         var: existing_dns_structured
@@ -163,17 +174,6 @@
       debug:
         var: dns_entries_to_remove
 
-    - name: Build lookup map for original domain casing
-      set_fact:
-        original_domain_map: >-
-          {{
-            original_domain_map | default({}) |
-            combine({
-              (item.ip, item.domain | lower): item.domain
-            })
-          }}
-      loop: "{{ existing_dns_structured }}"
-
     - name: Initialize list for delete URLs
       set_fact:
         dns_delete_urls: []
@@ -199,8 +199,6 @@
         status_code: [200, 204]
         validate_certs: no
       loop: "{{ dns_delete_urls }}"
-
-
 
     - name: Show deletion results
       debug:
