@@ -210,23 +210,26 @@
 
 #### updates to existing with different IP address
 
+    - name: Create map of existing DNS (domain → IP)
+      set_fact:
+        existing_dns_map: >-
+          {{
+            existing_dns_structured_lowercase
+            | items2dict(key_name='domain', value_name='ip')
+          }}
+
     - name: Detect DNS records with changed IPs
       set_fact:
-        dns_entries_to_update: >-
-          {{
-            pihole_dns_entries
-            | selectattr('exists', 'defined')
-            | selectattr('exists')
-            | selectattr('domain', 'in', existing_dns_structured_lowercase | map(attribute='domain') | list)
-            | selectattr('ip', '!=', 
-                existing_dns_structured_lowercase
-                | items2dict(key_name='domain', value_name='ip')
-                | dict2items
-                | selectattr('key', 'in', pihole_dns_entries | map(attribute='domain') | list)
-                | items2dict
-                )
-            | list
-          }}
+        dns_entries_to_update: []
+        
+    - name: Compare IPs for existing domains
+      set_fact:
+        dns_entries_to_update: "{{ dns_entries_to_update + [ item ] }}"
+      loop: "{{ pihole_dns_entries }}"
+      when: >
+        item.exists is defined and item.exists
+        and item.domain in existing_dns_map
+        and item.ip != existing_dns_map[item.domain]
 
     - name: Show DNS entries to update
       debug:
