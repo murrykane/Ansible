@@ -243,11 +243,25 @@
       debug:
         var: dns_entries_to_update
 
-    - name: Create list of delete targets (IP + original-case domain)
+    # - name: Create list of delete targets (IP + original-case domain)
+    #   set_fact:
+    #     dns_update_delete_targets: "{{ dns_update_delete_targets | default([]) + [ item.ip ~ ' ' ~ domain_case_map[item.domain] ] }}"
+    #   loop: "{{ dns_entries_to_update }}"
+    #   when: item.domain in domain_case_map
+
+    - name: Create original IP + original-case domain for updates
       set_fact:
-        dns_update_delete_targets: "{{ dns_update_delete_targets | default([]) + [ item.ip ~ ' ' ~ domain_case_map[item.domain] ] }}"
+        dns_update_delete_targets: "{{ dns_update_delete_targets | default([]) + [ old_entry.ip ~ ' ' ~ old_entry.domain ] }}"
       loop: "{{ dns_entries_to_update }}"
-      when: item.domain in domain_case_map
+      vars:
+        old_entry: >-
+          {{
+            existing_dns_structured
+            | selectattr('domain', 'equalto', item.domain | lower)
+            | list
+            | first
+          }}
+      when: old_entry is defined
 
 
     - name: Show DNS entries to remove for updates by original case
@@ -257,7 +271,7 @@
 
     - name: Remove DNS entries from Pi-hole
       uri:
-        url: "{{ pihole_api_url }}/config/dns/hosts/{{ item }} | urlencode"
+        url: "{{ pihole_api_url }}/config/dns/hosts/{{ item | urlencode }} "
         method: DELETE
         headers:
           sid: "{{ auth_response.json.session.sid }}"
