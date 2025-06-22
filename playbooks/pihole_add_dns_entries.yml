@@ -199,6 +199,7 @@
         status_code: [200, 204]
         validate_certs: no
       loop: "{{ dns_delete_urls }}"
+      register: delete_results
 
     - name: Show deletion results
       debug:
@@ -229,27 +230,49 @@
       debug:
         var: dns_entries_to_update
 
-#####
-# update doesnt update, rather it adds another duplicate record!!!! 
-# should just send a notificaiton to manually fix in this case....
-#####
+      #first we have to remove all the ones to be updated to then re-add them with correct details
+    - name: Append delete URLs with original domain casing
+      set_fact:
+        dns_delete_urls_for_updates: "{{ dns_delete_urls_for_updates + [ (item.ip + ' ' + original_domain_map[(item.ip, item.domain | lower)]) | urlencode ] }}"
+      loop: "{{ dns_entries_to_update }}"
+      when: (item.ip, item.domain | lower) in original_domain_map
 
-    # - name: Update changed DNS entries
-    #   uri:
-    #     url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
-    #     method: PUT
-    #     headers:
-    #       sid: "{{ auth_response.json.session.sid }}"
-    #     status_code: [200, 201]
-    #     validate_certs: no
-    #   loop: "{{ dns_entries_to_update }}"
-    #   when: dns_entries_to_update | length > 0
-    #   register: update_results
+    - name: Show DNS entries to remove for updates by original case
+      debug:
+        var: dns_delete_urls_for_updates
 
-    # - name: Show updated DNS entries
-    #   debug:
-    #     var: update_results
-    #   when: update_results is defined
+    - name: Remove DNS entries from Pi-hole
+      uri:
+        url: "{{ pihole_api_url }}/config/dns/hosts/{{ item }}"
+        method: DELETE
+        headers:
+          sid: "{{ auth_response.json.session.sid }}"
+        status_code: [200, 204]
+        validate_certs: no
+      loop: "{{ dns_delete_urls_for_updates }}"
+      register: post_delete_forupdates_results
+
+    - name: Show deletion for updates results
+      debug:
+        var: post_delete_forupdates_results
+      when: post_delete_forupdates_results is defined
+
+    - name: Update changed DNS entries
+      uri:
+        url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
+        method: PUT
+        headers:
+          sid: "{{ auth_response.json.session.sid }}"
+        status_code: [200, 201]
+        validate_certs: no
+      loop: "{{ dns_entries_to_update }}"
+      when: dns_entries_to_update | length > 0
+      register: update_results
+
+    - name: Show updated DNS entries
+      debug:
+        var: update_results
+      when: update_results is defined
 
 ##### done with updates for existing with new IP
 
