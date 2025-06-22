@@ -84,13 +84,17 @@
 
     - name: Populate structured dns records in lower case
       set_fact:
-        existing_dns_structured_lowercase: "{{ existing_dns_structured + [ {'ip': item.split()[0], 'domain': item.split()[1] | lower} ] }}"
+        existing_dns_structured_lowercase: "{{ existing_dns_structured_lowercase + [ {'ip': item.split()[0], 'domain': item.split()[1] | lower} ] }}"
       loop: "{{ existing_dns }}"
       when: item.split() | length == 2
 
-    - name: Show structured existing DNS
+    - name: Show structured existing DNS Original
       debug:
         var: existing_dns_structured
+
+    - name: Show structured existing DNS LowerCase
+      debug:
+        var: existing_dns_structured_lowercase
 
     - name: Filter entries to add
       set_fact:
@@ -143,7 +147,7 @@
             pihole_dns_entries |
             selectattr('exists', 'defined') |
             rejectattr('exists') |
-            selectattr('domain', 'in', existing_dns_structured | map(attribute='domain') | list) |
+            selectattr('domain', 'in', existing_dns_structured_lowercase | map(attribute='domain') | list) |
             selectattr('ip', 'in',
               existing_dns_structured |
               selectattr('domain', 'in', pihole_dns_entries | map(attribute='domain') | list) |
@@ -198,22 +202,27 @@
       debug:
         var: dns_entries_to_update
 
-    - name: Update changed DNS entries
-      uri:
-        url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
-        method: PUT
-        headers:
-          sid: "{{ auth_response.json.session.sid }}"
-        status_code: [200, 201]
-        validate_certs: no
-      loop: "{{ dns_entries_to_update }}"
-      when: dns_entries_to_update | length > 0
-      register: update_results
+#####
+# update doesnt update it adds another duplicate record!!!! 
+# should just send a notificaiton to manually fix in this case....
+#####
 
-    - name: Show updated DNS entries
-      debug:
-        var: update_results
-      when: update_results is defined
+    # - name: Update changed DNS entries
+    #   uri:
+    #     url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
+    #     method: PUT
+    #     headers:
+    #       sid: "{{ auth_response.json.session.sid }}"
+    #     status_code: [200, 201]
+    #     validate_certs: no
+    #   loop: "{{ dns_entries_to_update }}"
+    #   when: dns_entries_to_update | length > 0
+    #   register: update_results
+
+    # - name: Show updated DNS entries
+    #   debug:
+    #     var: update_results
+    #   when: update_results is defined
 
 ##### done with updates for existing with new IP
 
