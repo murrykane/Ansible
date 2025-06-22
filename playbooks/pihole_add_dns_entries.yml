@@ -210,21 +210,33 @@
 
 #### updates to existing with different IP address
 
+    # - name: Detect DNS records with changed IPs
+    #   set_fact:
+    #     dns_entries_to_update: >-
+    #       {{
+    #         pihole_dns_entries |
+    #         selectattr('exists', 'defined') |
+    #         selectattr('exists') |
+    #         selectattr('domain', 'in', existing_dns_structured_lowercase | map(attribute='domain') | list) |
+    #         rejectattr('domain', 'in',
+    #           existing_dns_structured_lowercase |
+    #           selectattr('ip', 'defined') |
+    #           selectattr('ip', 'in', pihole_dns_entries | map(attribute='ip') | list) |
+    #           map(attribute='domain') | list
+    #         ) | list
+    #       }}
+
     - name: Detect DNS records with changed IPs
       set_fact:
         dns_entries_to_update: >-
           {{
-            pihole_dns_entries |
-            selectattr('exists', 'defined') |
-            selectattr('exists') |
-            selectattr('domain', 'in', existing_dns_structured_lowercase | map(attribute='domain') | list) |
-            rejectattr('domain', 'in',
-              existing_dns_structured_lowercase |
-              selectattr('ip', 'defined') |
-              selectattr('ip', 'in', pihole_dns_entries | map(attribute='ip') | list) |
-              map(attribute='domain') | list
-            ) | list
+            pihole_dns_entries | selectattr('exists') | selectattr('domain', 'in', existing_dns_structured_lowercase | map(attribute='domain') | list)
+            | selectattr('ip', '!=', 
+                existing_dns_structured_lowercase | selectattr('domain', 'equalto', item.domain) | map(attribute='ip') | first
+              )
+            | list
           }}
+
 
     - name: Show DNS entries to update
       debug:
