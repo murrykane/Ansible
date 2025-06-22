@@ -190,17 +190,16 @@
         var: dns_delete_urls
 
 
-    - name: Remove DNS entries
+    - name: Remove DNS entries from Pi-hole
       uri:
-        url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.ip + ' ' + item.domain) | urlencode }}"
+        url: "{{ pihole_api_url }}/config/dns/hosts/{{ item }}"
         method: DELETE
         headers:
           sid: "{{ auth_response.json.session.sid }}"
         status_code: [200, 204]
         validate_certs: no
       loop: "{{ dns_delete_urls }}"
-      when: dns_delete_urls | length > 0
-      register: delete_results
+
 
 
     - name: Show deletion results
