@@ -76,25 +76,21 @@
       set_fact:
         existing_dns_structured: []
 
-    - name: Populate structured dns records
+    - name: Populate structured dns records original case
       set_fact:
-        existing_dns_structured: "{{ existing_dns_structured + [ {'ip': item.split()[0], 'domain': item.split()[1] | lower} ] }}"
+        existing_dns_structured: "{{ existing_dns_structured + [ {'ip': item.split()[0], 'domain': item.split()[1]} ] }}"
       loop: "{{ existing_dns }}"
       when: item.split() | length == 2
 
+    - name: Populate structured dns records in lower case
+      set_fact:
+        existing_dns_structured_lowercase: "{{ existing_dns_structured + [ {'ip': item.split()[0], 'domain': item.split()[1] | lower} ] }}"
+      loop: "{{ existing_dns }}"
+      when: item.split() | length == 2
 
     - name: Show structured existing DNS
       debug:
         var: existing_dns_structured
-
-    # - name: Filter out DNS records that already exist
-    #   set_fact:
-    #     dns_entries_to_add: >-
-    #       {{
-    #         pihole_dns_entries |
-    #         rejectattr('domain', 'in', existing_dns_structured | map(attribute='domain') | list)
-    #         | list
-    #       }}
 
     - name: Filter entries to add
       set_fact:
@@ -103,7 +99,7 @@
             pihole_dns_entries |
             selectattr('exists', 'defined') |
             selectattr('exists') |
-            rejectattr('domain', 'in', existing_dns_structured | map(attribute='domain') | list) |
+            rejectattr('domain', 'in', existing_dns_structured_lowercase | map(attribute='domain') | list) |
             list
           }}
 
@@ -189,7 +185,7 @@
             pihole_dns_entries |
             selectattr('exists', 'defined') |
             selectattr('exists') |
-            selectattr('domain', 'in', existing_dns_structured | map(attribute='domain') | list) |
+            selectattr('domain', 'in', existing_dns_structured_lowercase | map(attribute='domain') | list) |
             rejectattr('domain', 'in',
               existing_dns_structured |
               selectattr('ip', 'defined') |
