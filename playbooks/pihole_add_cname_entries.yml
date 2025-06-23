@@ -187,9 +187,9 @@
 
     - name: Append delete URLs with original domain casing
       set_fact:
-        cname_delete_urls: "{{ cname_delete_urls + [ (original_domain_map[(item.target, item.domain | lower)]) + ',' + item.target +',60' | urlencode ] }}"
+        cname_delete_urls: "{{ cname_delete_urls + [ (original_domain_map[(item.domain, item.target | lower)]) + ',' + item.target +',60' | urlencode ] }}"
       loop: "{{ cname_entries_to_remove }}"
-      when: (item.target, item.domain | lower) in original_domain_map
+      when: (item.domain, item.target | lower) in original_domain_map
 
     - name: Show CNAME entries to remove by original case
       debug:
