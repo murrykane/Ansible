@@ -85,7 +85,7 @@
 
     - name: Populate structured cname records in lower case
       set_fact:
-        existing_cname_structured_lowercase: "{{ existing_cname_structured_lowercase + [ {'target': item.split()[0], 'domain': item.split()[1] | lower} ] }}"
+        existing_cname_structured_lowercase: "{{ existing_cname_structured_lowercase + [ {'target': item.split()[0] | lower, 'domain': item.split()[1] | lower} ] }}"
       loop: "{{ existing_cname }}"
       when: item.split() | length == 2
 
