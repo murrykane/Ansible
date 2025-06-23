@@ -40,7 +40,7 @@
 
     - name: Fetch existing Pi-hole CNAME records
       uri:
-        url: "{{ pihole_api_url }}/config/dns/hosts"
+        url: "{{ pihole_api_url }}/config/dns/cnameRecords"
         method: GET
         headers:
           sid: "{{ auth_response.json.session.sid }}"
@@ -134,7 +134,7 @@
 
     # - name: Add missing CNAME entries
     #   uri:
-    #     url: "{{ pihole_api_url }}/config/dns/hosts/{{ (item.target + ' ' + item.domain) | urlencode }}"
+    #     url: "{{ pihole_api_url }}/config/dns/cnameRecords/{{ (item.target + ' ' + item.domain) | urlencode }}"
     #     method: PUT
     #     headers:
     #       sid: "{{ auth_response.json.session.sid }}"
@@ -198,7 +198,7 @@
 
     # - name: Remove CNAME entries from Pi-hole
     #   uri:
-    #     url: "{{ pihole_api_url }}/config/dns/hosts/{{ item }}"
+    #     url: "{{ pihole_api_url }}/config/dns/cnameRecords/{{ item }}"
     #     method: DELETE
     #     headers:
     #       sid: "{{ auth_response.json.session.sid }}"
