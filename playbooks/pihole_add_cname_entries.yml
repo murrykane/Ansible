@@ -127,6 +127,11 @@
             items2dict(key_name='domain' | lower, value_name='domain')
           }}
 
+    - name: Show original domain map
+      debug:
+        var: original_domain_map
+
+
     # - name: Show structured existing CNAME Original
     #   debug:
     #     var: existing_cname_structured
