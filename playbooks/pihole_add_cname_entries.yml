@@ -210,6 +210,12 @@
       loop: "{{ cname_entries_to_remove }}"
       when: (item.domain, item.target | lower) in original_domain_map
 
+    - name: Append delete URLs with original domain casing
+      set_fact:
+        cname_delete_urls: "{{ cname_delete_urls + [ (original_domain_map[(item.domain, item.target | lower)]) + ',' + item.target | urlencode ] }}"
+      loop: "{{ cname_entries_to_remove }}"
+      when: existing_cname_structured_lowercase | length == 2
+
     - name: Show CNAME entries to remove by original case
       debug:
         var: cname_delete_urls
