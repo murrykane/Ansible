@@ -217,7 +217,7 @@
         loop_var: entry
       when: 
         - (entry.domain, entry.target | lower) in original_domain_map
-        - entry.TTL is defined or entry.TTL is not None
+        - entry.TTL is defined and entry.TTL is not none
 
 
     - name: Append delete URLs with original domain casing
@@ -227,7 +227,7 @@
       loop_control:
         loop_var: entry
       when: 
-        - entry.TTL is not defined or entry.TTL is None
+        - entry.TTL is not defined or entry.TTL is none
         - (entry.domain, entry.target | lower) in original_domain_map
 
 
