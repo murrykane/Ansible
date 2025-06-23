@@ -4,14 +4,14 @@
   vars_files:
     - vars/pihole_cname.yml
 
-  tasks:
+  tasks:     
 
     - name: Normalize pihole_cname_entries (lowercase domains)
       set_fact:
         pihole_cname_entries_normalized: >-
           {{
             pihole_cname_entries_normalized | default([]) +
-            [ { 'target': item.target | lower, 'domain': item.domain | lower, 'exists': item.exists | default(true), 'TTL': item.ttl } | default 60 ]
+            [ { 'target': item.target | lower, 'domain': item.domain | lower, 'exists': item.exists | default(true), 'TTL': item.ttl  | default 60 } ]
           }}
       loop: "{{ pihole_cname_entries }}"
       loop_control:
