@@ -93,6 +93,21 @@
       loop: "{{ existing_cname }}"
       when: item.split(',') | length == 2
 
+    #for those with 3 keys , with TTL need to add them
+    - name: Populate structured cname records original case
+      set_fact:
+        existing_cname_structured: "{{ existing_cname_structured + [ {'target': item.split(',')[0], 'domain': item.split(',')[1], 'TTL': item.split(',')[2] }] }}"
+      loop: "{{ existing_cname }}"
+      when: item.split(',') | length == 3
+
+    - name: Populate structured cname records in lower case
+      set_fact:
+        existing_cname_structured_lowercase: "{{ existing_cname_structured_lowercase + [ {'domain': item.split(',')[0] | lower, 'target': item.split(',')[1], 'TTL': item.split(',')[2] }]  | lower} ] }}"
+      loop: "{{ existing_cname }}"
+      when: item.split(',') | length == 3
+
+
+
     - name: Build lookup map for original domain casing
       set_fact:
         original_domain_map: >-
