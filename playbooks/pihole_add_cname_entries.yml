@@ -95,7 +95,7 @@
           {{
             original_domain_map | default({}) |
             combine({
-              (item.target, item.doamin | lower): item.domain
+              (item.target, item.domain | lower): item.domain
             })
           }}
       loop: "{{ existing_cname_structured }}"
