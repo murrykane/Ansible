@@ -214,7 +214,7 @@
       set_fact:
         cname_delete_urls: "{{ cname_delete_urls + [ (original_domain_map[(item.domain, item.target | lower)]) + ',' + item.target | urlencode ] }}"
       loop: "{{ cname_entries_to_remove }}"
-      when: existing_cname_structured_lowercase | length == 2
+      when: item.TTL is not defined or item.TTL is none
 
     - name: Show CNAME entries to remove by original case
       debug:
