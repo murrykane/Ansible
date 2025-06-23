@@ -52,11 +52,11 @@
 
     # - name: Show HOSTS retrieved
     #   debug: 
-    #     msg: "Hosts retrieved is {{ existing_cname_response.json.config.dns.hosts }}"
+    #     msg: "Hosts retrieved is {{ existing_cname_response.json.config.dns.cnameRecords }}"
 
     - name: Set fact for existing records
       set_fact:
-        existing_cname: "{{ existing_cname_response.json.config.dns.hosts | default([]) }}"
+        existing_cname: "{{ existing_cname_response.json.config.dns.cnameRecords | default([]) }}"
 
     - name: Show CNAME's retrieved
       debug: 
