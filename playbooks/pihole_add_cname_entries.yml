@@ -138,7 +138,7 @@
 
     - name: Add missing CNAME entries
       uri:
-        url: "{{ pihole_api_url }}/config/dns/cnameRecords/{{ (item.domain + ',' + item.target + ',' + item.TTL) | urlencode }}"
+        url: "{{ pihole_api_url }}/config/dns/cnameRecords/{{ (item.domain + ',' + item.target + ',' + (item.TTL | string)) | urlencode }}"
         method: PUT
         headers:
           sid: "{{ auth_response.json.session.sid }}"
