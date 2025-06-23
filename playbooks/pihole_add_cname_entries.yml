@@ -22,6 +22,10 @@
       set_fact:
         pihole_cname_entries: "{{ pihole_cname_entries_normalized }}"
 
+    - name: Config CNAME's
+      debug: 
+        var: pihole_cname_entries
+
     - name: Obtain session ID from Pi-hole
       uri:
         url: "{{ pihole_api_url }}/auth"
@@ -95,7 +99,7 @@
           {{
             original_domain_map | default({}) |
             combine({
-              (item.target, item.domain | lower): item.domain
+              (item.domain, item.target | lower): item.domain
             })
           }}
       loop: "{{ existing_cname_structured }}"
