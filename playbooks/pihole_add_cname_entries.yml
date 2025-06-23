@@ -11,7 +11,7 @@
         pihole_cname_entries_normalized: >-
           {{
             pihole_cname_entries_normalized | default([]) +
-            [ { 'target': item.target | lower, 'domain': item.domain | lower, 'exists': item.exists | default(true) } ]
+            [ { 'target': item.target | lower, 'domain': item.domain | lower, 'exists': item.exists, 'TTL': item.ttl | default(true) } ]
           }}
       loop: "{{ pihole_cname_entries }}"
       loop_control:
@@ -134,7 +134,7 @@
 
     - name: Add missing CNAME entries
       uri:
-        url: "{{ pihole_api_url }}/config/dns/cnameRecords/{{ (item.domain + ',' + item.target +',-') | urlencode }}"
+        url: "{{ pihole_api_url }}/config/dns/cnameRecords/{{ (item.domain + ',' + item.target +',' + item.ttl) | urlencode }}"
         method: PUT
         headers:
           sid: "{{ auth_response.json.session.sid }}"
