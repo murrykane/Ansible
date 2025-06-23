@@ -85,7 +85,7 @@
 
     - name: Populate structured cname records in lower case
       set_fact:
-        existing_cname_structured_lowercase: "{{ existing_cname_structured_lowercase + [ {'target': item.split()[0] | lower, 'domain': item.split()[1] | lower} ] }}"
+        existing_cname_structured_lowercase: "{{ existing_cname_structured_lowercase + [ {'domain': item.split()[0] | lower, 'target': item.split()[1] | lower} ] }}"
       loop: "{{ existing_cname }}"
       when: item.split() | length == 2
 
@@ -95,7 +95,7 @@
           {{
             original_domain_map | default({}) |
             combine({
-              (item.target, item.domain | lower): item.domain
+              (item.domain, item.target | lower): item.domain
             })
           }}
       loop: "{{ existing_cname_structured }}"
@@ -134,7 +134,7 @@
 
     # - name: Add missing CNAME entries
     #   uri:
-    #     url: "{{ pihole_api_url }}/config/dns/cnameRecords/{{ (item.target + ' ' + item.domain) | urlencode }}"
+    #     url: "{{ pihole_api_url }}/config/dns/cnameRecords/{{ (item.domain + ',' + item.target) | urlencode }}"
     #     method: PUT
     #     headers:
     #       sid: "{{ auth_response.json.session.sid }}"
@@ -187,7 +187,8 @@
 
     - name: Append delete URLs with original domain casing
       set_fact:
-        cname_delete_urls: "{{ cname_delete_urls + [ (item.target + ' ' + original_domain_map[(item.target, item.domain | lower)]) | urlencode ] }}"
+        #cname_delete_urls: "{{ cname_delete_urls + [ (item.target + ' ' + original_domain_map[(item.target, item.domain | lower)]) | urlencode ] }}"
+        cname_delete_urls: "{{ cname_delete_urls + [ (original_domain_map[(item.target, item.domain | lower)]) + ',' + item.target | urlencode ] }}"
       loop: "{{ cname_entries_to_remove }}"
       when: (item.target, item.domain | lower) in original_domain_map
 
