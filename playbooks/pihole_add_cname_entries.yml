@@ -58,19 +58,19 @@
       set_fact:
         existing_cname: "{{ existing_cname_response.json.config.dns.hosts | default([]) }}"
 
-    # - name: Show HOSTS retrieved
-    #   debug: 
-    #     msg: "CNAME record is [{{ item }}]"
-    #   with_items: "{{ existing_cname }}"
-    #   loop_control:
-    #     loop_var: item
+    - name: Show CNAME's retrieved
+      debug: 
+        msg: "CNAME record is [{{ item }}]"
+      with_items: "{{ existing_cname }}"
+      loop_control:
+        loop_var: item
 
-    # - name: Split target and hostname
-    #   debug:
-    #     msg: "TARGET: {{ item.split(' ')[0] }}, Hostname: {{ item.split(' ')[1] }}"
-    #   with_items: "{{ existing_cname }}"
-    #   loop_control:
-    #     loop_var: item
+    - name: Split target and hostname
+      debug:
+        msg: "DOMAIN: {{ item.split(' ')[0] }}, Target: {{ item.split(',')[1] }}"
+      with_items: "{{ existing_cname }}"
+      loop_control:
+        loop_var: item
 
     - name: Convert existing CNAME records into dictionaries (simple loop)
       set_fact:
@@ -79,15 +79,15 @@
 
     - name: Populate structured cname records original case
       set_fact:
-        existing_cname_structured: "{{ existing_cname_structured + [ {'target': item.split()[0], 'domain': item.split()[1]} ] }}"
+        existing_cname_structured: "{{ existing_cname_structured + [ {'target': item.split(',')[0], 'domain': item.split(',')[1]} ] }}"
       loop: "{{ existing_cname }}"
-      when: item.split() | length == 2
+      when: item.split(',') | length == 2
 
     - name: Populate structured cname records in lower case
       set_fact:
-        existing_cname_structured_lowercase: "{{ existing_cname_structured_lowercase + [ {'domain': item.split()[0] | lower, 'target': item.split()[1] | lower} ] }}"
+        existing_cname_structured_lowercase: "{{ existing_cname_structured_lowercase + [ {'domain': item.split(',')[0] | lower, 'target': item.split(',')[1] | lower} ] }}"
       loop: "{{ existing_cname }}"
-      when: item.split() | length == 2
+      when: item.split(',') | length == 2
 
     - name: Build lookup map for original domain casing
       set_fact:
