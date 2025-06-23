@@ -11,7 +11,7 @@
         pihole_cname_entries_normalized: >-
           {{
             pihole_cname_entries_normalized | default([]) +
-            [ { 'target': item.target | lower, 'domain': item.domain | lower, 'exists': item.exists | default(true), 'TTL': item.ttl  | default(30) } ]
+            [ { 'target': item.target | lower, 'domain': item.domain | lower, 'exists': item.exists | default(true), 'TTL': item.TTL  | default(30) } ]
           }}
       loop: "{{ pihole_cname_entries }}"
       loop_control:
@@ -138,7 +138,7 @@
 
     - name: Add missing CNAME entries
       uri:
-        url: "{{ pihole_api_url }}/config/dns/cnameRecords/{{ (item.domain + ',' + item.target + ',' + item.ttl) | urlencode }}"
+        url: "{{ pihole_api_url }}/config/dns/cnameRecords/{{ (item.domain + ',' + item.target + ',' + item.TTL) | urlencode }}"
         method: PUT
         headers:
           sid: "{{ auth_response.json.session.sid }}"
@@ -191,7 +191,7 @@
 
     - name: Append delete URLs with original domain casing
       set_fact:
-        cname_delete_urls: "{{ cname_delete_urls + [ (original_domain_map[(item.domain, item.target | lower)]) + ',' + item.target + ',' + item.ttl | urlencode ] }}"
+        cname_delete_urls: "{{ cname_delete_urls + [ (original_domain_map[(item.domain, item.target | lower)]) + ',' + item.target + ',' + item.TTL | urlencode ] }}"
       loop: "{{ cname_entries_to_remove }}"
       when: (item.domain, item.target | lower) in original_domain_map
 
