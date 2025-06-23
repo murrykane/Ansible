@@ -216,7 +216,7 @@
       loop_control:
         loop_var: entry
       when: 
-        - (item.domain, item.target | lower) in original_domain_map
+        - (entry.domain, entry.target | lower) in original_domain_map
         - entry.TTL is defined or entry.TTL is not none
 
 
@@ -228,7 +228,7 @@
         loop_var: entry
       when: 
         - entry.TTL is not defined or entry.TTL is none
-        - (item.domain, item.target | lower) in original_domain_map
+        - (entry.domain, entry.target | lower) in original_domain_map
 
 
     - name: Show CNAME entries to remove by original case
