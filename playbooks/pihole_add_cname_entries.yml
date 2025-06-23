@@ -134,7 +134,7 @@
 
     - name: Add missing CNAME entries
       uri:
-        url: "{{ pihole_api_url }}/config/dns/cnameRecords/{{ (item.domain + ',' + item.target +',') | urlencode }}"
+        url: "{{ pihole_api_url }}/config/dns/cnameRecords/{{ (item.domain + ',' + item.target +',60') | urlencode }}"
         method: PUT
         headers:
           sid: "{{ auth_response.json.session.sid }}"
@@ -187,7 +187,7 @@
 
     - name: Append delete URLs with original domain casing
       set_fact:
-        cname_delete_urls: "{{ cname_delete_urls + [ (original_domain_map[(item.target, item.domain | lower)]) + ',' + item.target +',' | urlencode ] }}"
+        cname_delete_urls: "{{ cname_delete_urls + [ (original_domain_map[(item.target, item.domain | lower)]) + ',' + item.target +',60' | urlencode ] }}"
       loop: "{{ cname_entries_to_remove }}"
       when: (item.target, item.domain | lower) in original_domain_map
 
