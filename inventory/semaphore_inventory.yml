@@ -73,7 +73,7 @@ all:
         cyborg.kane.mk:
     rke2:
       vars:
-        ansible_user: murry
+        ansible_user: semaphore
       children:
         servers:
           hosts: 
@@ -86,3 +86,10 @@ all:
             rke2-prod-4.kane.mk:
             rke2-prod-5.kane.mk:
             rke2-prod-7.kane.mk:
+    longhorn:
+      vars:
+        ansible_user: semaphore
+      hosts:
+        longhorn-prod-1.kane.mk:
+        longhorn-prod-2.kane.mk:
+        longhorn-prod-3.kane.mk:
