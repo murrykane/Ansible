@@ -93,3 +93,5 @@ all:
         longhorn-prod-1.kane.mk:
         longhorn-prod-2.kane.mk:
         longhorn-prod-3.kane.mk:
+        longhorn-prod-4.kane.mk:
+        longhorn-prod-5.kane.mk:
