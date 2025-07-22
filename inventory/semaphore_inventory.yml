@@ -17,6 +17,13 @@ all:
         rke2-prod-3.kane.mk:
         rke2-prod-4.kane.mk:
         rke2-prod-5.kane.mk:
+        rke2-prod-6.kane.mk:
+        rke2-prod-7.kane.mk:
+        longhorn-prod-1.kane.mk:
+        longhorn-prod-2.kane.mk:
+        longhorn-prod-3.kane.mk:
+        longhorn-prod-4.kane.mk:
+        longhorn-prod-5.kane.mk:
       vars:
         #ansible_python_interpreter: auto_silent
         ansible_python_interpreter: /usr/bin/python3
@@ -49,14 +56,14 @@ all:
       vars:
         ansible_user: root
         ansible_python_interpreter: /usr/bin/python3
-    debian:
-      hosts:
-        hahome.kane.mk:
-      vars:
-        ansible_python_interpreter: auto_silent
-        ansible_user: semaphore 
-        ansible_become: true 
-        ansible_become_method: sudo
+    # debian:
+    #   hosts:
+    #     hahome.kane.mk:
+    #   vars:
+    #     ansible_python_interpreter: auto_silent
+    #     ansible_user: semaphore 
+    #     ansible_become: true 
+    #     ansible_become_method: sudo
     qnap:
       hosts:
         murdognas.kane.mk: 
