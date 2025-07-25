@@ -103,9 +103,14 @@
     # - name: Reload UFW
     #   command: ufw reload        
 
-    - name: Create group
+    - name: Create group sudo
       group:
         name: "sudo"
+        state: present
+
+    - name: Create group admin
+      group:
+        name: "admin"
         state: present
 
     - name: Create users
