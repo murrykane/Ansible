@@ -66,7 +66,41 @@
           - tree
           - net-tools
           - jq
+          - openssh-server
         update_cache: true
+
+    - name: Ensure SSH service is running and enabled
+      systemd:
+        name: ssh
+        state: started
+        enabled: yes
+
+    - name: Check status of SSH service
+      command: systemctl status ssh
+      register: ssh_status
+      changed_when: false
+
+    - name: Print SSH service status
+      debug:
+        var: ssh_status.stdout_lines
+
+    - name: Allow SSH through UFW
+      ufw:
+        rule: allow
+        name: OpenSSH
+
+    - name: Allow Docker TCP access from 192.168.1.0/24 on port 2376
+      command: >
+        ufw allow from 192.168.1.0/24 to any port 2376 proto tcp
+      args:
+        warn: false
+
+    - name: Ensure UFW is enabled
+      ufw:
+        state: enabled
+
+    - name: Reload UFW
+      command: ufw reload        
 
     - name: Create group
       group:
