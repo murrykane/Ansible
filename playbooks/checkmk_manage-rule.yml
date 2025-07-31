@@ -3,7 +3,7 @@
   hosts: localhost
   gather_facts: false
   vars_files:
-    - var/checkmk_secrets.yaml
+    - vars/checkmk_secrets.yaml
   # vars:
   #   server_url: "checkmk.home.arpa"
   #   site: "cmk"

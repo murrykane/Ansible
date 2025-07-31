@@ -102,3 +102,9 @@ all:
         longhorn-prod-3.kane.mk:
         longhorn-prod-4.kane.mk:
         longhorn-prod-5.kane.mk:
+    CheckMK:
+      children:
+        rke2:
+        prox:
+        unraid:
+        qnap:
