@@ -3,7 +3,7 @@
   hosts: localhost
   gather_facts: false
   vars_files:
-    - vars/checkmk_secrets.yaml
+    - vars/checkmk_secrets.yml
   # vars:
   #   server_url: "checkmk.home.arpa"
   #   site: "cmk"
@@ -62,10 +62,30 @@
               operator: "one_of"
             service_label_groups: []
           location:
-            folder: "/"
+            folder: "/ubuntu"
             position: "top"
           properties:
             description: "NVME Temperature override"
             disabled: false
           value_raw: "{'levels': (60.0, 80.0)}"
         state: present
+
+    - name: Disable "Virtual memory" service for all hosts in ubuntu folder
+      checkmk.general.rule:
+        server_url: "{{ server_url }}"
+        site: "{{ site }}"
+        automation_user: "{{ automation_user }}"
+        automation_secret: "{{ automation_secret }}"
+        rule_set: disabled_services
+        state: present
+        rule:
+          conditions:
+            host_label_groups: []
+            host_tags: []
+          location:
+            folder: "/ubuntu"
+            position: "top"
+          properties:
+          value:
+            disabled_services:
+              - "^Virtual memory$"
