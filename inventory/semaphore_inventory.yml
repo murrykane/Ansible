@@ -34,7 +34,6 @@ all:
       hosts:
         coco.kane.mk:
         proxmini.kane.mk:
-        pbs.kane.mk:
       vars:
         ansible_python_interpreter: auto_silent
         ansible_user: semaphore
