@@ -1,0 +1,5 @@
+- name: Setup HAProxy + Keepalived for RKE2 API HA
+  hosts: haproxy_keepalived
+  become: true
+  roles:
+    - haproxy_keepalived

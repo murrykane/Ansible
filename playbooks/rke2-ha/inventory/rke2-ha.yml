@@ -1,0 +1,17 @@
+all:
+  hosts:
+    utilserver.kane.mk:
+      #ansible_host: 192.168.1.61
+      keepalived_priority: 101
+    # cyborg.kane.mk:
+    #   #ansible_host: 192.168.1.62
+    #   keepalived_priority: 101
+    minidocker.kane.mk:
+      #ansible_host: 192.168.1.61
+      keepalived_priority: 100
+  children:
+    haproxy_keepalived:
+      hosts:
+        utilserver.kane.mk:
+        #cyborg.kane.mk:
+        minidocker.kane.mk:
