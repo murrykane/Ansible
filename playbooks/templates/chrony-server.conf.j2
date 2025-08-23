@@ -48,8 +48,13 @@ leapsectz right/UTC
 
 server time.cloudflare.com iburst minpoll 5 maxpoll 5
 server time.google.com iburst minpoll 5 maxpoll 5
+server time1.google.com iburst minpoll 5 maxpoll 5
+server time2.google.com iburst minpoll 5 maxpoll 5
 server time3.google.com iburst minpoll 5 maxpoll 5
+server time4.google.com iburst minpoll 5 maxpoll 5
 
+pool 0.pool.ntp.org iburst
+pool 1.pool.ntp.org iburst
 
 allow 192.168.1.0/24
 
