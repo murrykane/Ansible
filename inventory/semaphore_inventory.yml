@@ -23,7 +23,6 @@ all:
         longhorn-prod-2.kane.mk:
         longhorn-prod-3.kane.mk:
         longhorn-prod-4.kane.mk:
-        longhorn-prod-5.kane.mk:
         unifi.kane.mk:
       vars:
         #ansible_python_interpreter: auto_silent
@@ -88,11 +87,11 @@ all:
             rke2-prod-1.kane.mk:
             rke2-prod-2.kane.mk:
             rke2-prod-3.kane.mk:
-            rke2-prod-6.kane.mk:
         agents:
           hosts:
             rke2-prod-4.kane.mk:
             rke2-prod-5.kane.mk:
+            rke2-prod-6.kane.mk:
             rke2-prod-7.kane.mk:
     longhorn:
       vars:
@@ -102,7 +101,6 @@ all:
         longhorn-prod-2.kane.mk:
         longhorn-prod-3.kane.mk:
         longhorn-prod-4.kane.mk:
-        longhorn-prod-5.kane.mk:
     CheckMK:
       children:
         rke2:

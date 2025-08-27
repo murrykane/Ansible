@@ -4,12 +4,10 @@ tls-san:
   - {{ hostvars['server1']['ansible_host'] }}
   - {{ hostvars['server2']['ansible_host'] }}
   - {{ hostvars['server3']['ansible_host'] }}
-  - {{ hostvars['server6']['ansible_host'] }}
   - 192.168.1.48
   - rke2-prod-1.kane.mk
   - rke2-prod-2.kane.mk
   - rke2-prod-3.kane.mk
-  - rke2-prod-6.kane.mk
 node-label:
   - server=true
 disable:
