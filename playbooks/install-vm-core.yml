@@ -68,6 +68,9 @@
           - jq
           #- ufw                 #does not work on LXC containers
           - openssh-server
+          - apache2-utils
+          - tree
+          - net-tools
         update_cache: true
 
     - name: Ensure SSH service is running and enabled
