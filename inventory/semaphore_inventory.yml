@@ -24,6 +24,7 @@ all:
         longhorn-prod-3.kane.mk:
         longhorn-prod-4.kane.mk:
         unifi.kane.mk:
+        stargate.kane.mk:
       vars:
         #ansible_python_interpreter: auto_silent
         ansible_python_interpreter: /usr/bin/python3
