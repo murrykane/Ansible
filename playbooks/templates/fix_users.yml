@@ -1,0 +1,66 @@
+- name: Normalize UID/GID for murry & semaphore
+  hosts: "{{ scriptinventory }}"
+  become: true
+  gather_facts: true
+
+  vars:
+    murry_uid: 1000
+    murry_gid: 1000
+    semaphore_uid: 1001
+    semaphore_gid: 1001
+
+  tasks:
+
+    - name: "Ensure group 'murry' has correct GID {{ murry_gid }}"
+      group:
+        name: murry
+        gid: "{{ murry_gid }}"
+        state: present
+
+    - name: "Ensure group 'semaphore' has correct GID {{ semaphore_gid }}"
+      group:
+        name: semaphore
+        gid: "{{ semaphore_gid }}"
+        state: present
+
+    - name: "Ensure user 'murry' has correct UID/GID {{ murry_uid }}:{{ murry_gid }}"
+      user:
+        name: murry
+        uid: "{{ murry_uid }}"
+        group: murry
+        groups: admin,sudo
+        append: true
+        state: present
+
+    - name: "Ensure user 'semaphore' has correct UID/GID {{ semaphore_uid }}:{{ semaphore_gid }}"
+      user:
+        name: semaphore
+        uid: "{{ semaphore_uid }}"
+        group: semaphore
+        groups: admin,sudo
+        append: true
+        state: present
+
+    # Fix file ownerships for murry if UID changed
+    - name: "Fix file ownerships for murry if previous UID was wrong"
+      command: "find / -uid 1001 -exec chown 1000 {} +"
+      when: ansible_facts.getent_passwd.murry.uid != murry_uid
+      ignore_errors: true
+
+    # Fix file ownerships for semaphore if UID changed
+    - name: "Fix file ownerships for semaphore if previous UID was wrong"
+      command: "find / -uid 1000 -exec chown 1001 {} +"
+      when: ansible_facts.getent_passwd.semaphore.uid != semaphore_uid
+      ignore_errors: true
+
+    # Fix GID mismatches for murry
+    - name: "Fix group ownership for murry if GID changed"
+      command: "find / -gid 1001 -exec chgrp 1000 {} +"
+      when: ansible_facts.getent_group.murry.gid != murry_gid
+      ignore_errors: true
+
+    # Fix GID mismatches for semaphore
+    - name: "Fix group ownership for semaphore if GID changed"
+      command: "find / -gid 1000 -exec chgrp 1001 {} +"
+      when: ansible_facts.getent_group.semaphore.gid != semaphore_gid
+      ignore_errors: true

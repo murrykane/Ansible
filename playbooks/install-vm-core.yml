@@ -1,60 +1,22 @@
 ---
-
-# - name: Read public key locally on Semaphore host
-#   hosts: "{{ scriptinventory }}"
-#   gather_facts: false
-#   tasks:
-#     # - name: Read shared public key from files/id_rsa.pub
-#     #   slurp:
-#     #     src: "files/id_rsa.pub"
-#     #   register: pubkey_contents
-#     #   delegate_to: 127.0.0.1
-#     #   vars:
-#     #     ansible_connection: local
-#     #     ansible_become: false
-#     - name: Print current user and host
-#       command: whoami
-#       delegate_to: 127.0.0.1
-#       vars:
-#         ansible_connection: local
-#         ansible_become: false
-
-#     - name: Print current working directory (Semaphore host)
-#       command: pwd
-#       register: cwd_check
-#       delegate_to: 127.0.0.1
-#       vars:
-#         ansible_connection: local
-#         ansible_become: false
-
-#     - debug:
-#         var: cwd_check.stdout
-
-
-    # - name: Check if pub file exists for Semaphore
-    #   stat:
-    #     path: "files/semaphore_id.pub"
-    #   register: pubkey_file
-
-    # - name: Fail if pub is missing for semaphore
-    #   fail:
-    #     msg: "PUB file not found on control node (Semaphore)"
-    #   when: not pubkey_file.stat.exists
-
-
-    # - name: Read shared public key from files/id_rsa.pub
-    #   slurp:
-    #     src: "files/semaphore_id.pub"
-    #   register: pubkey_contents
-
 - name: Install core packages for virtual machines
   hosts: "{{ scriptinventory }}"
   become: true
   gather_facts: true
   vars:
-    users:
-      - semaphore
-      - murry
+    # users:
+    #   - semaphore
+    #   - murry
+
+    usersWithIDs:
+      - name: semaphore
+        uid: 1001
+        gid: 1001
+      - name: murry
+        uid: 1000
+        gid: 1000
+
+
   tasks:
 
     - name: Install packages
@@ -116,49 +78,59 @@
         name: "admin"
         state: present
 
-    - name: Create users
+    # new logic for create users....
+    - name: "Create user groups with fixed GIDs"
+      group:
+        name: "{{ item.name }}"
+        gid: "{{ item.gid }}"
+        state: present
+      loop: "{{ usersWithIDs }}"
+
+    - name: "Create users with fixed UID/GID"
       user:
-        name: "{{ item }}"
-        create_home: true
+        name: "{{ item.name }}"
+        uid: "{{ item.uid }}"
+        group: "{{ item.name }}"
+        groups: "admin,sudo"
         append: true
+        create_home: true
+        shell: /bin/bash
         state: present
         generate_ssh_key: true
-        shell: /bin/bash
-        groups: admin, sudo
-      loop: "{{ users }}"
+      loop: "{{ usersWithIDs }}"
 
     - name: Ensure .ssh directory exists for each user
       file:
-        path: "/home/{{ item }}/.ssh"
+        path: "/home/{{ item.name }}/.ssh"
         state: directory
-        owner: "{{ item }}"
-        group: "{{ item }}"
+        owner: "{{ item.name }}"
+        group: "{{ item.name }}"
         mode: '0700'
-      loop: "{{ users }}"
+      loop: "{{ usersWithIDs }}"
 
-    - name: copy public key for accounts
-      ansible.builtin.copy:
-        src: files/{{ item }}_id.pub
-        dest: /home/{{ item }}/.ssh/{{ item }}_id.pub
-        owner: "{{ item }}"
-        group: "{{ item }}"
+    - name: Copy public key for each account
+      copy:
+        src: "files/{{ item.name }}_id.pub"
+        dest: "/home/{{ item.name }}/.ssh/{{ item.name }}_id.pub"
+        owner: "{{ item.name }}"
+        group: "{{ item.name }}"
         mode: '0600'
-      loop: "{{ users }}"
+      loop: "{{ usersWithIDs }}"
 
-    - name: Read shared public key from PUB
+    - name: Read semaphore public key
       slurp:
         src: "/home/semaphore/.ssh/semaphore_id.pub"
       register: pubkey_contents
 
-    - name: Append shared public key to authorized_keys
-      ansible.builtin.lineinfile:
-        path: "/home/{{ item }}/.ssh/authorized_keys"
+    - name: Append semaphore shared key to each authorized_keys
+      lineinfile:
+        path: "/home/{{ item.name }}/.ssh/authorized_keys"
         line: "{{ pubkey_contents.content | b64decode | trim }}"
         create: yes
-        owner: "{{ item }}"
-        group: "{{ item }}"
+        owner: "{{ item.name }}"
+        group: "{{ item.name }}"
         mode: '0600'
-      loop: "{{ users }}"
+      loop: "{{ usersWithIDs }}"
 
     - name: Create sudoers file for no password 
       ansible.builtin.file:
@@ -171,8 +143,66 @@
     - name: Append shared public key to sudoers allowed list
       ansible.builtin.lineinfile:
         path: /etc/sudoers.d/90-kane-init
-        line: "{{ item }} ALL=(ALL) NOPASSWD:ALL"
-      loop: "{{ users }}"
+        line: "{{ item.name }} ALL=(ALL) NOPASSWD:ALL"
+      loop: "{{ usersWithIDs }}"
+
+    # - name: Create users
+    #   user:
+    #     name: "{{ item }}"
+    #     create_home: true
+    #     append: true
+    #     state: present
+    #     generate_ssh_key: true
+    #     shell: /bin/bash
+    #     groups: admin, sudo
+    #   loop: "{{ users }}"
+
+    # - name: Ensure .ssh directory exists for each user
+    #   file:
+    #     path: "/home/{{ item }}/.ssh"
+    #     state: directory
+    #     owner: "{{ item }}"
+    #     group: "{{ item }}"
+    #     mode: '0700'
+    #   loop: "{{ users }}"
+
+    # - name: copy public key for accounts
+    #   ansible.builtin.copy:
+    #     src: files/{{ item }}_id.pub
+    #     dest: /home/{{ item }}/.ssh/{{ item }}_id.pub
+    #     owner: "{{ item }}"
+    #     group: "{{ item }}"
+    #     mode: '0600'
+    #   loop: "{{ users }}"
+
+    # - name: Read shared public key from PUB
+    #   slurp:
+    #     src: "/home/semaphore/.ssh/semaphore_id.pub"
+    #   register: pubkey_contents
+
+    # - name: Append shared public key to authorized_keys
+    #   ansible.builtin.lineinfile:
+    #     path: "/home/{{ item }}/.ssh/authorized_keys"
+    #     line: "{{ pubkey_contents.content | b64decode | trim }}"
+    #     create: yes
+    #     owner: "{{ item }}"
+    #     group: "{{ item }}"
+    #     mode: '0600'
+    #   loop: "{{ users }}"
+
+    # - name: Create sudoers file for no password 
+    #   ansible.builtin.file:
+    #     path: /etc/sudoers.d/90-kane-init
+    #     state: touch
+    #     mode: '0660'
+    #     owner: root
+    #     group: root
+
+    # - name: Append shared public key to sudoers allowed list
+    #   ansible.builtin.lineinfile:
+    #     path: /etc/sudoers.d/90-kane-init
+    #     line: "{{ item }} ALL=(ALL) NOPASSWD:ALL"
+    #   loop: "{{ users }}"
 
 
 

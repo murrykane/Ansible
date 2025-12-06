@@ -10,19 +10,13 @@ all:
         pihole3.kane.mk:
         pihole6.kane.mk:
         utilserver.kane.mk:
-        minidocker.kane.mk:
         minijellyfin.kane.mk:
         rke2-prod-1.kane.mk:
         rke2-prod-2.kane.mk:
-        rke2-prod-3.kane.mk:
         rke2-prod-4.kane.mk:
         rke2-prod-5.kane.mk:
-        rke2-prod-6.kane.mk:
-        rke2-prod-7.kane.mk:
         longhorn-prod-1.kane.mk:
         longhorn-prod-2.kane.mk:
-        longhorn-prod-3.kane.mk:
-        longhorn-prod-4.kane.mk:
         unifi.kane.mk:
         stargate.kane.mk:
       vars:
@@ -76,7 +70,6 @@ all:
         ansible_python_interpreter: /share/CACHEDEV1_DATA/.qpkg/Python3/opt/python3/bin/python3  
     docker:
       hosts:
-        minidocker.kane.mk: 
         mkserver.kane.mk: 
         utilserver.kane.mk:
         cyborg.kane.mk:
@@ -88,21 +81,16 @@ all:
           hosts: 
             rke2-prod-1.kane.mk:
             rke2-prod-2.kane.mk:
-            rke2-prod-3.kane.mk:
         agents:
           hosts:
             rke2-prod-4.kane.mk:
             rke2-prod-5.kane.mk:
-            rke2-prod-6.kane.mk:
-            rke2-prod-7.kane.mk:
     longhorn:
       vars:
         ansible_user: murry
       hosts:
         longhorn-prod-1.kane.mk:
         longhorn-prod-2.kane.mk:
-        longhorn-prod-3.kane.mk:
-        longhorn-prod-4.kane.mk:
     unifi:
       hosts:
         unifi.kane.mk:
