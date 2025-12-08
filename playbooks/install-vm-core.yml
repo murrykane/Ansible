@@ -7,7 +7,6 @@
     # users:
     #   - semaphore
     #   - murry
-
     usersWithIDs:
       - name: semaphore
         uid: 1001

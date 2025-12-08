@@ -1,66 +1,114 @@
-- name: Normalize UID/GID for murry & semaphore
-  hosts: "{{ scriptinventory }}"
+---
+- name: Normalize murry=1000 and semaphore=1001 (3-step swap if needed)
+  hosts: pbs.kane.mk,other_hosts_to_fix
   become: true
   gather_facts: true
 
   vars:
-    murry_uid: 1000
-    murry_gid: 1000
-    semaphore_uid: 1001
-    semaphore_gid: 1001
+    desired:
+      murry: { uid: 1000, gid: 1000 }
+      semaphore: { uid: 1001, gid: 1001 }
+    temp_id: 150000   # pick high unused id
 
   tasks:
 
-    - name: "Ensure group 'murry' has correct GID {{ murry_gid }}"
+    - name: "Sanity: ensure TEMP id {{ temp_id }} is free"
+      fail:
+        msg: "TEMP id {{ temp_id }} is already in use on {{ inventory_hostname }}; pick another."
+      when: >
+        (ansible_facts.getent_passwd is defined and ansible_facts.getent_passwd | selectattr('uid','==', temp_id) | list | length > 0)
+        or
+        (ansible_facts.getent_group is defined and ansible_facts.getent_group | selectattr('gid','==', temp_id) | list | length > 0)
+
+    - name: "Gather current uids/gids for users"
+      set_fact:
+        cur_murry: "{{ (ansible_facts.getent_passwd | selectattr('name','==','murry') | list)[0] | default(None) }}"
+        cur_semaphore: "{{ (ansible_facts.getent_passwd | selectattr('name','==','semaphore') | list)[0] | default(None) }}"
+        cur_murry_group: "{{ (ansible_facts.getent_group | selectattr('name','==','murry') | list)[0] | default(None) }}"
+        cur_semaphore_group: "{{ (ansible_facts.getent_group | selectattr('name','==','semaphore') | list)[0] | default(None) }}"
+
+    - name: "Debug current uid/gid info"
+      debug:
+        msg:
+          - "murry uid={{ cur_murry.uid if cur_murry else 'absent' }} gid={{ cur_murry.gid if cur_murry else (cur_murry_group.gid if cur_murry_group else 'absent') }}"
+          - "semaphore uid={{ cur_semaphore.uid if cur_semaphore else 'absent' }} gid={{ cur_semaphore.gid if cur_semaphore else (cur_semaphore_group.gid if cur_semaphore_group else 'absent') }}"
+
+    # Step A: If semaphore currently has desired murry gid/uid, move semaphore -> TEMP
+    - name: "Move semaphore -> TEMP id if it conflicts with desired murry"
+      block:
+        - name: "Ensure group 'semaphore' exists (create if missing) at temp gid"
+          group:
+            name: semaphore
+            gid: "{{ temp_id }}"
+            state: present
+
+        - name: "Ensure user 'semaphore' exists (create if missing) at temp uid"
+          user:
+            name: semaphore
+            uid: "{{ temp_id }}"
+            group: semaphore
+            create_home: yes
+            state: present
+
+        - name: "Fix files that belonged to old semaphore uid/gid -> TEMP"
+          shell: |
+            find / -xdev \( -uid {{ desired.murry.uid }} -o -gid {{ desired.murry.gid }} \) -exec chown -h {{ temp_id }} {} + 2>/dev/null || true
+          args:
+            warn: false
+      when: >
+        (cur_semaphore is defined and (cur_semaphore.uid == desired.murry.uid or cur_semaphore.gid == desired.murry.gid))
+        or
+        (cur_semaphore_group is defined and cur_semaphore_group.gid == desired.murry.gid)
+
+    # Step B: Move murry -> desired (1000)
+    - name: "Ensure murry group -> {{ desired.murry.gid }}"
       group:
         name: murry
-        gid: "{{ murry_gid }}"
+        gid: "{{ desired.murry.gid }}"
         state: present
 
-    - name: "Ensure group 'semaphore' has correct GID {{ semaphore_gid }}"
-      group:
-        name: semaphore
-        gid: "{{ semaphore_gid }}"
-        state: present
-
-    - name: "Ensure user 'murry' has correct UID/GID {{ murry_uid }}:{{ murry_gid }}"
+    - name: "Ensure murry user -> {{ desired.murry.uid }}"
       user:
         name: murry
-        uid: "{{ murry_uid }}"
+        uid: "{{ desired.murry.uid }}"
         group: murry
         groups: admin,sudo
-        append: true
+        append: yes
+        create_home: yes
         state: present
 
-    - name: "Ensure user 'semaphore' has correct UID/GID {{ semaphore_uid }}:{{ semaphore_gid }}"
+    - name: "Fix files that belonged to previous murry uid/gid -> {{ desired.murry.uid }}"
+      shell: |
+        find / -xdev \( -uid {{ cur_murry.uid | default(0) }} -o -gid {{ cur_murry.gid | default(0) }} \) -exec chown -h {{ desired.murry.uid }} {} + 2>/dev/null || true
+      args:
+        warn: false
+      when: cur_murry is defined and (cur_murry.uid != desired.murry.uid or cur_murry.gid != desired.murry.gid)
+
+    # Step C: Move semaphore -> desired (1001) from TEMP (if we moved it)
+    - name: "Move semaphore group to {{ desired.semaphore.gid }}"
+      group:
+        name: semaphore
+        gid: "{{ desired.semaphore.gid }}"
+        state: present
+
+    - name: "Move semaphore user to {{ desired.semaphore.uid }}"
       user:
         name: semaphore
-        uid: "{{ semaphore_uid }}"
+        uid: "{{ desired.semaphore.uid }}"
         group: semaphore
-        groups: admin,sudo
-        append: true
+        create_home: yes
         state: present
 
-    # Fix file ownerships for murry if UID changed
-    - name: "Fix file ownerships for murry if previous UID was wrong"
-      command: "find / -uid 1001 -exec chown 1000 {} +"
-      when: ansible_facts.getent_passwd.murry.uid != murry_uid
-      ignore_errors: true
+    - name: "Fix files that were assigned to TEMP -> {{ desired.semaphore.uid }}"
+      shell: |
+        find / -xdev \( -uid {{ temp_id }} -o -gid {{ temp_id }} \) -exec chown -h {{ desired.semaphore.uid }} {} + 2>/dev/null || true
+      args:
+        warn: false
+      when: cur_semaphore is defined and (cur_semaphore.uid == temp_id or cur_semaphore.gid == temp_id)
 
-    # Fix file ownerships for semaphore if UID changed
-    - name: "Fix file ownerships for semaphore if previous UID was wrong"
-      command: "find / -uid 1000 -exec chown 1001 {} +"
-      when: ansible_facts.getent_passwd.semaphore.uid != semaphore_uid
-      ignore_errors: true
-
-    # Fix GID mismatches for murry
-    - name: "Fix group ownership for murry if GID changed"
-      command: "find / -gid 1001 -exec chgrp 1000 {} +"
-      when: ansible_facts.getent_group.murry.gid != murry_gid
-      ignore_errors: true
-
-    # Fix GID mismatches for semaphore
-    - name: "Fix group ownership for semaphore if GID changed"
-      command: "find / -gid 1000 -exec chgrp 1001 {} +"
-      when: ansible_facts.getent_group.semaphore.gid != semaphore_gid
-      ignore_errors: true
+    - name: "Refresh getent cache facts"
+      setup:
+        gather_subset:
+          - '!all'
+          - 'min'
+      changed_when: false
