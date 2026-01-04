@@ -1,272 +1,272 @@
 ---
 records:
   - zone: local.kaneworld.org
-    name: proxmox.local.kaneworld.org
+    name: proxmox
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: pihole2.local.kaneworld.org
+    name: pihole2
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: pihole3.local.kaneworld.org
+    name: pihole3
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: router.local.kaneworld.org
+    name: router
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: unraid.local.kaneworld.org
+    name: unraid
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: influxdb.local.kaneworld.org
+    name: influxdb
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: prometheus.local.kaneworld.org
+    name: prometheus
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: arris.local.kaneworld.org
+    name: arris
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: nas.local.kaneworld.org
+    name: nas
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: qvr.local.kaneworld.org
+    name: qvr
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: kemp.local.kaneworld.org
+    name: kemp
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: ansible.local.kaneworld.org
+    name: ansible
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: unifi.local.kaneworld.org
+    name: unifi
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: monitoring.local.kaneworld.org
+    name: monitoring
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: homepage.local.kaneworld.org
+    name: homepage
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: speedtest.local.kaneworld.org
+    name: speedtest
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: sonarr.local.kaneworld.org
+    name: sonarr
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: radarr.local.kaneworld.org
+    name: radarr
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: prowlarr.local.kaneworld.org
+    name: prowlarr
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: qbittorrent.local.kaneworld.org
+    name: qbittorrent
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: homeassist.local.kaneworld.org
+    name: homeassist
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: nas-portainer.local.kaneworld.org
+    name: nas-portainer
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: vaultwarden.local.kaneworld.org
+    name: vaultwarden
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: bazarr.local.kaneworld.org
+    name: bazarr
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: nextcloud.local.kaneworld.org
+    name: nextcloud
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: jellyseerr.local.kaneworld.org
+    name: jellyseerr
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: ups.local.kaneworld.org
+    name: ups
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: nodered.local.kaneworld.org
+    name: nodered
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: hahome.local.kaneworld.org
+    name: hahome
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: bosmox.local.kaneworld.org
+    name: bosmox
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: tdarr.local.kaneworld.org
+    name: tdarr
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: coco.local.kaneworld.org
+    name: coco
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: minijellyfin.local.kaneworld.org
+    name: minijellyfin
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: fileflow.local.kaneworld.org
+    name: fileflow
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: authentik.local.kaneworld.org
+    name: authentik
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: pbs.local.kaneworld.org
+    name: pbs
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: cadvisor-unraid.local.kaneworld.org
+    name: cadvisor-unraid
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: pihole5.local.kaneworld.org
+    name: pihole5
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: pihole6.local.kaneworld.org
+    name: pihole6
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: slzb-06.local.kaneworld.org
+    name: slzb-06
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: semaphore.local.kaneworld.org
+    name: semaphore
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: mini-portainer.local.kaneworld.org
+    name: mini-portainer
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: traefik-prod-2.local.kaneworld.org
+    name: traefik-prod-2
     ip: utilserver.kane.mk
   - zone: local.kaneworld.org
-    name: cadvisor-prod-2.local.kaneworld.org
+    name: cadvisor-prod-2
     ip: utilserver.kane.mk
   - zone: local.kaneworld.org
-    name: fileflows-prod-1.local.kaneworld.org
+    name: fileflows-prod-1
     ip: utilserver.kane.mk
   - zone: local.kaneworld.org
-    name: jellyseerr-prod-1.local.kaneworld.org
+    name: jellyseerr-prod-1
     ip: utilserver.kane.mk
   - zone: local.kaneworld.org
-    name: krusader-prod-1.local.kaneworld.org
+    name: krusader-prod-1
     ip: utilserver.kane.mk
   - zone: local.kaneworld.org
-    name: node_exporter-prod-2.local.kaneworld.org
+    name: node_exporter-prod-2
     ip: utilserver.kane.mk
   - zone: local.kaneworld.org
-    name: portainer-prod-2.local.kaneworld.org
+    name: portainer-prod-2
     ip: utilserver.kane.mk
   - zone: local.kaneworld.org
-    name: promtail-prod-2.local.kaneworld.org
+    name: promtail-prod-2
     ip: utilserver.kane.mk
   - zone: local.kaneworld.org
-    name: prowlarr-prod-1.local.kaneworld.org
+    name: prowlarr-prod-1
     ip: utilserver.kane.mk
   - zone: local.kaneworld.org
-    name: qbittorrent-prod-1.local.kaneworld.org
+    name: qbittorrent-prod-1
     ip: utilserver.kane.mk
   - zone: local.kaneworld.org
-    name: radarr-prod-1.local.kaneworld.org
+    name: radarr-prod-1
     ip: utilserver.kane.mk
   - zone: local.kaneworld.org
-    name: recyclarr-prod-1.local.kaneworld.org
+    name: recyclarr-prod-1
     ip: utilserver.kane.mk
   - zone: local.kaneworld.org
-    name: sonarr-prod-1.local.kaneworld.org
+    name: sonarr-prod-1
     ip: utilserver.kane.mk
   - zone: local.kaneworld.org
-    name: traefik-prod-3.local.kaneworld.org
+    name: traefik-prod-3
     ip: cyborg.kane.mk
   - zone: local.kaneworld.org
-    name: portainer-prod-3.local.kaneworld.org
+    name: portainer-prod-3
     ip: cyborg.kane.mk
   - zone: local.kaneworld.org
-    name: semaphore-prod-1.local.kaneworld.org
+    name: semaphore-prod-1
     ip: cyborg.kane.mk
   - zone: local.kaneworld.org
-    name: traefik-prod-1.local.kaneworld.org
+    name: traefik-prod-1
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: portainer-prod-1.local.kaneworld.org
+    name: portainer-prod-1
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: homepage-prod-1.local.kaneworld.org
+    name: homepage-prod-1
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: kuma-prod-1.local.kaneworld.org
+    name: kuma-prod-1
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: unifi-prod-1.local.kaneworld.org
+    name: unifi-prod-1
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: vaultwarden-prod-1.local.kaneworld.org
+    name: vaultwarden-prod-1
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: cadvisor-prod-1.local.kaneworld.org
+    name: cadvisor-prod-1
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: traefik3-widget.local.kaneworld.org
+    name: traefik3-widget
     ip: cyborg.kane.mk
   - zone: local.kaneworld.org
-    name: traefik1-widget.local.kaneworld.org
+    name: traefik1-widget
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: traefik2-widget.local.kaneworld.org
+    name: traefik2-widget
     ip: utilserver.kane.mk
   - zone: local.kaneworld.org
-    name: alertmanager.local.kaneworld.org
+    name: alertmanager
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: checkmk.local.kaneworld.org
+    name: checkmk
     ip: cyborg.kane.mk
   - zone: local.kaneworld.org
-    name: semaphore-api.local.kaneworld.org
+    name: semaphore-api
     ip: cyborg.kane.mk
   - zone: local.kaneworld.org
-    name: loki-prod-4.local.kaneworld.org
+    name: loki-prod-4
     ip: cyborg.kane.mk
   - zone: local.kaneworld.org
-    name: huntarr-prod-1.local.kaneworld.org
+    name: huntarr-prod-1
     ip: utilserver.kane.mk
   - zone: local.kaneworld.org
-    name: traefik1-metrics.local.kaneworld.org
+    name: traefik1-metrics
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: traefik2-metrics.local.kaneworld.org
+    name: traefik2-metrics
     ip: utilserver.kane.mk
   - zone: local.kaneworld.org
-    name: traefik3-metrics.local.kaneworld.org
+    name: traefik3-metrics
     ip: cyborg.kane.mk
   - zone: local.kaneworld.org
-    name: monitoring-widget.local.kaneworld.org
+    name: monitoring-widget
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: it-tools.local.kaneworld.org
+    name: it-tools
     ip: cyborg.kane.mk
   - zone: local.kaneworld.org
-    name: pihole1.local.kaneworld.org
+    name: pihole1
     ip: traefik4.kane.mk
   - zone: local.kaneworld.org
-    name: traefik4.local.kaneworld.org
+    name: traefik4
     ip: traefik4.kane.mk
   - zone: local.kaneworld.org
-    name: rancher.local.kaneworld.org
+    name: rancher
     ip: traefik4.kane.mk
   - zone: local.kaneworld.org
-    name: nvidia.local.kaneworld.org
+    name: nvidia
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: n8n.local.kaneworld.org
+    name: n8n
     ip: cyborg.kane.mk
   - zone: local.kaneworld.org
-    name: gotify.local.kaneworld.org
+    name: gotify
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: stirlingpdf.local.kaneworld.org
+    name: stirlingpdf
     ip: cyborg.kane.mk
   - zone: local.kaneworld.org
-    name: linkwarden.local.kaneworld.org
+    name: linkwarden
     ip: cyborg.kane.mk
   - zone: local.kaneworld.org
-    name: jellyfin.local.kaneworld.org
+    name: jellyfin
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: tinymedia.local.kaneworld.org
+    name: tinymedia
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: filebot.local.kaneworld.org
+    name: filebot
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: apprise.local.kaneworld.org
+    name: apprise
     ip: mkserver.kane.mk
