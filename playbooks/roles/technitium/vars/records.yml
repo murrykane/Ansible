@@ -1,0 +1,11 @@
+---
+records:
+  - zone: 'kaneworld.org'
+    name: 'madeup1'
+    ip: '172.16.0.2'
+  - zone: 'kane.mk'
+    name: 'madeup2'
+    ip: '172.16.0.1'
+  - zone: 'kandworld.local'
+    name: 'madeup3'
+    ip: '172.17.0.1'
