@@ -1,6 +1,6 @@
 ---
 - name: sync dns records
-  hosts: dns
+  hosts: localhost
   tasks:
     - name: sync dns
       include_role:
