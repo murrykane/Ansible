@@ -19,6 +19,9 @@ records:
   #   name: kaneworld.org
   #   ip: 192.168.1.234
   - zone: kane.mk
+    name: mkserver
+    ip: 192.168.1.234
+  - zone: kane.mk
     name: murdogap
     ip: 192.168.1.170
   - zone: kane.mk
