@@ -67,6 +67,14 @@
     # - name: Reload UFW
     #   command: ufw reload        
 
+    # new logic for create users....
+    - name: "Create user groups with fixed GIDs"
+      group:
+        name: "{{ item.name }}"
+        gid: "{{ item.gid }}"
+        state: present
+      loop: "{{ usersWithIDs }}"
+
     - name: Create group sudo
       group:
         name: "sudo"
@@ -76,15 +84,7 @@
       group:
         name: "admin"
         state: present
-
-    # new logic for create users....
-    - name: "Create user groups with fixed GIDs"
-      group:
-        name: "{{ item.name }}"
-        gid: "{{ item.gid }}"
-        state: present
-      loop: "{{ usersWithIDs }}"
-
+        
     - name: "Create users with fixed UID/GID"
       user:
         name: "{{ item.name }}"
