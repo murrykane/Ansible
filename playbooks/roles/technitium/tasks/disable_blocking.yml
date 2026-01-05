@@ -1,13 +1,19 @@
 ---
-- name: Include vars of records.yaml 
 
-- name: create zones
-  uri:
-    # http://[server-ip-address]:5380/api/settings/temporaryDisableBlocking?token=[API-token]&minutes=[duration]
-    url: "{{ base_address }}/api/settings/temporaryDisableBlocking?token={{ dns_configurations.token }}&minutes={{ default_blocking_time }}
+- name: Disable blocking for DNS Lists
+  ansible.builtin.uri:
+    url: "{{ base_address }}/api/settings/temporaryDisableBlocking?token={{ dns_configurations.token }}&minutes={{ default_blocking_time }}"
     method: GET
+    # This ensures Ansible parses the JSON response automatically
     return_content: yes
     status_code: 200
     validate_certs: false
-    body_format: json
+  register: list_records_response
+  # Fails if the API returns a '200' but the internal status is 'error'
+  failed_when: 
+    - list_records_response.status != 200 
+    - list_records_response.json.status != "ok"
 
+- name: Output results
+  ansible.builtin.debug:
+    msg: "Blocking disabled status: {{ list_records_response.json.status }}"
