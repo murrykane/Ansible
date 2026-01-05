@@ -342,3 +342,10 @@ records:
   - zone: kane.mk
     name: filebot 
     ip: 192.168.1.20 
+  - zone: kane.mk
+    name: dns-primary
+    ip: 192.168.1.205
+  - zone: kane.mk
+    name: dns-secondary
+    ip: 192.168.1.206
+    

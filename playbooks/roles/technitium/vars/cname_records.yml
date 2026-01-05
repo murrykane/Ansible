@@ -270,3 +270,10 @@ records:
   - zone: local.kaneworld.org
     name: apprise
     ip: mkserver.kane.mk
+  - zone: local.kaneworld.org
+    name: dns-primary
+    ip: dns-primary.kane.mk
+  - zone: local.kaneworld.org
+    name: dns-secondary
+    ip: dns-secondary
+    
