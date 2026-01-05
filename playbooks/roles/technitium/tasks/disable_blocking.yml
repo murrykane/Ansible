@@ -1,7 +1,5 @@
 ---
 - name: Include vars of records.yaml 
-  # include_vars:
-  #   file: records.yml
 
 - name: create zones
   uri:
@@ -12,7 +10,4 @@
     status_code: 200
     validate_certs: false
     body_format: json
-  loop: "{{ records | map(attribute='zone') | unique | list }}"
-
-
 
