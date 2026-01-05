@@ -348,4 +348,6 @@ records:
   - zone: kane.mk
     name: dns-secondary
     ip: 192.168.1.206
-    
+  - zone: kane.mk
+    name: kaneserver 
+    ip: 192.168.1.20
