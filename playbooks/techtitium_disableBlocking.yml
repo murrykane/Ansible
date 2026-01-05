@@ -1,0 +1,8 @@
+---
+- name: Disable Blocking for 15 Minutes
+  hosts: localhost
+  tasks:
+    - name: disable blocking
+      include_role:
+        name: technitium
+        tasks_from: disable_blocking

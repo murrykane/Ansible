@@ -1,0 +1,18 @@
+---
+- name: Include vars of records.yaml 
+  # include_vars:
+  #   file: records.yml
+
+- name: create zones
+  uri:
+    # http://[server-ip-address]:5380/api/settings/temporaryDisableBlocking?token=[API-token]&minutes=[duration]
+    url: "{{ base_address }}/api/settings/temporaryDisableBlocking?token={{ dns_configurations.token }}&minutes={{ default_blocking_time }}
+    method: GET
+    return_content: yes
+    status_code: 200
+    validate_certs: false
+    body_format: json
+  loop: "{{ records | map(attribute='zone') | unique | list }}"
+
+
+
