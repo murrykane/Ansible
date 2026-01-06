@@ -276,3 +276,6 @@ records:
   - zone: local.kaneworld.org
     name: dns-secondary
     ip: mkserver.kane.mk
+  - zone: local.kaneworld.org
+    name: dns-tiertiary
+    ip: mkserver.kane.mk
