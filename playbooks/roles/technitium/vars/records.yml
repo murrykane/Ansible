@@ -263,10 +263,10 @@ records:
     ip: 192.168.1.188
   - zone: kane.mk
     name: dns-primary
-    ip: 192.168.1.205
+    ip: 192.168.1.215
   - zone: kane.mk
     name: dns-secondary
-    ip: 192.168.1.206
+    ip: 192.168.1.219
   - zone: kane.mk
     name: dns-tertiary
     ip: 192.168.1.4
