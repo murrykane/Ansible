@@ -131,6 +131,22 @@
         mode: '0600'
       loop: "{{ usersWithIDs }}"
 
+    #repeat for murry key
+    - name: Read murry public key
+      slurp:
+        src: "/home/murry/.ssh/murry_id.pub"
+      register: pubkey_contents2
+
+    - name: Append murry shared key to each authorized_keys
+      lineinfile:
+        path: "/home/{{ item.name }}/.ssh/authorized_keys"
+        line: "{{ pubkey_contents2.content | b64decode | trim }}"
+        create: yes
+        owner: "{{ item.name }}"
+        group: "{{ item.name }}"
+        mode: '0600'
+      loop: "{{ usersWithIDs }}"
+
     - name: Create sudoers file for no password 
       ansible.builtin.file:
         path: /etc/sudoers.d/90-kane-init
