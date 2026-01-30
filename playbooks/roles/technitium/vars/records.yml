@@ -276,3 +276,9 @@ records:
   - zone: kane.mk 
     name: murdognas 
     ip: 192.168.1.104
+  - zone: kane.mk
+    name: athena 
+    ip: 192.168.1.11
+  - zone: kane.mk
+    name: apex 
+    ip: 192.168.1.12
