@@ -282,3 +282,9 @@ records:
   - zone: local.kaneworld.org
     name: fileflows
     ip: mkserver.kane.mk
+  - zone: local.kaneworld.org
+    name: athena
+    ip: mkserver.kane.mk
+  - zone: local.kaneworld.org
+    name: apex
+    ip: mkserver.kane.mk
