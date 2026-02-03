@@ -1,0 +1,13 @@
+#- hosts: ubuntu:prox:debian
+- hosts: apex.kane.mk
+  become: yes
+
+  vars:
+    reboot_delay: 90
+    
+  tasks:
+    - name: Perform reboot
+      ansible.builtin.reboot:
+        post_reboot_delay: "{{ reboot_delay }}"
+        pre_reboot_delay: "{{ reboot_delay }}"
+
