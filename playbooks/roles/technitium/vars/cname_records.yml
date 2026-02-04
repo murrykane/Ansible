@@ -1,7 +1,7 @@
 ---
 records:
   - zone: local.kaneworld.org
-    name: proxmox
+    name: mini
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
     name: pihole2
