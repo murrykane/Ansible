@@ -27,8 +27,9 @@ all:
     prox:
       hosts:
         coco.kane.mk:
-        proxmini.kane.mk:
-        nvidia.kane.mk:
+        mini.kane.mk:
+        apex.kane.mk:
+        athena.kane.mk:
       vars:
         ansible_python_interpreter: auto_silent
         ansible_user: murry
