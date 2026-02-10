@@ -1,9 +1,11 @@
 - name: Check if {{ mount_point }} is in /etc/fstab
-  ansible.builtin.shell: grep -w "{{ mount_point }}" /etc/fstab
+  ansible.builtin.command: grep -w "{{ mount_point }}" /etc/fstab
   register: fstab_check
-  ignore_errors: true
+  failed_when: false
+  changed_when: false
 
-- name: Check if {{ mount_point }} is a mount
+# ---------- Initial mount check ----------
+- name: Check if {{ mount_point }} is mounted
   ansible.builtin.command: mountpoint -q {{ mount_point }}
   register: mount_check
   failed_when: false
@@ -13,103 +15,103 @@
 - name: Run tree -L 1 on {{ mount_point }}
   ansible.builtin.command: tree -L 1 {{ mount_point }}
   register: tree_output
-  when:
-    - mount_check is defined
-    - (mount_check.rc | default(1)) == 0
   failed_when: false
   changed_when: false
-
-
-- name: Set fact if tree output contains directory/file summary
-  ansible.builtin.set_fact:
-    tree_summary_found: "{{ tree_output.stdout_lines | select('search', '^\\d+ directories?, \\d+ files?$') | list | length > 0 }}"
   when:
-    - "'stdout_lines' in tree_output"
+    - mount_check is defined
+    - mount_check.rc == 0
 
-- name: Debug mount check
-  debug: 
-    var: mount_check
-
-- name: Debug tree output
-  debug: 
-    var: tree_output
-
-- name: Debug tree summary detection
-  debug: 
-    var: tree_summary_found
-
-
+# ---------- Detect broken mount ----------
 - name: Send Discord alert for mount issue {{ mount_point }}
   community.general.discord:
     webhook_id: "{{ discord_webhook_id }}"
     webhook_token: "{{ discord_webhook_token }}"
     username: "{{ discord_user }}"
     avatar_url: "{{ discord_avatar }}"
-    content: ":warning: NFS Share issue on {{ inventory_hostname }} for `{{ mount_point }}` - either not mounted or appears empty."
+    content: >
+      :warning: NFS Share issue on {{ inventory_hostname }} for
+      `{{ mount_point }}` - either not mounted or appears empty.
   when:
-    - fstab_check is defined
     - fstab_check.rc == 0
-    - (mount_check is not defined or (mount_check.rc | default(1)) != 0) or
-      (tree_summary_found is defined and not tree_summary_found)
+    - mount_check is not defined
+      or mount_check.rc != 0
+      or (
+        tree_output is defined
+        and
+        (
+          tree_output.stdout_lines
+          | select('search', '^\\d+ directories?, \\d+ files?$')
+          | list
+          | length
+        ) == 0
+      )
 
-- name: Lets fix a broken mount point when needed for {{ mount_point }}
+# ---------- Repair block ----------
+- name: Attempt repair of {{ mount_point }}
   block:
 
-    - name: Attempt to unmount {{ mount_point }} if it's in a bad state
+    - name: Unmount {{ mount_point }}
       ansible.builtin.command: umount {{ mount_point }}
-      become: true
       ignore_errors: true
 
-    - name: Run mount -a to remount fstab entries
+    - name: Remount all fstab entries
       ansible.builtin.command: mount -a
-      become: true
 
-    - name: Re-check if {{ mount_point }} is now mounted
+    - name: Re-check mount {{ mount_point }}
       ansible.builtin.command: mountpoint -q {{ mount_point }}
       register: remount_check
       failed_when: false
       changed_when: false
 
-    - name: Re-run tree -L 1 on {{ mount_point }}
+    - name: Re-run tree after remount
       ansible.builtin.command: tree -L 1 {{ mount_point }}
       register: retried_tree_output
-      when:
-        - remount_check is defined
-        - (remount_check.rc | default(1)) == 0
       failed_when: false
       changed_when: false
-
-    - name: Set fact if retried tree output has files/directories
-      ansible.builtin.set_fact:
-        retried_tree_summary_found: "{{ retried_tree_output.stdout_lines | select('search', '^\\d+ directories?, \\d+ files?$') | list | length > 0 }}"
       when:
-        - "'stdout_lines' in retried_tree_output"
+        - remount_check.rc == 0
 
-    - name: Send Discord alert if remount did not fix the issue
+    - name: Alert if remount failed
       community.general.discord:
         webhook_id: "{{ discord_webhook_id }}"
         webhook_token: "{{ discord_webhook_token }}"
         username: "{{ discord_user }}"
         avatar_url: "{{ discord_avatar }}"
-        content: ":x: Auto-remount failed on {{ inventory_hostname }} for `{{ mount_point }}`. Manual intervention may be required."
+        content: >
+          :x: Auto-remount failed on {{ inventory_hostname }} for
+          `{{ mount_point }}`. Manual intervention required.
       when:
-        - fstab_check.rc == 0
-        - (remount_check is not defined or (remount_check.rc | default(1)) != 0) or
-          (retried_tree_summary_found is defined and not retried_tree_summary_found)
+        - remount_check.rc != 0
+          or (
+            retried_tree_output is defined
+            and
+            (
+              retried_tree_output.stdout_lines
+              | select('search', '^\\d+ directories?, \\d+ files?$')
+              | list
+              | length
+            ) == 0
+          )
 
-    - name: Send Discord alert if remount did fix the issue
+    - name: Alert if remount succeeded
       community.general.discord:
         webhook_id: "{{ discord_webhook_id }}"
         webhook_token: "{{ discord_webhook_token }}"
         username: "{{ discord_user }}"
         avatar_url: "{{ discord_avatar }}"
-        content: ":heavy_check_mark: Auto-remount worked on {{ inventory_hostname }} for `{{ mount_point }}`. Its been fixed and can be ignored."
+        content: >
+          :heavy_check_mark: Auto-remount worked on {{ inventory_hostname }}
+          for `{{ mount_point }}`.
       when:
-        - fstab_check.rc == 0
-        - (remount_check is not defined or (remount_check.rc | default(1)) != 0) or
-          (retried_tree_summary_found is defined and retried_tree_summary_found)
+        - remount_check.rc == 0
+        - retried_tree_output is defined
+        - (
+            retried_tree_output.stdout_lines
+            | select('search', '^\\d+ directories?, \\d+ files?$')
+            | list
+            | length
+          ) > 0
 
   when:
-    - fstab_check is defined
     - fstab_check.rc == 0
-    - (mount_check is not defined or (mount_check.rc | default(1)) != 0)
+    - mount_check is not defined or mount_check.rc != 0
