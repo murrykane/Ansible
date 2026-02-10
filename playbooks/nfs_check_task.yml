@@ -18,8 +18,8 @@
   failed_when: false
   changed_when: false
   when:
-    - mount_check is defined
-    - mount_check.rc == 0
+    - mount_check.rc | default(1) == 0
+
 
 # ---------- Detect broken mount ----------
 - name: Send Discord alert for mount issue {{ mount_point }}
