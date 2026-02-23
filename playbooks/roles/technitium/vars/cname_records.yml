@@ -294,3 +294,6 @@ records:
   - zone: local.kaneworld.org
     name: atlas
     ip: cyborg.kane.mk
+  - zone: local.kaneworld.org
+    name: pbs-mini
+    ip: mkserver.kane.mk

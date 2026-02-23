@@ -282,3 +282,6 @@ records:
   - zone: kane.mk
     name: apex 
     ip: 192.168.1.12
+  - zone: kane.mk
+    name: pbs-mini
+    ip: 192.168.1.141
