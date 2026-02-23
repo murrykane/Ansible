@@ -288,3 +288,9 @@ records:
   - zone: local.kaneworld.org
     name: apex
     ip: mkserver.kane.mk
+  - zone: local.kaneworld.org
+    name: dockhand
+    ip: cyborg.kane.mk
+  - zone: local.kaneworld.org
+    name: atlas
+    ip: cyborg.kane.mk
