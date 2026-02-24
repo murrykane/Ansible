@@ -1,5 +1,9 @@
 all:
   children:
+    pbs_servers:
+      hosts:
+        pbs.kane.mk:
+        pbs-mini.kane.mk:
     lxc: 
       hosts:
         dns-primary.kane.mk: 
@@ -11,11 +15,8 @@ all:
           ansible_python_interpreter: /usr/bin/python3.11
         cyborg.kane.mk:
         pbs.kane.mk:
-        pihole3.kane.mk:
-        pihole6.kane.mk:
+        pbs-mini.kane.mk:
         utilserver.kane.mk:
-        longhorn-prod-1.kane.mk:
-        longhorn-prod-2.kane.mk:
         unifi.kane.mk:
         stargate.kane.mk:
         dns-primary.kane.mk:
@@ -29,7 +30,6 @@ all:
     prox:
       hosts:
         coco.kane.mk:
-        #proxmini.kane.mk:
         mini.kane.mk:
         apex.kane.mk:
         athena.kane.mk:

@@ -1,5 +1,9 @@
 all:
   children:
+    pbs_servers:
+      hosts:
+        pbs.kane.mk:
+        pbs-mini.kane.mk:
     lxc: 
       hosts:
         dns-primary.kane.mk: 
@@ -11,8 +15,7 @@ all:
           ansible_python_interpreter: /usr/bin/python3.11
         cyborg.kane.mk:
         pbs.kane.mk:
-        pihole3.kane.mk:
-        pihole6.kane.mk:
+        pbs-mini.kane.mk:
         utilserver.kane.mk:
         unifi.kane.mk:
         stargate.kane.mk:
@@ -25,7 +28,6 @@ all:
     prox:
       hosts:
         coco.kane.mk:
-        #proxmini.kane.mk:
         mini.kane.mk:
         apex.kane.mk:
         athena.kane.mk:
@@ -51,14 +53,6 @@ all:
       vars:
         ansible_user: root
         ansible_python_interpreter: /usr/bin/python3
-    # debian:
-    #   hosts:
-    #     hahome.kane.mk:
-    #   vars:
-    #     ansible_python_interpreter: auto_silent
-    #     ansible_user: semaphore 
-    #     ansible_become: true 
-    #     ansible_become_method: sudo
     qnap:
       hosts:
         murdognas.kane.mk: 
@@ -72,27 +66,8 @@ all:
         mkserver.kane.mk: 
         utilserver.kane.mk:
         cyborg.kane.mk:
-    # rke2:
-    #   vars:
-    #     ansible_user: semaphore
-    #   children:
-    #     servers:
-    #       hosts: 
-    #         rke2-prod-1.kane.mk:
-    #         rke2-prod-2.kane.mk:
-    #     agents:
-    #       hosts:
-    #         rke2-prod-4.kane.mk:
-    #         rke2-prod-5.kane.mk:
-    # longhorn:
-    #   vars:
-    #     ansible_user: semaphore
-    #   hosts:
-    #     longhorn-prod-1.kane.mk:
-    #     longhorn-prod-2.kane.mk:
     CheckMK:
       children:
-        #rke2:
         prox:
         unraid:
         qnap:
