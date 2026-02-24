@@ -285,3 +285,6 @@ records:
   - zone: kane.mk
     name: pbs-mini
     ip: 192.168.1.141
+  - zone: kane.mk
+    name: raptor
+    ip: 192.168.1.142
