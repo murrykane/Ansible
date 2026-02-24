@@ -234,15 +234,15 @@ records:
   - zone: local.kaneworld.org
     name: it-tools
     ip: cyborg.kane.mk
-  - zone: local.kaneworld.org
-    name: pihole1
-    ip: traefik4.kane.mk
-  - zone: local.kaneworld.org
-    name: traefik4
-    ip: traefik4.kane.mk
-  - zone: local.kaneworld.org
-    name: rancher
-    ip: traefik4.kane.mk
+  # - zone: local.kaneworld.org
+  #   name: pihole1
+  #   ip: traefik4.kane.mk
+  # - zone: local.kaneworld.org
+  #   name: traefik4
+  #   ip: traefik4.kane.mk
+  # - zone: local.kaneworld.org
+  #   name: rancher
+  #   ip: traefik4.kane.mk
   - zone: local.kaneworld.org
     name: nvidia
     ip: mkserver.kane.mk
@@ -300,3 +300,12 @@ records:
   - zone: local.kaneworld.org
     name: qui
     ip: mkserver.kane.mk
+  - zone: local.kaneworld.org
+    name: traefik-prod-4
+    ip: raptor.kane.mk
+  - zone: local.kaneworld.org
+    name: traefik4-widget
+    ip: raptor.kane.mk
+  - zone: local.kaneworld.org
+    name: traefik4-metrics
+    ip: raptor.kane.mk

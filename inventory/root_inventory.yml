@@ -17,6 +17,7 @@ all:
         pbs.kane.mk:
         pbs-mini.kane.mk:
         utilserver.kane.mk:
+        raptor.kane.mk:
         unifi.kane.mk:
         stargate.kane.mk:
         dns-primary.kane.mk:
