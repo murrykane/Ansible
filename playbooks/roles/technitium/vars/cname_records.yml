@@ -324,3 +324,6 @@ records:
   - zone: local.kaneworld.org
     name: open-webui
     ip: raptor.kane.mk
+  - zone: local.kaneworld.org
+    name: immich
+    ip: raptor.kane.mk
