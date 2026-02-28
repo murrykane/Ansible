@@ -310,7 +310,7 @@ records:
     name: traefik4-metrics
     ip: raptor.kane.mk
   - zone: local.kaneworld.org
-    name: dozzle
+    name: dozzle-prod-4
     ip: raptor.kane.mk
   - zone: local.kaneworld.org
     name: paperless
@@ -327,3 +327,15 @@ records:
   - zone: local.kaneworld.org
     name: immich
     ip: raptor.kane.mk
+  - zone: local.kaneworld.org
+    name: dozzle-prod-1
+    ip: mkserver.kane.mk
+  - zone: local.kaneworld.org
+    name: dozzle-prod-2
+    ip: utilserver.kane.mk
+  - zone: local.kaneworld.org
+    name: dozzle-prod-3
+    ip: cyborg.kane.mk
+  - zone: local.kaneworld.org
+    name: dozzle-prod-5
+    ip: mkserver.kane.mk
