@@ -1,4 +1,4 @@
 ct_backup_path: /mnt/unraid-backups/pbs/ct
 vm_backup_path: /mnt/unraid-backups/pbs/vm
 ct_count: 4
-vm_count: 5
+vm_count: 6
