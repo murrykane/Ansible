@@ -298,7 +298,7 @@ records:
     name: pbs-mini
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: qui
+    name: qui-prod-1
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
     name: traefik-prod-4
@@ -339,3 +339,30 @@ records:
   - zone: local.kaneworld.org
     name: dozzle-prod-5
     ip: mkserver.kane.mk
+  - zone: local.kaneworld.org
+    name: traefik-prod-5
+    ip: kaneserver.kane.mk
+  - zone: local.kaneworld.org
+    name: sonarr-prod-2
+    ip: kaneserver.kane.mk
+  - zone: local.kaneworld.org
+    name: radarr-prod-2
+    ip: kaneserver.kane.mk
+  - zone: local.kaneworld.org
+    name: qbittorrent-prod-2
+    ip: kaneserver.kane.mk
+  - zone: local.kaneworld.org
+    name: cleanuparr-prod-1
+    ip: kaneserver.kane.mk
+  - zone: local.kaneworld.org
+    name: huntarr-prod-2
+    ip: kaneserver.kane.mk
+  - zone: local.kaneworld.org
+    name: jellyseerr-prod-2
+    ip: kaneserver.kane.mk
+  - zone: local.kaneworld.org
+    name: krusader-prod-2
+    ip: kaneserver.kane.mk
+  - zone: local.kaneworld.org
+    name: prowlarr-prod-2
+    ip: kaneserver.kane.mk
