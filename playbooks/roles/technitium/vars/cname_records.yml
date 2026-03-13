@@ -366,3 +366,6 @@ records:
   - zone: local.kaneworld.org
     name: prowlarr-prod-2
     ip: kaneserver.kane.mk
+  - zone: local.kaneworld.org
+    name: portainer-prod-5
+    ip: kaneserver.kane.mk
