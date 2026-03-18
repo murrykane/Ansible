@@ -299,7 +299,7 @@ records:
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
     name: qui-prod-1
-    ip: mkserver.kane.mk
+    ip: kaneserver.kane.mk
   - zone: local.kaneworld.org
     name: traefik-prod-4
     ip: raptor.kane.mk
