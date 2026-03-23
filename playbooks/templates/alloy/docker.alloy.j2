@@ -1,0 +1,65 @@
+logging {
+  level = "info"
+}
+
+//
+// ─── GLOBAL LABELS (APPLIED EVERYWHERE) ────────────────────────
+//
+
+locals {
+  //host = env("HOSTNAME")        //when running in Docker, Kubernetes, etc. you can set the hostname via an environment variable
+  host = sys.hostname         //when running as systemctl service, we can use the system hostname
+  env  = "prod"
+  role = "docker"
+}
+
+
+// ---------------------------------------------------------
+// Docker container log collection
+// ---------------------------------------------------------
+
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "containers" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_image"]
+    target_label  = "image"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+
+  rule {
+    target_label = "host"
+    replacement  = sys.env("HOSTNAME")
+  }
+}
+
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.containers.output
+  forward_to = [loki.write.default.receiver]
+  relabel_rules = discovery.relabel.containers.rules
+}
+
+// ---------------------------------------------------------
+// Loki destination
+// ---------------------------------------------------------
+
+loki.write "default" {
+  endpoint {
+    url = "https://loki-prod-4.local.kaneworld.org/loki/api/v1/push"
+  }
+}

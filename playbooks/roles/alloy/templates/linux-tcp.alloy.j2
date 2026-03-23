@@ -1,0 +1,7 @@
+# ==============================
+# roles/alloy/templates/linux-tcp.alloy.j2
+# ==============================
+loki.source.tcp "tcp_logs" {
+  listen_address = "0.0.0.0:1515"
+  forward_to = [loki.write.default.receiver]
+}

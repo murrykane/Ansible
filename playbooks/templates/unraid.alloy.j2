@@ -1,0 +1,218 @@
+logging {
+  level = "info"
+}
+
+//
+// ─── GLOBAL LABELS (APPLIED EVERYWHERE) ────────────────────────
+//
+
+locals {
+  host = env("HOSTNAME")        //when running in Docker, Kubernetes, etc. you can set the hostname via an environment variable
+  //host = sys.hostname         //when running as systemctl service, we can use the system hostname
+  env  = "prod"
+  role = "unraid"
+}
+
+
+// ---------------------------------------------------------
+// Docker container log collection
+// ---------------------------------------------------------
+
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "containers" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_image"]
+    target_label  = "image"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+
+  rule {
+    target_label = "host"
+    replacement  = sys.env("HOSTNAME")
+  }
+
+  rule {
+    target_label = "role"
+    replacement  = locals.role
+  }
+}
+
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.containers.output
+  forward_to = [loki.write.default.receiver]
+  relabel_rules = discovery.relabel.containers.rules
+}
+
+// ---------------------------------------------------------
+// Syslog collection (UDP + TCP on port 514)
+// ---------------------------------------------------------
+
+loki.source.syslog "syslog_udp" {
+  listener {
+    address  = "0.0.0.0:514"
+    protocol = "udp"
+    labels   = { job = "syslog", transport = "udp", host = sys.env("HOSTNAME") }
+  }
+  forward_to = [loki.write.default.receiver]
+}
+
+
+//
+// ─── TRAEFIK LOG PARSING ───────────────────────────────────────
+//
+
+loki.process "traefik" {
+  forward_to = [loki.write.loki.receiver]
+
+  stage.match {
+    selector = "{container=~\"traefik.*\"}"
+
+    stage.json {
+      expressions = {
+        method = "RequestMethod",
+        path   = "RequestPath",
+        status = "DownstreamStatus",
+        latency = "Duration",
+      }
+    }
+
+    stage.labels {
+      values = {
+        method = "",
+        status = "",
+      }
+    }
+  }
+}
+
+//
+// ─── SYSTEMD JOURNAL ───────────────────────────────────────────
+//
+
+loki.source.journal "journal" {
+  path       = "/var/log/journal"
+  forward_to = [loki.write.loki.receiver]
+
+  labels = {
+    job  = "systemd",
+    host = locals.host,
+    env  = locals.env,
+    role = locals.role,
+  }
+}
+
+//
+// ─── /VAR/LOG FILES ────────────────────────────────────────────
+//
+
+local.file_match "varlogs" {
+  path_targets = [
+    { "__path__" = "/var/log/*.log" },
+  ]
+}
+
+loki.source.file "varlogs" {
+  targets    = local.file_match.varlogs.targets
+  forward_to = [loki.write.loki.receiver]
+
+  labels = {
+    job  = "varlogs",
+    host = locals.host,
+    env  = locals.env,
+    role = locals.role,
+  }
+}
+
+//
+// ─── CROWDSEC LOGS ─────────────────────────────────────────────
+//
+
+local.file_match "crowdsec" {
+  path_targets = [
+    { "__path__" = "/var/log/crowdsec.log" },
+  ]
+}
+
+loki.source.file "crowdsec" {
+  targets    = local.file_match.crowdsec.targets
+  forward_to = [loki.write.loki.receiver]
+
+  labels = {
+    job  = "crowdsec",
+    host = locals.host,
+    env  = locals.env,
+    role = locals.role,
+  }
+}
+
+//
+// ─── METRICS: NODE EXPORTER ────────────────────────────────────
+//
+
+prometheus.exporter.unix "node" {}
+
+prometheus.scrape "node_metrics" {
+  targets    = prometheus.exporter.unix.node.targets
+
+  forward_to = [prometheus.remote_write.metrics.receiver]
+
+  labels = {
+    host = locals.host,
+    env  = locals.env,
+    role = locals.role,
+  }
+}
+
+//
+// ─── METRICS: TCP ──────────────────────────────────────────────
+//
+
+prometheus.exporter.tcp "tcp" {}
+
+prometheus.scrape "tcp_metrics" {
+  targets    = prometheus.exporter.tcp.tcp.targets
+
+  forward_to = [prometheus.remote_write.metrics.receiver]
+
+  labels = {
+    host = locals.host,
+    env  = locals.env,
+    role = locals.role,
+  }
+}
+
+//
+// ─── PROMETHEUS REMOTE WRITE ───────────────────────────────────
+//
+
+prometheus.remote_write "metrics" {
+  endpoint {
+    url = "http://mkserver.kane.mk:9090/api/v1/push"
+  }
+}
+
+// ---------------------------------------------------------
+// Loki destination
+// ---------------------------------------------------------
+
+loki.write "default" {
+  endpoint {
+    url = "https://loki-prod-4.local.kaneworld.org/loki/api/v1/push"
+  }
+}

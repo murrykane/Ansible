@@ -1,0 +1,8 @@
+
+# ==============================
+# roles/alloy/handlers/main.yml
+# ==============================
+- name: restart alloy
+  service:
+    name: "{{ alloy_service_name }}"
+    state: restarted

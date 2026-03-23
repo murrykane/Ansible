@@ -1,0 +1,29 @@
+# ==============================
+# roles/alloy/tasks/install.yml
+# ==============================
+- name: Ensure alloy user exists
+  user:
+    name: "{{ alloy_user }}"
+    system: yes
+    create_home: no
+
+- name: Add alloy to docker group
+  user:
+    name: "{{ alloy_user }}"
+    groups: docker
+    append: yes
+  when: alloy_has_docker
+
+- name: Remove node_exporter if present
+  block:
+    - name: Stop node_exporter
+      service:
+        name: node_exporter
+        state: stopped
+      ignore_errors: true
+
+    - name: Disable node_exporter
+      service:
+        name: node_exporter
+        enabled: no
+      ignore_errors: true

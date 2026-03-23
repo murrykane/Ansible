@@ -1,0 +1,10 @@
+# ==============================
+# roles/alloy/templates/windows-metrics.alloy.j2
+# ==============================
+prometheus.exporter.windows "windows" {
+}
+
+prometheus.scrape "windows" {
+  targets = prometheus.exporter.windows.windows.targets
+  forward_to = [prometheus.remote_write.default.receiver]
+}

@@ -1,0 +1,154 @@
+// ======================================================
+// =============== GLOBAL SETTINGS =======================
+// ======================================================
+
+livedebugging {}
+
+// ======================================================
+// ================== METRICS ============================
+// ======================================================
+
+// ---------- cAdvisor (Docker metrics) ----------
+prometheus.exporter.cadvisor "cadvisor" {
+  docker_only = true
+}
+
+discovery.relabel "cadvisor" {
+  targets = prometheus.exporter.cadvisor.cadvisor.targets
+
+  rule {
+    target_label = "job"
+    replacement  = "Unraid/AlloyExporter"
+  }
+
+  rule {
+    target_label = "instance"
+    replacement  = sys.env("HOSTNAME_FQDN")
+  }
+}
+
+prometheus.scrape "cadvisor" {
+  targets         = discovery.relabel.cadvisor.output
+  scrape_interval = "10s"
+  forward_to      = [prometheus.remote_write.default.receiver]
+}
+
+
+// ---------- Node Exporter (system metrics) ----------
+prometheus.exporter.unix "node_exporter" {
+  disable_collectors = ["ipvs", "btrfs", "infiniband", "xfs", "zfs", "mdadm"]
+  enable_collectors  = ["meminfo"]
+
+  filesystem {
+    fs_types_exclude     = "^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|tmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$"
+    mount_points_exclude = "^/(dev|proc|run/credentials/.+|sys|var/lib/docker/.+)($|/)"
+    mount_timeout        = "5s"
+  }
+
+  netclass {
+    ignored_devices = "^(veth.*|cali.*|[a-f0-9]{15})$"
+  }
+
+  netdev {
+    device_exclude = "^(veth.*|cali.*|[a-f0-9]{15})$"
+  }
+}
+
+discovery.relabel "node_exporter" {
+  targets = prometheus.exporter.unix.node_exporter.targets
+
+  rule {
+    target_label = "job"
+    replacement  = "Unraid/AlloyExporter"
+  }
+
+  rule {
+    target_label = "instance"
+    replacement  = sys.env("HOSTNAME_FQDN")
+  }
+}
+
+prometheus.scrape "node_exporter" {
+  targets         = discovery.relabel.node_exporter.output
+  scrape_interval = "15s"
+  forward_to      = [prometheus.remote_write.default.receiver]
+}
+
+
+// ---------- Remote Write (Prometheus) ----------
+prometheus.remote_write "default" {
+  endpoint {
+    url = "http://mkserver.kane.mk:9090/api/v1/write"
+  }
+}
+
+
+// ======================================================
+// ==================== LOGS =============================
+// ======================================================
+
+// ---------- Docker Logs ----------
+discovery.docker "docker" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "docker_logs" {
+  targets = []
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  rule {
+    target_label = "job"
+    replacement  = "Unraid/AlloyExporter"
+  }
+
+  rule {
+    target_label = "instance"
+    replacement  = sys.env("HOSTNAME_FQDN")
+  }
+}
+
+loki.source.docker "docker" {
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.docker.docker.targets
+  relabel_rules = discovery.relabel.docker_logs.rules
+  forward_to    = [loki.process.docker.receiver]
+}
+
+loki.process "docker" {
+  forward_to = [loki.write.default.receiver]
+
+  // Drop noisy infrastructure containers (edit as needed)
+  stage.drop {
+    source     = "container"
+    expression = "(alloy|grafana|loki)"
+  }
+}
+
+
+// ---------- Syslog / File Logs (Unraid way) ----------
+local.file_match "syslog" {
+  path_targets = [{
+    __address__ = "localhost",
+    __path__    = "/var/log/{syslog,messages,dmesg,*.log}",
+    job         = "Unraid/AlloyExporter",
+    instance    = sys.env("HOSTNAME_FQDN"),
+  }]
+}
+
+loki.source.file "syslog" {
+  targets    = local.file_match.syslog.targets
+  forward_to = [loki.write.default.receiver]
+}
+
+
+// ---------- Loki Output ----------
+loki.write "default" {
+  endpoint {
+    url = "https://loki-prod-4.local.kaneworld.org/loki/api/v1/push"
+  }
+}

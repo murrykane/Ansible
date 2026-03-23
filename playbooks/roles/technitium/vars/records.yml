@@ -288,3 +288,6 @@ records:
   - zone: kane.mk
     name: raptor
     ip: 192.168.1.142
+  - zone: kane.mk
+    name: netbird
+    ip: 192.168.1.146

@@ -1,0 +1,30 @@
+# ==============================
+# roles/alloy/tasks/detect.yml
+# ==============================
+- name: Check if docker exists
+  command: which docker
+  register: docker_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Set docker fact
+  set_fact:
+    alloy_has_docker: "{{ docker_check.rc == 0 }}"
+
+- name: Check journald
+  stat:
+    path: /run/systemd/journal
+  register: journald_check
+
+- name: Set journald fact
+  set_fact:
+    alloy_has_journald: "{{ journald_check.stat.exists }}"
+
+- name: Detect Proxmox
+  stat:
+    path: /etc/pve
+  register: proxmox_check
+
+- name: Set proxmox fact
+  set_fact:
+    alloy_is_proxmox: "{{ proxmox_check.stat.exists }}"

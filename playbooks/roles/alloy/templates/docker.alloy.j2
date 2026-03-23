@@ -1,0 +1,16 @@
+# ==============================
+# roles/alloy/templates/docker.alloy.j2
+# ==============================
+loki.source.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+  targets = ["*"]
+  forward_to = [loki.write.default.receiver]
+}
+
+
+# ==============================
+# roles/alloy/templates/linux-logs.alloy.j2
+# ==============================
+loki.source.journal "journald" {
+  forward_to = [loki.write.default.receiver]
+}

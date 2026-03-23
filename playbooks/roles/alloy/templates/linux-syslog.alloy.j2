@@ -1,0 +1,7 @@
+# ==============================
+# roles/alloy/templates/linux-syslog.alloy.j2
+# ==============================
+loki.source.syslog "syslog" {
+  listen_address = "0.0.0.0:1514"
+  forward_to = [loki.write.default.receiver]
+}

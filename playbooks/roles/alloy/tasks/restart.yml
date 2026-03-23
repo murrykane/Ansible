@@ -1,0 +1,15 @@
+# ==============================
+# roles/alloy/tasks/restart.yml
+# ==============================
+- name: Ensure alloy service is running
+  service:
+    name: "{{ alloy_service_name }}"
+    state: started
+    enabled: true
+  when: ansible_system != "Win32NT"
+
+- name: Restart alloy on Windows
+  win_service:
+    name: alloy
+    state: restarted
+  when: ansible_system == "Win32NT"
