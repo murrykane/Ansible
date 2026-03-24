@@ -4,12 +4,12 @@
 - name: Ensure alloy service is running
   service:
     name: "{{ alloy_service_name }}"
-    state: started
+    state: restarted
     enabled: true
-  when: ansible_system != "Win32NT"
+  when: ansible_facts['system'] != "Win32NT"
 
 - name: Restart alloy on Windows
   win_service:
     name: alloy
     state: restarted
-  when: ansible_system == "Win32NT"
+  when: ansible_facts['system'] == "Win32NT"

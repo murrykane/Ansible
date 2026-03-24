@@ -3,7 +3,12 @@
 # ==============================
 alloy_user: alloy
 alloy_group: alloy
+# alloy_config_dir: /etc/alloy
+# alloy_config_path: /etc/alloy/config.alloy
+alloy_config_dir: /opt/alloy
 alloy_config_path: /etc/alloy/config.alloy
+alloy_base_env: /etc/default/alloy
+alloy_default_conf: /etc/default/config.alloy
 alloy_service_name: alloy
 
 # Feature toggles
