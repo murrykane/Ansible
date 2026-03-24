@@ -1,0 +1,8 @@
+---
+- name: Deploy Alloy to Servers
+  hosts: raptor.kane.mk
+  tasks:
+    - name: Deploy Alloy
+      include_role:
+        name: alloy
+        tasks_from: main

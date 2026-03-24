@@ -19,6 +19,7 @@ all:
         utilserver.kane.mk:
         unifi.kane.mk:
         stargate.kane.mk:
+        netbird.kane.mk:
       vars:
         #ansible_python_interpreter: auto_silent
         ansible_python_interpreter: /usr/bin/python3
