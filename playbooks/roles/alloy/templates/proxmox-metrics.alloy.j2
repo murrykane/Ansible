@@ -1,13 +1,13 @@
 //// PROXMOX CONFIGURATION FOR ALLOY ////
 ////                              ////
 
-local.file_match "local_files" {
+local.file_match "local_prox_files" {
     path_targets = [{"__path__" = "/mnt/pve/backups/dump/{**/*.log}", "job" = "logs", "hostname" = constants.hostname, "env" = "prod", "source" = "proxmox", "instance" = constants.hostname}]
     sync_period  = "5s"
 }
 
-loki.source.file "log_scrape" {
-    targets    = local.file_match.local_files.targets
+loki.source.file "log_prox_scrape" {
+    targets    = local.file_match.local_prox_files.targets
     forward_to = [loki.write.default.receiver]
     tail_from_end = true
 
