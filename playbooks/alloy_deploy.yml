@@ -1,6 +1,6 @@
 ---
 - name: Deploy Alloy to Servers
-  hosts: raptor.kane.mk
+  hosts: docker:unifi:lxc:prox:ubuntu:pbs_servers
   tasks:
     - name: Deploy Alloy
       include_role:

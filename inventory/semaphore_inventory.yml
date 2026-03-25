@@ -68,6 +68,8 @@ all:
         mkserver.kane.mk: 
         utilserver.kane.mk:
         cyborg.kane.mk:
+        raptor.kane.mk:
+        netbird.kane.mk:
     CheckMK:
       children:
         prox:
