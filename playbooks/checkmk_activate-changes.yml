@@ -8,6 +8,9 @@
   #   server_url: "checkmk.home.arpa"
   #   site: "cmk"
 
+  collections:
+    - checkmk.general
+
   tasks:
 
     - name: include vars 
