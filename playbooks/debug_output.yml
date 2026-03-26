@@ -1,0 +1,6 @@
+- name: Debug collection paths
+  ansible.builtin.command: ansible-config dump | grep COLLECTIONS_PATHS
+  register: output
+
+- debug:
+    var: output.stdout
