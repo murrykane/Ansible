@@ -372,3 +372,6 @@ records:
   - zone: local.kaneworld.org
     name: netbird
     ip: mkserver.kane.mk
+  - zone: local.kaneworld.org
+    name: auth
+    ip: mkserver.kane.mk

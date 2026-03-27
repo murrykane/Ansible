@@ -1,0 +1,124 @@
+- name: Create TLS directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0700'
+  loop:
+    - "{{ docker_tls_dir }}"
+    - "{{ docker_user_cert_dir }}"
+
+# -----------------------------
+# Check if cert exists
+# -----------------------------
+- name: Check if server cert exists
+  stat:
+    path: "{{ docker_tls_dir }}/server-cert.pem"
+  register: cert_stat
+
+# -----------------------------
+# Check expiration
+# -----------------------------
+- name: Get cert expiry
+  command: openssl x509 -enddate -noout -in server-cert.pem
+  args:
+    chdir: "{{ docker_tls_dir }}"
+  register: cert_expiry
+  when: cert_stat.stat.exists
+  changed_when: false
+
+- name: Parse expiry date
+  set_fact:
+    cert_expiry_date: "{{ cert_expiry.stdout.split('=')[1] | to_datetime('%b %d %H:%M:%S %Y %Z') }}"
+  when: cert_stat.stat.exists
+
+- name: Determine if cert expired
+  set_fact:
+    cert_expired: "{{ (cert_expiry_date | default(0)) < (ansible_date_time.iso8601 | to_datetime) }}"
+  when: cert_stat.stat.exists
+
+- name: Force regenerate if expired
+  set_fact:
+    regenerate_certs: true
+  when: cert_expired | default(false)
+
+- name: Set default regenerate flag
+  set_fact:
+    regenerate_certs: "{{ regenerate_certs | default(not cert_stat.stat.exists) }}"
+
+# -----------------------------
+# Generate CA
+# -----------------------------
+- name: Generate CA
+  shell: |
+    openssl genrsa -out ca-key.pem 4096
+    openssl req -new -x509 -days {{ docker_cert_days }} \
+      -key ca-key.pem -sha256 \
+      -subj "/CN=docker-ca" \
+      -out ca.pem
+  args:
+    chdir: "{{ docker_tls_dir }}"
+  when: regenerate_certs
+
+# -----------------------------
+# Server cert
+# -----------------------------
+- name: Create SAN config
+  copy:
+    dest: "{{ docker_tls_dir }}/server.cnf"
+    content: |
+      [req]
+      distinguished_name=req
+
+      [ext]
+      subjectAltName = {{ docker_tls_san | join(',') }}
+
+- name: Generate server cert
+  shell: |
+    openssl genrsa -out server-key.pem 4096
+    openssl req -new -key server-key.pem \
+      -subj "/CN={{ docker_tls_host }}" \
+      -out server.csr -config server.cnf
+
+    openssl x509 -req -days {{ docker_cert_days }} \
+      -in server.csr \
+      -CA ca.pem -CAkey ca-key.pem -CAcreateserial \
+      -out server-cert.pem \
+      -extensions ext -extfile server.cnf
+  args:
+    chdir: "{{ docker_tls_dir }}"
+  when: regenerate_certs
+
+# -----------------------------
+# Client cert
+# -----------------------------
+- name: Generate client cert
+  shell: |
+    openssl genrsa -out key.pem 4096
+    openssl req -subj "/CN=client" -new -key key.pem -out client.csr
+    echo "extendedKeyUsage = clientAuth" > client-ext.cnf
+
+    openssl x509 -req -days {{ docker_cert_days }} \
+      -in client.csr \
+      -CA ca.pem -CAkey ca-key.pem -CAcreateserial \
+      -out cert.pem \
+      -extfile client-ext.cnf
+  args:
+    chdir: "{{ docker_tls_dir }}"
+  when: regenerate_certs
+
+# -----------------------------
+# Copy to user dir
+# -----------------------------
+- name: Copy client certs
+  copy:
+    src: "{{ docker_tls_dir }}/{{ item }}"
+    dest: "{{ docker_user_cert_dir }}/{{ item }}"
+    remote_src: true
+    owner: murry
+    group: murry
+    mode: '0644'
+  loop:
+    - ca.pem
+    - cert.pem
+    - key.pem
+  notify: restart docker

@@ -1,0 +1,12 @@
+- name: Allow Docker TLS port
+  ufw:
+    rule: allow
+    port: "{{ docker_tls_port }}"
+    proto: tcp
+    src: "{{ item }}"
+  loop: "{{ docker_allowed_subnets }}"
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+    policy: deny

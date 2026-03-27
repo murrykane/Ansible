@@ -1,0 +1,6 @@
+- name: Deploy Docker TLS
+  hosts: docker_hosts
+  become: true
+
+  roles:
+    - docker_tls

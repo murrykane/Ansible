@@ -1,0 +1,13 @@
+docker_tls_dir: /etc/docker/tls
+docker_cert_days: 3650
+docker_user_cert_dir: /home/murry/certs
+
+docker_tls_host: "{{ ansible_default_ipv4.address }}"
+docker_tls_san:
+  - "IP:{{ docker_tls_host }}"
+  - "IP:127.0.0.1"
+
+docker_tls_port: 2376
+
+docker_allowed_subnets:
+  - 192.168.1.0/24

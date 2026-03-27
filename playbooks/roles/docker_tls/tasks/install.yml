@@ -1,0 +1,14 @@
+- name: Install packages
+  apt:
+    name:
+      - docker.io
+      - openssl
+      - ufw
+    state: present
+    update_cache: true
+
+- name: Enable docker
+  systemd:
+    name: docker
+    enabled: true
+    state: started

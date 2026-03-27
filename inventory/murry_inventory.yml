@@ -20,6 +20,7 @@ all:
         unifi.kane.mk:
         stargate.kane.mk:
         netbird.kane.mk:
+        auth.kane.mk:
       vars:
         #ansible_python_interpreter: auto_silent
         ansible_python_interpreter: /usr/bin/python3
@@ -67,6 +68,20 @@ all:
         mkserver.kane.mk: 
         utilserver.kane.mk:
         cyborg.kane.mk:
+        auth.kane.mk:
+        raptor.kane.mk:
+      vars:
+        docker_allowed_subnets:
+          - 192.168.1.0/24
+          - 10.0.0.0/8
+        docker_tls_san:
+          - "IP:{{ ansible_default_ipv4.address }}"
+          - "IP:127.0.0.1"
+          - "DNS: {{ inventory_hostname}}"
+          - "DNS: {{ inventory_hostname}}.kane.mk"
+          - "DNS:192.168.1.215"
+          - "DNS:192.168.1.219"
+          - "DNS:192.168.1.4"
     unifi:
       hosts:
         unifi.kane.mk:

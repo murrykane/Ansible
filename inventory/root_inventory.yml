@@ -23,6 +23,7 @@ all:
         dns-primary.kane.mk:
         dns-secondary.kane.mk:
         netbird.kane.mk:
+        auth.kane.mk:
       vars:
         #ansible_python_interpreter: auto_silent
         ansible_python_interpreter: /usr/bin/python3
