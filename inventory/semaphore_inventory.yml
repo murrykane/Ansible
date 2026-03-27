@@ -69,8 +69,20 @@ all:
         mkserver.kane.mk: 
         utilserver.kane.mk:
         cyborg.kane.mk:
+        auth.kane.mk:
         raptor.kane.mk:
-        netbird.kane.mk:
+      vars:
+        docker_allowed_subnets:
+          - 192.168.1.0/24
+          - 10.0.0.0/8
+        docker_tls_san:
+          - "IP:{{ ansible_default_ipv4.address }}"
+          - "IP:127.0.0.1"
+          - "DNS: {{ inventory_hostname}}"
+          - "DNS: {{ inventory_hostname}}.kane.mk"
+          - "DNS:192.168.1.215"
+          - "DNS:192.168.1.219"
+          - "DNS:192.168.1.4"
     CheckMK:
       children:
         prox:
