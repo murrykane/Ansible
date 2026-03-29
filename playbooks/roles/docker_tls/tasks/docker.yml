@@ -1,13 +1,46 @@
-- name: Configure docker daemon
-  copy:
+# - name: Configure docker daemon
+#   copy:
+#     dest: /etc/docker/daemon.json
+#     content: |
+#       {
+#         "hosts": ["tcp://0.0.0.0:{{ docker_tls_port }}", "unix:///var/run/docker.sock"],
+#         "tls": true,
+#         "tlscacert": "{{ docker_tls_dir }}/ca.pem",
+#         "tlscert": "{{ docker_tls_dir }}/server-cert.pem",
+#         "tlskey": "{{ docker_tls_dir }}/server-key.pem",
+#         "tlsverify": true
+#       }
+#   notify: restart docker
+
+- name: Deploy Docker daemon config
+  template:
+    src: daemon.json  
+    #est: "{{ alloy_config_dir }}/{{ item | regex_replace('.j2$', '') }}"
     dest: /etc/docker/daemon.json
-    content: |
-      {
-        "hosts": ["tcp://0.0.0.0:{{ docker_tls_port }}", "unix:///var/run/docker.sock"],
-        "tls": true,
-        "tlscacert": "{{ docker_tls_dir }}/ca.pem",
-        "tlscert": "{{ docker_tls_dir }}/server-cert.pem",
-        "tlskey": "{{ docker_tls_dir }}/server-key.pem",
-        "tlsverify": true
-      }
+    owner: root
+    group: root
+    mode: '0644'
+  #notify: restart docker
+  when: ansible_facts.system == "Linux"
+
+- name: Create systemd override directory
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+    mode: '0700'  
+    owner: root
+    group: root
+  when: ansible_facts.system == "Linux"
+
+- name: Deploy Docker daemon config
+  template:
+    src: override.conf
+    #dest: "{{ alloy_config_dir }}/{{ item | regex_replace('.j2$', '') }}"
+    dest: /etc/systemd/system/docker.service.d/override.conf
+    owner: root
+    group: root
+    mode: '0644'
   notify: restart docker
+  when: ansible_facts.system == "Linux"
+
+    

@@ -6,6 +6,14 @@
     src: "{{ item }}"
   loop: "{{ docker_allowed_subnets }}"
 
+- name: Allow SSH Port for Firewall
+  ufw:
+    rule: allow
+    port: 22
+    proto: tcp
+    src: "{{ item }}"
+  loop: "{{ docker_allowed_subnets }}"
+
 - name: Enable UFW
   ufw:
     state: enabled
