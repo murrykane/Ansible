@@ -11,9 +11,9 @@
     rule: allow
     port: "22"
     proto: tcp
-    src: "{{ item }}"
-    direction: in
-  loop: "{{ docker_allowed_subnets }}"
+  #   src: "{{ item }}"
+  #   direction: in
+  # loop: "{{ docker_allowed_subnets }}"
 
 - name: Enable UFW
   ufw:
