@@ -40,7 +40,9 @@
     owner: root
     group: root
     mode: '0644'
-  notify: restart docker
+  notify:
+    - reload systemd
+    - restart docker
   when: ansible_facts.system == "Linux"
 
     
