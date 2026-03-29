@@ -18,6 +18,27 @@
 # -----------------------------
 # Check expiration
 # -----------------------------
+# - name: Get cert expiry
+#   command: openssl x509 -enddate -noout -in server-cert.pem
+#   args:
+#     chdir: "{{ docker_tls_dir }}"
+#   register: cert_expiry
+#   when: cert_stat.stat.exists
+#   changed_when: false
+
+# - name: Parse expiry date
+#   set_fact:
+#     cert_expiry_date: "{{ cert_expiry.stdout.split('=')[1] | to_datetime('%b %d %H:%M:%S %Y %Z') }}"
+#   when: cert_stat.stat.exists
+
+# - name: Determine if cert expired
+#   set_fact:
+#     cert_expired: "{{ (cert_expiry_date | default(0)) < (ansible_date_time.iso8601 | to_datetime) }}"
+#   when: cert_stat.stat.exists
+
+# -----------------------------
+# Check expiration
+# -----------------------------
 - name: Get cert expiry
   command: openssl x509 -enddate -noout -in server-cert.pem
   args:
@@ -26,16 +47,33 @@
   when: cert_stat.stat.exists
   changed_when: false
 
-- name: Parse expiry date
+- name: Extract expiry string
   set_fact:
-    cert_expiry_date: "{{ cert_expiry.stdout.split('=')[1] | to_datetime('%b %d %H:%M:%S %Y %Z') }}"
+    cert_expiry_raw: "{{ cert_expiry.stdout.split('=')[1] }}"
   when: cert_stat.stat.exists
 
-- name: Determine if cert expired
-  set_fact:
-    cert_expired: "{{ (cert_expiry_date | default(0)) < (ansible_date_time.iso8601 | to_datetime) }}"
+- name: Convert expiry to epoch
+  command: date -d "{{ cert_expiry_raw }}" +%s
+  register: cert_expiry_epoch
   when: cert_stat.stat.exists
+  changed_when: false
 
+- name: Get current epoch
+  command: date +%s
+  register: current_epoch
+  changed_when: false
+
+# - name: Determine if cert expired
+#   set_fact:
+#     cert_expired: "{{ (cert_expiry_epoch.stdout | int) < (current_epoch.stdout | int) }}"
+#   when: cert_stat.stat.exists
+
+- name: Determine if cert expiring soon (30 days)
+  set_fact:
+    cert_expired: >
+      {{ (cert_expiry_epoch.stdout | int) < ((current_epoch.stdout | int) + (30 * 86400)) }}
+  when: cert_stat.stat.exists
+  
 - name: Force regenerate if expired
   set_fact:
     regenerate_certs: true
