@@ -4,7 +4,8 @@
       - docker.io
       - openssl
       - ufw
-      - docker-compose 
+      #- docker-compose 
+      - docker-compose-plugin
     state: present
     update_cache: true
 
