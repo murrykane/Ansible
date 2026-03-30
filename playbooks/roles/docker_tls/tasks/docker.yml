@@ -56,4 +56,15 @@
   notify:
     - reload systemd
     - restart docker
-    
+
+- name: Ensure docker group exists
+  group:
+    name: docker
+    state: present
+
+- name: Add users to docker group
+  user:
+    name: "{{ item }}"
+    groups: docker
+    append: yes
+  loop: "{{ docker_users }}"
