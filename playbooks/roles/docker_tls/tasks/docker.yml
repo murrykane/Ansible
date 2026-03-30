@@ -32,17 +32,28 @@
     group: root
   when: ansible_facts.system == "Linux"
 
-- name: Deploy Docker daemon config
+# - name: Deploy Docker daemon config
+#   template:
+#     src: override.conf
+#     #dest: "{{ alloy_config_dir }}/{{ item | regex_replace('.j2$', '') }}"
+#     dest: /etc/systemd/system/docker.service.d/override.conf
+#     owner: root
+#     group: root
+#     mode: '0644'
+#   notify:
+#     - reload systemd
+#     - restart docker
+#   when: ansible_facts.system == "Linux"
+
+- name: Deploy docker systemd override (TLS)
   template:
-    src: override.conf
-    #dest: "{{ alloy_config_dir }}/{{ item | regex_replace('.j2$', '') }}"
+    src: override.conf.j2
     dest: /etc/systemd/system/docker.service.d/override.conf
+    mode: '0644'
     owner: root
     group: root
-    mode: '0644'
+  when: ansible_facts.system == "Linux"
   notify:
     - reload systemd
     - restart docker
-  when: ansible_facts.system == "Linux"
-
     

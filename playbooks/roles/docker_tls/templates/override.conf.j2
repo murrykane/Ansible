@@ -1,0 +1,12 @@
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd \
+  -H fd:// \
+  -H tcp://{{ docker_tls_host }}:{{ docker_tls_port }} \
+  --containerd=/run/containerd/containerd.sock \
+  --tlsverify \
+  --tlscacert={{ docker_tls_dir }}/ca.pem \
+  --tlscert={{ docker_tls_dir }}/server-cert.pem \
+  --tlskey={{ docker_tls_dir }}/server-key.pem
+
+Environment=DOCKER_MIN_API_VERSION=1.24
