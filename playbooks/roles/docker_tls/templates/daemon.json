@@ -1,6 +1,5 @@
 {
   "log-driver": "json-file",
-  "min-api-version": "1.24",
   "log-opts": {
     "max-size": "50m",
     "max-file": "10"
