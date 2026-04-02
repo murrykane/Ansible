@@ -364,7 +364,7 @@ records:
     name: traefik6-widget
     ip: auth.kane.mk
   - zone: local.kaneworld.org
-    name: traefik-metrics
+    name: traefik6-metrics
     ip: auth.kane.mk
   - zone: local.kaneworld.org
     name: traefik5-widget
