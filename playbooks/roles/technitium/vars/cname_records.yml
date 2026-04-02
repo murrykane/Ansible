@@ -375,3 +375,7 @@ records:
   - zone: local.kaneworld.org
     name: auth
     ip: mkserver.kane.mk
+  - zone: local.kaneworld.org
+    name: portainer-prod-6
+    ip: mkserver.kane.mk
+
