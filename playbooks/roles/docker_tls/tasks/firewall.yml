@@ -15,6 +15,12 @@
   #   direction: in
   # loop: "{{ docker_allowed_subnets }}"
 
+- name: Allow Alloy Port for Firewall
+  ufw:
+    rule: allow
+    port: "12345"
+    proto: tcp
+
 - name: Enable UFW
   ufw:
     state: enabled
