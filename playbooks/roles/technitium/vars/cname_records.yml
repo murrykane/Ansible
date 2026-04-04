@@ -372,3 +372,12 @@ records:
   - zone: local.kaneworld.org
     name: traefik5-metrics
     ip: kaneserver.kane.mk
+  - zone: local.kaneworld.org
+    name: traefik-prod-7
+    ip: murdognas.kane.mk
+  - zone: local.kaneworld.org
+    name: traefik7-widget
+    ip: kaneserver.kane.mk
+  - zone: local.kaneworld.org
+    name: traefik7-metrics
+    ip: kaneserver.kane.mk
