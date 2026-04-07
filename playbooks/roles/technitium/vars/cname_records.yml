@@ -136,8 +136,8 @@ records:
     name: portainer-prod-2
     ip: utilserver.kane.mk
   - zone: local.kaneworld.org
-    name: promtail-prod-2
-    ip: utilserver.kane.mk
+    name: promtail-prod-1
+    ip: murdognas.kane.mk
   - zone: local.kaneworld.org
     name: prowlarr-prod-1
     ip: utilserver.kane.mk
