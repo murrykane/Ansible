@@ -1,4 +1,4 @@
 ct_backup_path: /mnt/mini-backups/ct
 vm_backup_path: /mnt/mini-backups/vm
 ct_count: 1
-vm_count: 9
+vm_count: 8
