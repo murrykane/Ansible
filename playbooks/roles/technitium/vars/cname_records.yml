@@ -103,56 +103,11 @@ records:
     name: pbs
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: cadvisor-unraid
-    ip: mkserver.kane.mk
-  - zone: local.kaneworld.org
     name: slzb-06
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
     name: semaphore
     ip: mkserver.kane.mk
-  - zone: local.kaneworld.org
-    name: mini-portainer
-    ip: mkserver.kane.mk
-  - zone: local.kaneworld.org
-    name: traefik-prod-2
-    ip: utilserver.kane.mk
-  - zone: local.kaneworld.org
-    name: cadvisor-prod-2
-    ip: utilserver.kane.mk
-  - zone: local.kaneworld.org
-    name: fileflows-prod-1
-    ip: utilserver.kane.mk
-  - zone: local.kaneworld.org
-    name: jellyseerr-prod-1
-    ip: utilserver.kane.mk
-  - zone: local.kaneworld.org
-    name: krusader-prod-1
-    ip: utilserver.kane.mk
-  - zone: local.kaneworld.org
-    name: node_exporter-prod-2
-    ip: utilserver.kane.mk
-  - zone: local.kaneworld.org
-    name: portainer-prod-2
-    ip: utilserver.kane.mk
-  - zone: local.kaneworld.org
-    name: promtail-prod-1
-    ip: murdognas.kane.mk
-  - zone: local.kaneworld.org
-    name: prowlarr-prod-1
-    ip: utilserver.kane.mk
-  - zone: local.kaneworld.org
-    name: qbittorrent-prod-1
-    ip: utilserver.kane.mk
-  - zone: local.kaneworld.org
-    name: radarr-prod-1
-    ip: utilserver.kane.mk
-  - zone: local.kaneworld.org
-    name: recyclarr-prod-1
-    ip: utilserver.kane.mk
-  - zone: local.kaneworld.org
-    name: sonarr-prod-1
-    ip: utilserver.kane.mk
   - zone: local.kaneworld.org
     name: traefik-prod-3
     ip: cyborg.kane.mk
@@ -181,17 +136,11 @@ records:
     name: vaultwarden-prod-1
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: cadvisor-prod-1
-    ip: mkserver.kane.mk
-  - zone: local.kaneworld.org
     name: traefik3-widget
     ip: cyborg.kane.mk
   - zone: local.kaneworld.org
     name: traefik1-widget
     ip: mkserver.kane.mk
-  - zone: local.kaneworld.org
-    name: traefik2-widget
-    ip: utilserver.kane.mk
   - zone: local.kaneworld.org
     name: alertmanager
     ip: mkserver.kane.mk
@@ -205,14 +154,8 @@ records:
     name: loki-prod-4
     ip: cyborg.kane.mk
   - zone: local.kaneworld.org
-    name: huntarr-prod-1
-    ip: utilserver.kane.mk
-  - zone: local.kaneworld.org
     name: traefik1-metrics
     ip: mkserver.kane.mk
-  - zone: local.kaneworld.org
-    name: traefik2-metrics
-    ip: utilserver.kane.mk
   - zone: local.kaneworld.org
     name: traefik3-metrics
     ip: cyborg.kane.mk
@@ -310,9 +253,6 @@ records:
     name: dozzle-prod-1
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: dozzle-prod-2
-    ip: utilserver.kane.mk
-  - zone: local.kaneworld.org
     name: dozzle-prod-3
     ip: cyborg.kane.mk
   - zone: local.kaneworld.org
@@ -380,4 +320,7 @@ records:
     ip: kaneserver.kane.mk
   - zone: local.kaneworld.org
     name: traefik7-metrics
+    ip: kaneserver.kane.mk
+  - zone: local.kaneworld.org
+    name: fileflows
     ip: kaneserver.kane.mk
