@@ -94,9 +94,6 @@ records:
     name: minijellyfin
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: fileflow
-    ip: mkserver.kane.mk
-  - zone: local.kaneworld.org
     name: authentik
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
@@ -200,9 +197,6 @@ records:
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
     name: dns-tertiary
-    ip: mkserver.kane.mk
-  - zone: local.kaneworld.org
-    name: fileflows
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
     name: athena
