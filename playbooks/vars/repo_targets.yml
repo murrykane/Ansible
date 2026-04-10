@@ -2,8 +2,10 @@
 # Define repos and which servers each should be pushed to
 
 #nas_base_path: /share/CACHEDEV1_DATA/Public/Documents/SourceControl   # Path on QNAP NAS where repos live
-repo_base_path: /home/murry/repos                                     # Local path on cyborg where repos will be pulled from NAS before pushing to servers
-dest_base_path: /home/murry/repos                                     # Destination path on target servers
+#repo_base_path: /home/murry/repos                                     # Local path on cyborg where repos will be pulled from NAS before pushing to servers
+#dest_base_path: /home/murry/repos                                     # Destination path on target servers
+repo_base_path: /opt/repos                                     # Local path on cyborg where repos will be pulled from NAS before pushing to servers
+dest_base_path: /opt/repos                                     # Destination path on target servers
 
 repos:
   - name: ansible
