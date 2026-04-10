@@ -9,14 +9,14 @@ dest_base_path: /opt/repos                                     # Destination pat
 
 repos:
   - name: ansible
-    src: "{{ repo_base_path }}/Ansible"
+    src: "{{ repo_base_path }}/ansible"
     targets:
       - mkserver.kane.mk
       - raptor.kane.mk
       - stargate.kane.mk
 
   - name: homelab
-    src: "{{ repo_base_path }}/HomeLab"
+    src: "{{ repo_base_path }}/homeLab"
     targets:
       - mkserver.kane.mk
       - raptor.kane.mk

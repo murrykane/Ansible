@@ -18,6 +18,40 @@
         key_file: ~/.ssh/id_rsa
       loop: "{{ repos }}"
 
+- name: Setup repogroup on target servers
+  hosts: repo_servers
+  gather_facts: false
+  vars_files:
+    - vars/repo_targets.yml
+
+  tasks:
+    - name: Ensure repogroup exists
+      ansible.builtin.group:
+        name: repogroup
+        gid: 1004
+        state: present
+      become: true
+
+    - name: Add users to repogroup
+      ansible.builtin.user:
+        name: "{{ item }}"
+        groups: repogroup
+        append: true
+      loop:
+        - murry
+        - semaphore
+      become: true
+
+    - name: Ensure dest base directory exists with correct ownership
+      ansible.builtin.file:
+        path: "{{ dest_base_path }}"
+        state: directory
+        owner: root
+        group: repogroup
+        mode: '2775'
+      become: true
+
+
 - name: Push code repositories to target servers
   hosts: repo_servers
   gather_facts: false
