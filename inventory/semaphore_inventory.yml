@@ -21,7 +21,7 @@ all:
         cyborg.kane.mk:
         pbs.kane.mk:
         pbs-mini.kane.mk:
-        utilserver.kane.mk:
+        #utilserver.kane.mk:
         unifi.kane.mk:
         stargate.kane.mk:
         raptor.kane.mk:
@@ -72,10 +72,12 @@ all:
     docker:
       hosts:
         mkserver.kane.mk: 
-        utilserver.kane.mk:
+        #utilserver.kane.mk:
         cyborg.kane.mk:
         auth.kane.mk:
         raptor.kane.mk:
+        netbird.kane.mk:
+        murdognas.kane.mk:
       vars:
         docker_allowed_subnets:
           - 192.168.1.0/24

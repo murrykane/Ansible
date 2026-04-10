@@ -1,5 +1,6 @@
 - name: Deploy Docker TLS
-  hosts: docker
+  #hosts: docker
+  hosts: "{{ scriptinventory }}"
   become: true
 
   roles:

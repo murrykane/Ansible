@@ -16,7 +16,7 @@ all:
         cyborg.kane.mk:
         pbs.kane.mk:
         pbs-mini.kane.mk:
-        utilserver.kane.mk:
+        #utilserver.kane.mk:
         raptor.kane.mk:
         unifi.kane.mk:
         stargate.kane.mk:
@@ -69,8 +69,24 @@ all:
     docker:
       hosts:
         mkserver.kane.mk: 
-        utilserver.kane.mk:
+        #utilserver.kane.mk:
         cyborg.kane.mk:
+        auth.kane.mk:
+        raptor.kane.mk:
+        netbird.kane.mk:
+        murdognas.kane.mk:
+      vars:
+        docker_allowed_subnets:
+          - 192.168.1.0/24
+          - 10.0.0.0/8
+        docker_tls_san:
+          - "IP:{{ ansible_default_ipv4.address }}"
+          - "IP:127.0.0.1"
+          - "DNS: {{ inventory_hostname}}"
+          - "DNS: {{ inventory_hostname}}.kane.mk"
+          - "DNS:192.168.1.215"
+          - "DNS:192.168.1.219"
+          - "DNS:192.168.1.4"
     unifi:
       hosts:
         unifi.kane.mk:
