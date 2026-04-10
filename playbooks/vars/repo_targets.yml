@@ -16,7 +16,7 @@ repos:
       - stargate.kane.mk
 
   - name: homelab
-    src: "{{ repo_base_path }}/homeLab"
+    src: "{{ repo_base_path }}/homelab"
     targets:
       - mkserver.kane.mk
       - raptor.kane.mk
