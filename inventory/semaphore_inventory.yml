@@ -1,5 +1,10 @@
 all:
   children:
+    repo_servers:
+      hosts:
+        mkserver.kane.mk:
+        raptor.kane.mk:
+        stargate.kane.mk:
     pbs_servers:
       hosts:
         pbs.kane.mk:

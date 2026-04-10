@@ -1,0 +1,42 @@
+---
+- name: Pull repos from QNAP to cyborg
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - vars/repo_targets.yml
+
+  tasks:
+    - name: rsync each repo from NAS to local
+      ansible.builtin.synchronize:
+        src: "MurryKane@murdognas.kane.mk:{{ nas_base_path }}/{{ item.name }}/"
+        dest: "/home/murry/repos/{{ item.name }}"
+        mode: pull
+      loop: "{{ repos }}"
+
+- name: Push code repositories to target servers
+  hosts: repo_servers
+  gather_facts: false
+  vars_files:
+    - vars/repo_targets.yml
+
+  tasks:
+    - name: Ensure destination base directory exists
+      ansible.builtin.file:
+        path: "{{ dest_base_path }}"
+        state: directory
+        mode: '0755'
+      become: true
+
+    - name: Sync repos to servers that are listed as targets
+      ansible.builtin.synchronize:
+        src: "{{ item.src }}/"
+        dest: "{{ dest_base_path }}/{{ item.name }}"
+        delete: true
+        recursive: true
+        rsync_opts:
+          - "--exclude=.git"
+      loop: "{{ repos | selectattr('targets', 'contains', inventory_hostname) | list }}"
+      loop_control:
+        label: "{{ item.name }} → {{ inventory_hostname }}"
+      become: true
