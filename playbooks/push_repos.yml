@@ -1,5 +1,5 @@
 ---
-- name: Pull repos from QNAP to cyborg
+- name: Pull repos from GitHub to cyborg
   hosts: localhost
   connection: local
   gather_facts: false
@@ -7,11 +7,13 @@
     - vars/repo_targets.yml
 
   tasks:
-    - name: rsync each repo from NAS to local
-      ansible.builtin.synchronize:
-        src: "MurryKane@murdognas.kane.mk:{{ nas_base_path }}/{{ item.name }}/"
-        dest: "/home/murry/repos/{{ item.name }}"
-        mode: pull
+    - name: Clone or update repos on cyborg
+      ansible.builtin.git:
+        repo: "git@github.com:murrykane/{{ item.name }}.git"
+        dest: "{{ repo_base_path }}/{{ item.name }}"
+        update: true
+        version: main
+        force: true
       loop: "{{ repos }}"
 
 - name: Push code repositories to target servers
