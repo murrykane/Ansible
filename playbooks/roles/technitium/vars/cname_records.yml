@@ -318,3 +318,6 @@ records:
   - zone: local.kaneworld.org
     name: fileflows
     ip: kaneserver.kane.mk
+  - zone: local.kaneworld.org
+    name: n8n-prod-2
+    ip: raptor.kane.mk
