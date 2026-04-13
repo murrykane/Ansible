@@ -321,3 +321,6 @@ records:
   - zone: local.kaneworld.org
     name: n8n-prod-2
     ip: raptor.kane.mk
+  - zone: local.kaneworld.org
+    name: houndarr-prod-1
+    ip: kaneserver.kane.mk
