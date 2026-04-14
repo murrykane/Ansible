@@ -20,10 +20,10 @@
     #     key_file: ~/.ssh/id_rsa
     #   loop: "{{ repos }}"
 
-- name: Pull repos from QNAP to cyborg
-  hosts: localhost
-  connection: local
-  tasks:
+    # - name: Pull repos from QNAP to cyborg
+    #   hosts: localhost
+    #   connection: local
+    #   tasks:
 
     - name: Ensure rsync is installed on targets
       ansible.builtin.package:
