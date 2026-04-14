@@ -30,14 +30,14 @@
         perms: false
       loop: "{{ repos }}"
 
-    # Set owner, group, and permissions recursively on the web root  NO SUDO needed since running as root inside container
-    - name: Set permissions on Repos on cyborg
-      ansible.builtin.file:
-        path: "{{ repo_base_path }}"
-        owner: semaphore
-        group: repogroup
-        mode: '0755'
-        recurse: yes
+    # this group does not exist inside the semaphore container, skipping since I ignore group/owner above....
+    # - name: Set permissions on Repos on cyborg
+    #   ansible.builtin.file:
+    #     path: "{{ repo_base_path }}"
+    #     owner: semaphore
+    #     group: repogroup
+    #     mode: '0755'
+    #     recurse: yes
 
 
 - name: Setup repogroup on target servers
@@ -68,11 +68,11 @@
       ansible.builtin.file:
         path: "{{ dest_base_path }}"
         state: directory
-        owner: root
+        #owner: root
+        owner: semaphore
         group: repogroup
         mode: '2775'
       become: true
-
 
 - name: Push code repositories to target servers
   hosts: repo_servers
