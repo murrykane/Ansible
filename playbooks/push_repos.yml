@@ -36,6 +36,9 @@
         src: "root@kaneserver.kane.mk:{{ unraid_base_path }}/{{ item.name }}/"
         dest: "{{ repo_base_path }}/{{ item.name }}"
         mode: pull
+        group: false
+        owner: false
+        perms: false
       loop: "{{ repos }}"
 
     # Set owner, group, and permissions recursively on the web root
