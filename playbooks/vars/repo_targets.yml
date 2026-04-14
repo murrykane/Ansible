@@ -6,6 +6,7 @@
 #dest_base_path: /home/murry/repos                                     # Destination path on target servers
 repo_base_path: /opt/repos                                     # Local path on cyborg where repos will be pulled from NAS before pushing to servers
 dest_base_path: /opt/repos                                     # Destination path on target servers
+unraid_base_path: /mnt/user/data/sourcecontrol 
 
 repos:
   - name: ansible
