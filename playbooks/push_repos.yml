@@ -20,17 +20,6 @@
     #     key_file: ~/.ssh/id_rsa
     #   loop: "{{ repos }}"
 
-    # - name: Pull repos from QNAP to cyborg
-    #   hosts: localhost
-    #   connection: local
-    #   tasks:
-
-    # - name: Ensure rsync is installed on targets
-    #   ansible.builtin.package:
-    #     name: rsync
-    #     state: present
-    #   become: true
-
     - name: rsync each repo from NAS to local
       ansible.builtin.synchronize:
         src: "root@kaneserver.kane.mk:{{ unraid_base_path }}/{{ item.name }}/"
@@ -41,7 +30,7 @@
         perms: false
       loop: "{{ repos }}"
 
-    # Set owner, group, and permissions recursively on the web root
+    # Set owner, group, and permissions recursively on the web root  NO SUDO needed since running as root inside container
     - name: Set permissions on Repos on cyborg
       ansible.builtin.file:
         path: "{{ repo_base_path }}"
@@ -49,7 +38,7 @@
         group: repogroup
         mode: '0755'
         recurse: yes
-      become: true
+
 
 - name: Setup repogroup on target servers
   hosts: repo_servers
