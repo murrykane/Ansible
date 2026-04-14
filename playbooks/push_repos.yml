@@ -9,44 +9,44 @@
   tasks:
 
     # removing GIT download as I don't source control .env files and cf_token and still need these on other servers.....
-    # - name: Clone or update repos on cyborg
-    #   ansible.builtin.git:
-    #     repo: "git@github.com:murrykane/{{ item.name }}.git"
-    #     dest: "{{ repo_base_path }}/{{ item.name }}"
-    #     update: true
-    #     version: main
-    #     force: true
-    #     accept_hostkey: true
-    #     key_file: ~/.ssh/id_rsa
-    #   loop: "{{ repos }}"
+    - name: Clone or update repos on cyborg
+      ansible.builtin.git:
+        repo: "git@github.com:murrykane/{{ item.name }}.git"
+        dest: "{{ repo_base_path }}/{{ item.name }}"
+        update: true
+        version: main
+        force: true
+        accept_hostkey: true
+        key_file: ~/.ssh/id_rsa
+      loop: "{{ repos }}"
 
     # - name: Pull repos from QNAP to cyborg
     #   hosts: localhost
     #   connection: local
     #   tasks:
 
-    - name: Ensure rsync is installed on targets
-      ansible.builtin.package:
-        name: rsync
-        state: present
-      become: true
+    # - name: Ensure rsync is installed on targets
+    #   ansible.builtin.package:
+    #     name: rsync
+    #     state: present
+    #   become: true
 
-    - name: rsync each repo from NAS to local
-      ansible.builtin.synchronize:
-        src: "root@kaneserver.kane.mk:{{ unraid_base_path }}/{{ item.name }}/"
-        dest: "{{ repo_base_path }}/{{ item.name }}"
-        mode: pull
-      loop: "{{ repos }}"
+    # - name: rsync each repo from NAS to local
+    #   ansible.builtin.synchronize:
+    #     src: "root@kaneserver.kane.mk:{{ unraid_base_path }}/{{ item.name }}/"
+    #     dest: "{{ repo_base_path }}/{{ item.name }}"
+    #     mode: pull
+    #   loop: "{{ repos }}"
 
-    # Set owner, group, and permissions recursively on the web root
-    - name: Set permissions on Repos on cyborg
-      ansible.builtin.file:
-        path: "{{ repo_base_path }}"
-        owner: semaphore
-        group: repogroup
-        mode: '0755'
-        recurse: yes
-      become: true
+    # # Set owner, group, and permissions recursively on the web root
+    # - name: Set permissions on Repos on cyborg
+    #   ansible.builtin.file:
+    #     path: "{{ repo_base_path }}"
+    #     owner: semaphore
+    #     group: repogroup
+    #     mode: '0755'
+    #     recurse: yes
+    #   become: true
 
 - name: Setup repogroup on target servers
   hosts: repo_servers
