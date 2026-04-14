@@ -30,13 +30,23 @@
         name: rsync
         state: present
       become: true
-      
+
     - name: rsync each repo from NAS to local
       ansible.builtin.synchronize:
         src: "root@kaneserver.kane.mk:{{ unraid_base_path }}/{{ item.name }}/"
-        dest: "{{ dest_base_path }}/{{ item.name }}"
+        dest: "{{ repo_base_path }}/{{ item.name }}"
         mode: pull
       loop: "{{ repos }}"
+
+    # Set owner, group, and permissions recursively on the web root
+    - name: Set permissions on Repos on cyborg
+      ansible.builtin.file:
+        path: "{{ repo_base_path }}"
+        owner: semaphore
+        group: repogroup
+        mode: '0755'
+        recurse: yes
+      become: true
 
 - name: Setup repogroup on target servers
   hosts: repo_servers
