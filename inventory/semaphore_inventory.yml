@@ -5,6 +5,7 @@ all:
         mkserver.kane.mk:
         raptor.kane.mk:
         stargate.kane.mk:
+        auth.kane.mk:
     pbs_servers:
       hosts:
         pbs.kane.mk:
