@@ -96,6 +96,8 @@
         recursive: true
         rsync_opts:
           - "--exclude=.git"
+          - "--exclude=.gitignore"
+          - "--exclude=README.md"
       loop: "{{ repos | selectattr('targets', 'contains', inventory_hostname) | list }}"
       loop_control:
         label: "{{ item.name }} → {{ inventory_hostname }}"
