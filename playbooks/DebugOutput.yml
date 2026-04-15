@@ -8,3 +8,4 @@
       ansible.builtin.debug:
         msg: "{{ lookup('env', 'USER') }}"
       when: ansible_facts['os_family'] != 'Windows'
+      become: true
