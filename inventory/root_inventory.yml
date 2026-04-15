@@ -11,8 +11,8 @@ all:
     ubuntu:
       hosts:
         mkserver.kane.mk:
-        authentik.kane.mk:
-          ansible_python_interpreter: /usr/bin/python3.11
+        #authentik.kane.mk:
+        #  ansible_python_interpreter: /usr/bin/python3.11
         cyborg.kane.mk:
         pbs.kane.mk:
         pbs-mini.kane.mk:
