@@ -15,6 +15,7 @@ repos:
       - mkserver.kane.mk
       - raptor.kane.mk
       - stargate.kane.mk
+      - auth.kane.mk
 
   - name: homelab
     src: "{{ repo_base_path }}/homelab"
@@ -22,6 +23,7 @@ repos:
       - mkserver.kane.mk
       - raptor.kane.mk
       - stargate.kane.mk
+      - auth.kane.mk
 
   - name: scripts
     src: "{{ repo_base_path }}/scripts"
@@ -29,6 +31,7 @@ repos:
       - mkserver.kane.mk
       - raptor.kane.mk
       - stargate.kane.mk
+      - auth.kane.mk
 
   - name: terraform
     src: "{{ repo_base_path }}/terraform"
@@ -36,4 +39,5 @@ repos:
       - mkserver.kane.mk
       - raptor.kane.mk
       - stargate.kane.mk
+      - auth.kane.mk
 
