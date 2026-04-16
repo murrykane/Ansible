@@ -51,7 +51,7 @@ all:
         ansible_user: ansible
         ansible_password: Skippy10!
         ansible_connection: winrm
-        ansible_port: 
+        ansible_port: 5985  # 5986 for HTTPS
         ansible_winrm_transport: basic
         ansible_winrm_server_cert_validation: ignore
         ansible_python_interpreter: C:\Users\MurDog\AppData\Local\Programs\Python\python312
@@ -72,19 +72,14 @@ all:
         ansible_become_user: admin
         ansible_python_interpreter: /share/CACHEDEV1_DATA/.qpkg/Python3/opt/python3/bin/python3  
     docker:
+      children:
+        qnap:
       hosts:
         mkserver.kane.mk: 
         cyborg.kane.mk:
         auth.kane.mk:
         raptor.kane.mk:
-        #netbird.kane.mk:
-        murdognas.kane.mk:
-          ansible_port: 8622
-          ansible_user: MurryKane
-          ansible_become: true
-          ansible_become_method: sudo
-          ansible_become_user: admin
-          ansible_python_interpreter: /share/CACHEDEV1_DATA/.qpkg/Python3/opt/python3/bin/python3  
+        #netbird.kane.mk: 
       vars:
         docker_allowed_subnets:
           - 192.168.1.0/24
@@ -92,8 +87,8 @@ all:
         docker_tls_san:
           - "IP:{{ ansible_default_ipv4.address }}"
           - "IP:127.0.0.1"
-          - "DNS: {{ inventory_hostname}}"
-          - "DNS: {{ inventory_hostname}}.kane.mk"
+          - "DNS: {{ inventory_hostname }}"
+          - "DNS: {{ inventory_hostname }}.kane.mk"
           - "DNS:192.168.1.215"
           - "DNS:192.168.1.219"
           - "DNS:192.168.1.4"
