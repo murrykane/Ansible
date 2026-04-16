@@ -70,7 +70,7 @@ all:
         ansible_become_user: admin
         ansible_python_interpreter: /share/CACHEDEV1_DATA/.qpkg/Python3/opt/python3/bin/python3  
         ansible_env:
-          PATH: "/share/CACHEDEV1_DATA/.qpkg/container-station/bin:/usr/local/bin:/usr/bin:/bin"
+          PATH: "/share/CACHEDEV1_DATA/.qpkg/Portainer:/share/CACHEDEV1_DATA/.qpkg/container-station/bin:/usr/local/bin:/usr/bin:/bin"
     docker:
       hosts:
         mkserver.kane.mk: 
