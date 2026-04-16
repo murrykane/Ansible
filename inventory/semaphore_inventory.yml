@@ -77,7 +77,6 @@ all:
         raptor.kane.mk:
         #netbird.kane.mk:
         murdognas.kane.mk:
-        vars:
           ansible_port: 8622
           ansible_user: MurryKane
           ansible_become_user: admin
