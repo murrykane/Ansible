@@ -49,7 +49,7 @@ all:
         ansible_become_method: sudo
     windows:
       hosts:
-        murdogpc.kane.mk: 
+        murrypc.kane.mk: 
       vars:
         ansible_user: ansible
         ansible_password: Skippy10!
@@ -57,7 +57,7 @@ all:
         ansible_port: 5986
         ansible_winrm_transport: basic
         ansible_winrm_server_cert_validation: ignore
-        ansible_python_interpreter: C:\Users\MurDog\AppData\Local\Programs\Python\python312
+        ansible_python_interpreter: C:\Users\murry\AppData\Local\Python\bin
     unraid:
       hosts:
         kaneserver.kane.mk: 
