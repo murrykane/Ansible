@@ -86,7 +86,7 @@
     - name: Find files to remove 
       ansible.builtin.find: 
         paths: "{{ repo_base_path }}" 
-        patterns: ['.git', '.gitignore']
+        patterns: '.git,.gitignore'
         recurse: yes
       register: vct_files
 
