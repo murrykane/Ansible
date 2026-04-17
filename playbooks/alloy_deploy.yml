@@ -1,6 +1,6 @@
 ---
 - name: Deploy Alloy to Servers
-  hosts: docker:unifi:lxc:prox:ubuntu:pbs_servers
+  hosts: unifi:lxc:prox:ubuntu:pbs_servers
   become: true
   tasks:
     - name: Deploy Alloy
