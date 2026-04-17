@@ -30,7 +30,17 @@
         perms: false
       loop: "{{ repos }}"
 
-    # this group does not exist inside the semaphore container, skipping since I ignore group/owner above....
+# set permissions on synranized repo on cyborg before pushing to other servers since the synchronize module does not preserve permissions 
+# when pulling from a remote source (rsync -a does not work with remote sources)
+- name: Pull repos from GitHub to cyborg
+  hosts: cyborg.kane.mk    # will change permissions before pushing to all other servers 
+  gather_facts: false
+  become: true
+  vars_files:
+    - vars/repo_targets.yml
+
+  tasks:
+
     # - name: Set permissions on Repos on cyborg
     #   ansible.builtin.file:
     #     path: "{{ repo_base_path }}"
@@ -38,9 +48,42 @@
     #     group: repogroup
     #     mode: '0755'
     #     recurse: yes
+    #   become: true
+
+    - name: Find all directories
+      ansible.builtin.find:
+        paths: "{{ repo_base_path }}"
+        file_type: directory
+        recurse: yes
+      register: found_directories
+
+    - name: Find all files
+      ansible.builtin.find:
+        paths: "{{ repo_base_path }}"
+        file_type: file
+        recurse: yes
+      register: found_files
+
+    - name: Set directory permissions to 0755
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        owner: semaphore
+        group: repogroup
+        mode: '0755'
+      loop: "{{ found_directories.files }}"
+
+    - name: Set file permissions to 0644
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        owner: semaphore
+        group: repogroup
+        mode: '0644'
+      loop: "{{ found_files.files }}"
 
 
-- name: Setup repogroup on target servers
+
+# setup repogroup and permissions on target servers before pushing repos
+- name: Setup repo group and permissions on target servers
   hosts: repo_servers
   gather_facts: false
   vars_files:
@@ -74,6 +117,7 @@
         mode: '2775'
       become: true
 
+# Push the code
 - name: Push code repositories to target servers
   hosts: repo_servers
   gather_facts: false
