@@ -94,7 +94,7 @@
       ansible.builtin.file:
         path: "{{ item.path }}"
         state: absent
-        loop: "{{ vct_files.files }}"
+      loop: "{{ vct_files.files }}"
 
     # Use native chmod for bulk permission changes (much faster on large trees)
     - name: Set directory permissions recursively
