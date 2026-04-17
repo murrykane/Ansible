@@ -1,0 +1,82 @@
+---
+- name: Disable and remove IPMI services
+  hosts: "${{ scriptinventory }}"
+  become: true
+  gather_facts: true
+
+  vars:
+    ipmi_services:
+      - openipmi
+      - ipmitool
+
+    ipmi_packages:
+      - OpenIPMI
+      - OpenIPMI-libs
+      - ipmitool
+
+  tasks:
+
+    - name: Stop IPMI services if running
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: stopped
+      loop: "{{ ipmi_services }}"
+      ignore_errors: true
+      register: service_stop
+
+    - name: Disable IPMI services from starting on boot
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: false
+      loop: "{{ ipmi_services }}"
+      ignore_errors: true
+
+    - name: Mask IPMI services to prevent accidental re-enablement
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        masked: true
+      loop: "{{ ipmi_services }}"
+      ignore_errors: true
+
+    - name: Remove IPMI packages (RedHat/CentOS/Rocky)
+      ansible.builtin.yum:
+        name: "{{ ipmi_packages }}"
+        state: absent
+      when: ansible_os_family == "RedHat"
+
+    - name: Remove IPMI packages (Debian/Ubuntu)
+      ansible.builtin.apt:
+        name:
+          - openipmi
+          - ipmitool
+        state: absent
+        purge: true
+        autoremove: true
+      when: ansible_os_family == "Debian"
+
+    - name: Remove IPMI packages (SUSE)
+      community.general.zypper:
+        name:
+          - OpenIPMI
+          - ipmitool
+        state: absent
+      when: ansible_os_family == "Suse"
+
+    - name: Reload systemd daemon after package removal
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Verify services are no longer active
+      ansible.builtin.command:
+        cmd: "systemctl is-active {{ item }}"
+      loop: "{{ ipmi_services }}"
+      register: service_status
+      changed_when: false
+      failed_when: false
+
+    - name: Report service status
+      ansible.builtin.debug:
+        msg: "Service '{{ item.item }}' status: {{ item.stdout | default('not found') }}"
+      loop: "{{ service_status.results }}"
+      loop_control:
+        label: "{{ item.item }}"
