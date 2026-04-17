@@ -87,7 +87,7 @@
       ansible.builtin.find: 
         paths: "{{ repo_base_path }}" 
         patterns: ['.git', '.gitignore']
-        rescurse: yes
+        recurse: yes
       register: vct_files
 
     - name: Remove unwanted files
