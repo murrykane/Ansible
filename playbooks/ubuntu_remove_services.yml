@@ -24,14 +24,6 @@
       ignore_errors: true
       register: service_stop
 
-    - name: Stop IPMI services if running
-      ansible.builtin.systemd:
-        name: "{{ item }}"
-        state: reset-failed
-      loop: "{{ ipmi_services }}"
-      ignore_errors: true
-      register: service_stop
-
     - name: Disable IPMI services from starting on boot
       ansible.builtin.systemd:
         name: "{{ item }}"
@@ -46,6 +38,13 @@
       loop: "{{ ipmi_services }}"
       ignore_errors: true
 
+    - name: Reset failed state for IPMI services
+      ansible.builtin.command:
+        cmd: "systemctl reset-failed {{ item }}"
+      loop: "{{ ipmi_services }}"
+      ignore_errors: true
+      changed_when: false
+      
     - name: Remove IPMI packages (RedHat/CentOS/Rocky)
       ansible.builtin.yum:
         name: "{{ ipmi_packages }}"
