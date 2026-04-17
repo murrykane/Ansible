@@ -1,6 +1,6 @@
 ---
 - name: Disable and remove IPMI services
-  hosts: "${{ scriptinventory }}"
+  hosts: " {{ scriptinventory }}" 
   become: true
   gather_facts: true
 
