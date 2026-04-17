@@ -50,37 +50,69 @@
     #     recurse: yes
     #   become: true
 
-    - name: Find all directories
-      ansible.builtin.find:
-        paths: "{{ repo_base_path }}"
-        file_type: directory
-        recurse: yes
-      register: found_directories
+    #####   SLOWWWWWWWWWWWWWWWW ###########
+    # - name: Find all directories
+    #   ansible.builtin.find:
+    #     paths: "{{ repo_base_path }}"
+    #     file_type: directory
+    #     recurse: yes
+    #   register: found_directories
 
-    - name: Find all files
-      ansible.builtin.find:
-        paths: "{{ repo_base_path }}"
-        file_type: file
-        recurse: yes
-      register: found_files
+    # - name: Find all files
+    #   ansible.builtin.find:
+    #     paths: "{{ repo_base_path }}"
+    #     file_type: file
+    #     recurse: yes
+    #   register: found_files
 
-    - name: Set directory permissions to 0755
+    # - name: Set directory permissions to 0755
+    #   ansible.builtin.file:
+    #     path: "{{ item.path }}"
+    #     owner: semaphore
+    #     group: repogroup
+    #     mode: '0755'
+    #   loop: "{{ found_directories.files }}"
+
+    # - name: Set file permissions to 0644
+    #   ansible.builtin.file:
+    #     path: "{{ item.path }}"
+    #     owner: semaphore
+    #     group: repogroup
+    #     mode: '0644'
+    #   loop: "{{ found_files.files }}"
+    #####  SLOW end ###############
+
+    # lets remove .git and .gitignore files and set permissions on the rest of the tree using native find and chmod since the ansible file module is very slow on large trees
+    - name: Find files to remove 
+      ansible.builtin.find: 
+        paths: "{{ repo_base_path }}" 
+        patterns: ['.git', '.gitignore']
+        rescurse: yes
+      register: vct_files
+
+    - name: Remove unwanted files
       ansible.builtin.file:
         path: "{{ item.path }}"
-        owner: semaphore
-        group: repogroup
-        mode: '0755'
-      loop: "{{ found_directories.files }}"
+        state: absent
+        loop: "{{ vct_files.files }}"
 
-    - name: Set file permissions to 0644
+    # Use native chmod for bulk permission changes (much faster on large trees)
+    - name: Set directory permissions recursively
+      ansible.builtin.command:
+        cmd: find "{{ repo_base_path }}" -type d -exec chmod 0755 {} +
+      changed_when: true
+
+    - name: Set file permissions recursively
+      ansible.builtin.command:
+        cmd: find "{{ repo_base_path }}" -type f -exec chmod 0644 {} +
+      changed_when: true
+
+    - name: Set ownership recursively
       ansible.builtin.file:
-        path: "{{ item.path }}"
+        path: "{{ repo_base_path }}"
         owner: semaphore
         group: repogroup
-        mode: '0644'
-      loop: "{{ found_files.files }}"
-
-
+        recurse: yes
 
 # setup repogroup and permissions on target servers before pushing repos
 - name: Setup repo group and permissions on target servers
