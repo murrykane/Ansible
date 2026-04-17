@@ -86,7 +86,12 @@
     - name: Find files to remove 
       ansible.builtin.find: 
         paths: "{{ repo_base_path }}" 
-        patterns: '.*/.git,.*/.gitignore'
+        patterns: 
+          - ".git"
+          - ".gitignore"
+          - "README.md"
+        file_type: any
+        hidden: true
         recurse: yes
         use_regex: true
       ignore_errors: true
