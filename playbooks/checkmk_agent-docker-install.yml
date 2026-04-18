@@ -143,8 +143,8 @@
     checkmk_docker_node_tag_id: "true"
     # Hosts to skip for apt/plugin tasks (no apt, non-standard docker runtimes)
     checkmk_skip_apt_hosts:
-      - unraid.kane.mk
       - murdognas.kane.mk
+      - kaneserver.kane.mk
 
   tasks:
     # -------------------------------------------------------------------------
