@@ -141,6 +141,10 @@
     # Adjust the tag group / tag ID to match your Checkmk configuration.
     checkmk_docker_node_tag_group: docker_node
     checkmk_docker_node_tag_id: "true"
+    # Hosts to skip for apt/plugin tasks (no apt, non-standard docker runtimes)
+    checkmk_skip_apt_hosts:
+      - unraid.kane.mk
+      - murdognas.kane.mk
 
   tasks:
     # -------------------------------------------------------------------------
@@ -161,6 +165,7 @@
           - python3-docker
         state: present
         update_cache: yes
+      when: inventory_hostname not in checkmk_skip_apt_hosts
       # python3-docker is the distro-packaged docker SDK — no pip/PEP-668 issues.
       # If python3-docker is not available in your apt repos (older Ubuntu),
       # remove it from this list and the pip fallback task below will cover it.
@@ -192,6 +197,7 @@
         group: root
         mode: '0644'
         validate_certs: false
+      when: inventory_hostname not in checkmk_skip_apt_hosts
       # validate_certs: false handles self-signed certs on internal Checkmk servers.
       # Remove this line if your server uses a trusted certificate.
 
@@ -210,7 +216,8 @@
         owner: root
         group: root
         mode: '0755'
- 
+      when: inventory_hostname not in checkmk_skip_apt_hosts
+
     - name: Download mk_docker.py agent plugin from Checkmk server
       become: true
       ansible.builtin.get_url:
@@ -220,6 +227,7 @@
         group: root
         mode: '0755'
         validate_certs: false
+      when: inventory_hostname not in checkmk_skip_apt_hosts
       # validate_certs: false handles self-signed certs on internal Checkmk servers.
       # Remove this line if your server uses a trusted certificate.
 

@@ -4,13 +4,23 @@
     port: "{{ docker_tls_port }}"
     proto: tcp
     src: "{{ item }}"
+    comment: Allow Docker TLS Port
   loop: "{{ docker_allowed_subnets }}"
+
+- name: Allow CheckMK port
+  ufw:
+    rule: allow
+    port: "6556"
+    proto: tcp
+    src: 192.168.1.0/24
+    comment: Allow CheckMK discovery Port
 
 - name: Allow SSH Port for Firewall
   ufw:
     rule: allow
     port: "22"
     proto: tcp
+    comment: Allow SSH Port for Firewall
   #   src: "{{ item }}"
   #   direction: in
   # loop: "{{ docker_allowed_subnets }}"
@@ -20,6 +30,7 @@
     rule: allow
     port: "12345"
     proto: tcp
+    comment: Allow Alloy Port for Firewall
 
 - name: Enable UFW
   ufw:

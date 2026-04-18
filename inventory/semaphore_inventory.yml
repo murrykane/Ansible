@@ -74,6 +74,7 @@ all:
     docker:
       children:
         qnap:
+        unraid:
       hosts:
         mkserver.kane.mk: 
         cyborg.kane.mk:
