@@ -127,7 +127,7 @@
 # =============================================================================
 - name: "Configure Docker monitoring in Checkmk (CRE - manual piggyback)"
   hosts: docker
-  become: true
+  #become: true
   vars:
     checkmk_agent_server: checkmk.local.kaneworld.org
     checkmk_agent_site: KaneCo
@@ -135,7 +135,7 @@
     # checkmk_pass: i4eKFBOODdZ&KNuS
     # Folder in Checkmk where docker container hosts will be created.
     # Create this folder manually in Checkmk UI first, or adjust to an existing path.
-    checkmk_docker_folder: docker
+    checkmk_docker_folder: Docker
     # Tag group and tag ID applied to the Docker node host itself.
     # Assumes a custom tag group "docker_node" with tag ID "true" exists in Checkmk.
     # Adjust the tag group / tag ID to match your Checkmk configuration.
@@ -154,6 +154,7 @@
     #         Ubuntu 24.04+, falling back to pip for older distros.
     # -------------------------------------------------------------------------
     - name: Ensure python3-pip and python3-docker are installed via apt
+      become: true
       apt:
         name:
           - python3-pip
@@ -170,6 +171,7 @@
     #    to the 12-char short container ID which is hard to map to a host.
     # -------------------------------------------------------------------------
     - name: Deploy mk_docker.cfg to use container name as piggyback host name
+      become: true
       ansible.builtin.copy:
         dest: /etc/check_mk/docker.cfg
         owner: root
@@ -186,6 +188,7 @@
     #    The plugin ships with the Checkmk agent; we symlink/copy it into place.
     # -------------------------------------------------------------------------
     - name: Ensure mk_docker.py agent plugin is present
+      become: true
       ansible.builtin.copy:
         src: /usr/lib/check_mk_agent/plugins/mk_docker.py
         dest: /usr/lib/check_mk_agent/plugins/mk_docker.py
@@ -337,4 +340,3 @@
         sites:
           - "{{ site }}"
       run_once: true
-      delegate_to: localhost
