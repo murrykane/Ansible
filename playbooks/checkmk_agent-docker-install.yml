@@ -276,6 +276,9 @@
     #    (CONTAINER_ID = "name"), which in turn must match the piggyback directory
     #    created under ~/tmp/check_mk/piggyback/<container_name>/ on the CMK server.
     # -------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
+    # 7. Register each container as a host in Checkmk (CRE manual piggyback)
+    # -------------------------------------------------------------------------
     - name: "Create Checkmk host for each Docker container (piggyback, no IP, no agent)"
       checkmk.general.host:
         server_url: "https://{{ checkmk_agent_server }}"
@@ -285,11 +288,8 @@
         name: "{{ item }}"
         folder: "/{{ checkmk_docker_folder }}"
         attributes:
-          # No IP — containers are not directly reachable
-          ip_address_family: "no-ip"
-          # No agent — data arrives via piggyback from the docker node
+          tag_address_family: "no-ip"
           tag_agent: "no-agent"
-          # Parent = docker node, so Checkmk knows where piggyback data comes from
           parents:
             - "{{ ansible_hostname }}"
         state: "present"
