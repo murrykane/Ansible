@@ -1,0 +1,312 @@
+---
+- name: "Install Checkmk agent on all hosts"
+  hosts: "{{ scriptinventory }}"
+  become: true
+  vars:
+    checkmk_version: "2.2.0p8"
+    checkmk_edition: "cre"
+    checkmk_os: "ubuntu-24.04"
+    checkmk_arch: "amd64"
+    #checkmk_url: "https://checkmk.local.kaneworld.org/KaneCo/check_mk/agents/check-mk-agent_2.4.0p25-1_all.deb"
+    checkmk_deb_file: "/tmp/checkmk-${checkmk_version}.deb"
+    checkmk_folder: ubuntu
+    checkmk_agent_version: 2.4.0p15
+    checkmk_agent_server: checkmk.local.kaneworld.org
+    checkmk_agent_registration_server: checkmk.local.kaneworld.org:8005
+    # checkmk_user: murrykane
+    # checkmk_pass: i4eKFBOODdZ&KNuS
+    checkmk_agent_site: KaneCo
+
+  tasks:
+    - name: Ensure dependencies are installed
+      apt:
+        name:
+          - wget
+          - gdebi-core
+        update_cache: yes
+
+    - name: Download Checkmk .deb package
+      get_url:
+        url: "{{ checkmk_url }}"
+        dest: "{{ checkmk_deb_file }}"
+        mode: '0644'
+
+    - name: Install Checkmk .deb package
+      apt:
+        deb: "{{ checkmk_deb_file }}"
+
+    - name: Clean up downloaded .deb file
+      file:
+        path: "{{ checkmk_deb_file }}"
+        state: absent
+
+    - name: Ensure systemd service is enabled
+      systemd:
+        name: check-mk-agent-async
+        enabled: true
+        state: started
+
+    - name: "Create a host with IP address."
+      checkmk.general.host:
+        server_url: "https://{{ checkmk_agent_server }}"
+        site: "{{ checkmk_agent_site }}"
+        automation_user: "{{ checkmk_user }}"
+        automation_secret: "{{ checkmk_pass }}"
+        name: "{{ ansible_hostname }}"
+        folder: "{{ checkmk_folder }}"
+        state: "present"
+
+    - name: include vars
+      ansible.builtin.include_vars: vars/checkmk_secrets.yml
+
+    - name: "Start activation on a specific site"
+      checkmk.general.activation:
+        server_url: "{{ server_url }}"
+        site: "{{ site }}"
+        automation_user: "{{ automation_user }}"
+        automation_secret: "{{ automation_secret }}"
+        force_foreign_changes: true
+        sites:
+          - "{{ site }}"
+
+    - name: "Add newly discovered services, update labels and remove vanished services on host."
+      checkmk.general.discovery:
+        server_url: "{{ server_url }}"
+        site: "{{ site }}"
+        automation_user: "{{ automation_user }}"
+        automation_secret: "{{ automation_secret }}"
+        host_name: "{{ ansible_hostname }}"
+        state: "fix_all"
+
+    - name: "Start activation on a specific site"
+      checkmk.general.activation:
+        server_url: "{{ server_url }}"
+        site: "{{ site }}"
+        automation_user: "{{ automation_user }}"
+        automation_secret: "{{ automation_secret }}"
+        force_foreign_changes: true
+        sites:
+          - "{{ site }}"
+
+    - name: Register Checkmk agent with server
+      ansible.builtin.command: >
+        cmk-agent-ctl register
+        --server "{{ checkmk_agent_registration_server }}"
+        --site "{{ site }}"
+        --user "{{ automation_user }}"
+        --password "{{ automation_secret }}"
+        --hostname "{{ ansible_hostname }}"
+        --trust-cert
+
+    - name: "Add newly discovered services, update labels and remove vanished services on host."
+      checkmk.general.discovery:
+        server_url: "{{ server_url }}"
+        site: "{{ site }}"
+        automation_user: "{{ automation_user }}"
+        automation_secret: "{{ automation_secret }}"
+        host_name: "{{ ansible_hostname }}"
+        state: "fix_all"
+
+    - name: "Start activation on a specific site"
+      checkmk.general.activation:
+        server_url: "{{ server_url }}"
+        site: "{{ site }}"
+        automation_user: "{{ automation_user }}"
+        automation_secret: "{{ automation_secret }}"
+        force_foreign_changes: true
+        sites:
+          - "{{ site }}"
+
+
+# =============================================================================
+# DOCKER HOST SETUP
+# Runs only on hosts in the [docker_hosts] inventory group.
+# DCD (Dynamic Configuration Daemon) is a commercial-edition-only feature and
+# is NOT available in CRE (Raw Edition). Containers are therefore registered
+# as hosts manually via the Checkmk REST API, using piggyback with no agent.
+# =============================================================================
+- name: "Configure Docker monitoring in Checkmk (CRE - manual piggyback)"
+  hosts: docker
+  become: true
+  vars:
+    checkmk_agent_server: checkmk.local.kaneworld.org
+    checkmk_agent_site: KaneCo
+    # checkmk_user: murrykane
+    # checkmk_pass: i4eKFBOODdZ&KNuS
+    # Folder in Checkmk where docker container hosts will be created.
+    # Create this folder manually in Checkmk UI first, or adjust to an existing path.
+    checkmk_docker_folder: docker
+    # Tag group and tag ID applied to the Docker node host itself.
+    # Assumes a custom tag group "docker_node" with tag ID "true" exists in Checkmk.
+    # Adjust the tag group / tag ID to match your Checkmk configuration.
+    checkmk_docker_node_tag_group: docker_node
+    checkmk_docker_node_tag_id: "true"
+
+  tasks:
+    # -------------------------------------------------------------------------
+    # 1. Install the Python docker SDK so mk_docker.py can query the daemon
+    # -------------------------------------------------------------------------
+    - name: Install Python docker SDK (required by mk_docker.py plugin)
+      ansible.builtin.pip:
+        name: docker
+        executable: pip3
+        extra_args: "--break-system-packages"
+      # 'break-system-packages' is required on Ubuntu 24.04+ (PEP 668)
+
+    # -------------------------------------------------------------------------
+    # 2. Deploy mk_docker.cfg — tells the plugin to use container NAME not ID
+    #    as the piggyback host name. Without this the piggyback name defaults
+    #    to the 12-char short container ID which is hard to map to a host.
+    # -------------------------------------------------------------------------
+    - name: Deploy mk_docker.cfg to use container name as piggyback host name
+      ansible.builtin.copy:
+        dest: /etc/check_mk/docker.cfg
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          # Checkmk Docker plugin configuration
+          # Use the container *name* as the piggyback host name instead of the
+          # default 12-character short container ID.
+          CONTAINER_ID = "name"
+
+    # -------------------------------------------------------------------------
+    # 3. Deploy mk_docker.py plugin to the agent plugin directory
+    #    The plugin ships with the Checkmk agent; we symlink/copy it into place.
+    # -------------------------------------------------------------------------
+    - name: Ensure mk_docker.py agent plugin is present
+      ansible.builtin.copy:
+        src: /usr/lib/check_mk_agent/plugins/mk_docker.py
+        dest: /usr/lib/check_mk_agent/plugins/mk_docker.py
+        remote_src: true
+        owner: root
+        group: root
+        mode: '0755'
+      # If the source path differs on your distro, adjust accordingly.
+      # The plugin is also downloadable from:
+      # https://<checkmk_server>/<site>/check_mk/agents/plugins/mk_docker.py
+
+    # -------------------------------------------------------------------------
+    # 4. Add a tag to the Docker *node* host in Checkmk so it is easily
+    #    identifiable as a Docker host (explicit_host_conf tag).
+    #    Requires a custom host tag group to exist in Checkmk first.
+    # -------------------------------------------------------------------------
+    - name: include vars
+      ansible.builtin.include_vars: vars/checkmk_secrets.yml
+
+    - name: "Tag docker node host in Checkmk"
+      checkmk.general.host:
+        server_url: "https://{{ checkmk_agent_server }}"
+        site: "{{ checkmk_agent_site }}"
+        automation_user: "{{ checkmk_user }}"
+        automation_secret: "{{ checkmk_pass }}"
+        name: "{{ ansible_hostname }}"
+        attributes:
+          tag_{{ checkmk_docker_node_tag_group }}: "{{ checkmk_docker_node_tag_id }}"
+        state: "present"
+
+    # -------------------------------------------------------------------------
+    # 5. Ensure the /docker folder exists in Checkmk
+    # -------------------------------------------------------------------------
+    - name: "Ensure docker folder exists in Checkmk"
+      checkmk.general.folder:
+        server_url: "https://{{ checkmk_agent_server }}"
+        site: "{{ checkmk_agent_site }}"
+        automation_user: "{{ checkmk_user }}"
+        automation_secret: "{{ checkmk_pass }}"
+        path: "/{{ checkmk_docker_folder }}"
+        title: "Docker Containers"
+        state: present
+
+    # -------------------------------------------------------------------------
+    # 6. Gather running container names from the Docker node
+    # -------------------------------------------------------------------------
+    - name: Get list of running Docker container names
+      ansible.builtin.command: docker ps --format "{{ '{{' }}.Names{{ '}}' }}"
+      register: docker_container_names
+      changed_when: false
+
+    # -------------------------------------------------------------------------
+    # 7. Register each container as a host in Checkmk (CRE manual piggyback)
+    #
+    #    Settings applied per Checkmk docs for piggyback container hosts:
+    #      - ip_address_family: No IP  (containers have no routable IP)
+    #      - agent: No API integrations, no Checkmk agent (data comes via piggyback)
+    #      - parents: Docker node hostname (so Checkmk knows data source)
+    #      - folder: /docker
+    #
+    #    The host name MUST exactly match the container name set in mk_docker.cfg
+    #    (CONTAINER_ID = "name"), which in turn must match the piggyback directory
+    #    created under ~/tmp/check_mk/piggyback/<container_name>/ on the CMK server.
+    # -------------------------------------------------------------------------
+    - name: "Create Checkmk host for each Docker container (piggyback, no IP, no agent)"
+      checkmk.general.host:
+        server_url: "https://{{ checkmk_agent_server }}"
+        site: "{{ checkmk_agent_site }}"
+        automation_user: "{{ checkmk_user }}"
+        automation_secret: "{{ checkmk_pass }}"
+        name: "{{ item }}"
+        folder: "/{{ checkmk_docker_folder }}"
+        attributes:
+          # No IP — containers are not directly reachable
+          ip_address_family: "no-ip"
+          # No agent — data arrives via piggyback from the docker node
+          tag_agent: "no-agent"
+          # Parent = docker node, so Checkmk knows where piggyback data comes from
+          parents:
+            - "{{ ansible_hostname }}"
+        state: "present"
+      loop: "{{ docker_container_names.stdout_lines }}"
+      when: docker_container_names.stdout_lines | length > 0
+
+    # -------------------------------------------------------------------------
+    # 8. Activate changes so new hosts become visible
+    # -------------------------------------------------------------------------
+    - name: "Activate changes after adding container hosts"
+      checkmk.general.activation:
+        server_url: "{{ server_url }}"
+        site: "{{ site }}"
+        automation_user: "{{ automation_user }}"
+        automation_secret: "{{ automation_secret }}"
+        force_foreign_changes: true
+        sites:
+          - "{{ site }}"
+
+    # -------------------------------------------------------------------------
+    # 9. Run service discovery on the Docker node (discovers Docker services)
+    # -------------------------------------------------------------------------
+    - name: "Discover services on Docker node"
+      checkmk.general.discovery:
+        server_url: "{{ server_url }}"
+        site: "{{ site }}"
+        automation_user: "{{ automation_user }}"
+        automation_secret: "{{ automation_secret }}"
+        host_name: "{{ ansible_hostname }}"
+        state: "fix_all"
+
+    # -------------------------------------------------------------------------
+    # 10. Run service discovery on each container host
+    # -------------------------------------------------------------------------
+    - name: "Discover services on each container host"
+      checkmk.general.discovery:
+        server_url: "{{ server_url }}"
+        site: "{{ site }}"
+        automation_user: "{{ automation_user }}"
+        automation_secret: "{{ automation_secret }}"
+        host_name: "{{ item }}"
+        state: "fix_all"
+      loop: "{{ docker_container_names.stdout_lines }}"
+      when: docker_container_names.stdout_lines | length > 0
+
+    # -------------------------------------------------------------------------
+    # 11. Final activation to make all discovered services live
+    # -------------------------------------------------------------------------
+    - name: "Final activation after discovery"
+      checkmk.general.activation:
+        server_url: "{{ server_url }}"
+        site: "{{ site }}"
+        automation_user: "{{ automation_user }}"
+        automation_secret: "{{ automation_secret }}"
+        force_foreign_changes: true
+        sites:
+          - "{{ site }}"
