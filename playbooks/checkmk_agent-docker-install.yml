@@ -184,21 +184,32 @@
           CONTAINER_ID = "name"
 
     # -------------------------------------------------------------------------
-    # 3. Deploy mk_docker.py plugin to the agent plugin directory
-    #    The plugin ships with the Checkmk agent; we symlink/copy it into place.
+    # 3. Download mk_docker.py from the Checkmk server
+    #
+    #    FIX: Previously used remote_src copy which failed on hosts that never
+    #    had the plugin manually placed. Now downloaded directly from the
+    #    Checkmk server's agent plugin endpoint — works on all hosts.
     # -------------------------------------------------------------------------
-    - name: Ensure mk_docker.py agent plugin is present
+    - name: Ensure /usr/lib/check_mk_agent/plugins directory exists
       become: true
-      ansible.builtin.copy:
-        src: /usr/lib/check_mk_agent/plugins/mk_docker.py
-        dest: /usr/lib/check_mk_agent/plugins/mk_docker.py
-        remote_src: true
+      ansible.builtin.file:
+        path: /usr/lib/check_mk_agent/plugins
+        state: directory
         owner: root
         group: root
         mode: '0755'
-      # If the source path differs on your distro, adjust accordingly.
-      # The plugin is also downloadable from:
-      # https://<checkmk_server>/<site>/check_mk/agents/plugins/mk_docker.py
+ 
+    - name: Download mk_docker.py agent plugin from Checkmk server
+      become: true
+      ansible.builtin.get_url:
+        url: "https://{{ checkmk_agent_server }}/{{ checkmk_agent_site }}/check_mk/agents/plugins/mk_docker.py"
+        dest: /usr/lib/check_mk_agent/plugins/mk_docker.py
+        owner: root
+        group: root
+        mode: '0755'
+        validate_certs: false
+      # validate_certs: false handles self-signed certs on internal Checkmk servers.
+      # Remove this line if your server uses a trusted certificate.
 
     # -------------------------------------------------------------------------
     # 4. Add a tag to the Docker *node* host in Checkmk so it is easily
@@ -243,7 +254,6 @@
         title: "Docker Containers"
         state: present
       run_once: true
-      delegate_to: localhost
 
     # -------------------------------------------------------------------------
     # 6. Gather running container names from the Docker node
@@ -299,7 +309,6 @@
         sites:
           - "{{ site }}"
       run_once: true
-      delegate_to: localhost
 
     # -------------------------------------------------------------------------
     # 9. Run service discovery on the Docker node (discovers Docker services)
