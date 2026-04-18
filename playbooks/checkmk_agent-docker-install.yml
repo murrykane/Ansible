@@ -207,9 +207,7 @@
 
     - name: "Build docker node tag attribute dict"
       ansible.builtin.set_fact:
-        docker_node_tag_attrs: "{{ {'tag_' + checkmk_docker_node_tag_group: checkmk_docker_node_tag_id} }}"
-      # Ansible cannot interpolate variables inside a YAML dict key directly.
-      # set_fact + dict concatenation is the correct way to build a dynamic key.
+        docker_node_tag_attrs: "{{ {} | combine({ 'tag_' + checkmk_docker_node_tag_group: checkmk_docker_node_tag_id }) }}"
  
     - name: "Tag docker node host in Checkmk"
       checkmk.general.host:
@@ -223,6 +221,14 @@
 
     # -------------------------------------------------------------------------
     # 5. Ensure the /docker folder exists in Checkmk
+    #
+    #    FIX: run_once + delegate_to localhost ensures this API call fires
+    #    exactly ONCE across all docker_hosts. Without this, parallel calls from
+    #    multiple hosts each see a stale ETag after the first write and fail
+    #    with 412 Precondition Failed.
+    #
+    #    Activations (steps 8 and 11) are also run_once for the same reason —
+    #    activating from multiple hosts simultaneously causes race conditions.
     # -------------------------------------------------------------------------
     - name: "Ensure docker folder exists in Checkmk"
       checkmk.general.folder:
@@ -233,6 +239,8 @@
         path: "/{{ checkmk_docker_folder }}"
         title: "Docker Containers"
         state: present
+      run_once: true
+      delegate_to: localhost
 
     # -------------------------------------------------------------------------
     # 6. Gather running container names from the Docker node
@@ -287,6 +295,8 @@
         force_foreign_changes: true
         sites:
           - "{{ site }}"
+      run_once: true
+      delegate_to: localhost
 
     # -------------------------------------------------------------------------
     # 9. Run service discovery on the Docker node (discovers Docker services)
@@ -326,3 +336,5 @@
         force_foreign_changes: true
         sites:
           - "{{ site }}"
+      run_once: true
+      delegate_to: localhost
