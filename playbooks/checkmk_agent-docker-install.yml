@@ -170,18 +170,30 @@
     #    as the piggyback host name. Without this the piggyback name defaults
     #    to the 12-char short container ID which is hard to map to a host.
     # -------------------------------------------------------------------------
-    - name: Deploy mk_docker.cfg to use container name as piggyback host name
+    # - name: Deploy mk_docker.cfg to use container name as piggyback host name
+    #   become: true
+    #   ansible.builtin.copy:
+    #     dest: /etc/check_mk/docker.cfg
+    #     owner: root
+    #     group: root
+    #     mode: '0644'
+    #     content: |
+    #       # Checkmk Docker plugin configuration
+    #       # Use the container *name* as the piggyback host name instead of the
+    #       # default 12-character short container ID.
+    #       CONTAINER_ID = "name"
+
+    - name: Download docker.cfg to use container name as piggyback host name
       become: true
-      ansible.builtin.copy:
+      ansible.builtin.get_url:
+        url: "https://{{ checkmk_agent_server }}/{{ checkmk_agent_site }}/check_mk/agents/cfg_examples/docker.cfg"
         dest: /etc/check_mk/docker.cfg
         owner: root
         group: root
         mode: '0644'
-        content: |
-          # Checkmk Docker plugin configuration
-          # Use the container *name* as the piggyback host name instead of the
-          # default 12-character short container ID.
-          CONTAINER_ID = "name"
+        validate_certs: false
+      # validate_certs: false handles self-signed certs on internal Checkmk servers.
+      # Remove this line if your server uses a trusted certificate.
 
     # -------------------------------------------------------------------------
     # 3. Download mk_docker.py from the Checkmk server
