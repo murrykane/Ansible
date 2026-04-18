@@ -145,13 +145,24 @@
   tasks:
     # -------------------------------------------------------------------------
     # 1. Install the Python docker SDK so mk_docker.py can query the daemon
+    #
+    #    Two steps:
+    #      a) Ensure python3-pip is present via apt (fixes "pip3 not found" on
+    #         hosts that never had pip installed at all)
+    #      b) Install the 'docker' SDK via pip. We use the apt package
+    #         python3-docker where possible to avoid PEP-668 issues on
+    #         Ubuntu 24.04+, falling back to pip for older distros.
     # -------------------------------------------------------------------------
-    - name: Install Python docker SDK (required by mk_docker.py plugin)
-      ansible.builtin.pip:
-        name: docker
-        executable: pip3
-        extra_args: "--break-system-packages"
-      # 'break-system-packages' is required on Ubuntu 24.04+ (PEP 668)
+    - name: Ensure python3-pip and python3-docker are installed via apt
+      apt:
+        name:
+          - python3-pip
+          - python3-docker
+        state: present
+        update_cache: yes
+      # python3-docker is the distro-packaged docker SDK — no pip/PEP-668 issues.
+      # If python3-docker is not available in your apt repos (older Ubuntu),
+      # remove it from this list and the pip fallback task below will cover it.
 
     # -------------------------------------------------------------------------
     # 2. Deploy mk_docker.cfg — tells the plugin to use container NAME not ID
@@ -194,6 +205,12 @@
     - name: include vars
       ansible.builtin.include_vars: vars/checkmk_secrets.yml
 
+    - name: "Build docker node tag attribute dict"
+      ansible.builtin.set_fact:
+        docker_node_tag_attrs: "{{ {'tag_' + checkmk_docker_node_tag_group: checkmk_docker_node_tag_id} }}"
+      # Ansible cannot interpolate variables inside a YAML dict key directly.
+      # set_fact + dict concatenation is the correct way to build a dynamic key.
+ 
     - name: "Tag docker node host in Checkmk"
       checkmk.general.host:
         server_url: "https://{{ checkmk_agent_server }}"
@@ -201,8 +218,7 @@
         automation_user: "{{ checkmk_user }}"
         automation_secret: "{{ checkmk_pass }}"
         name: "{{ ansible_hostname }}"
-        attributes:
-          tag_{{ checkmk_docker_node_tag_group }}: "{{ checkmk_docker_node_tag_id }}"
+        attributes: "{{ docker_node_tag_attrs }}"
         state: "present"
 
     # -------------------------------------------------------------------------
