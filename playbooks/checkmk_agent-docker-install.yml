@@ -7,14 +7,12 @@
     checkmk_edition: "cre"
     checkmk_os: "ubuntu-24.04"
     checkmk_arch: "amd64"
-    #checkmk_url: "https://checkmk.local.kaneworld.org/KaneCo/check_mk/agents/check-mk-agent_2.4.0p25-1_all.deb"
+    #checkmk_url: "https://checkmk.local.kaneworld.org/KaneCo/check_mk/agents/check-mk-agent_2.4.0p25-1_all.deb"  ### MOVED INTO VARIABLES in Semaphore for better security
     checkmk_deb_file: "/tmp/checkmk-${checkmk_version}.deb"
     checkmk_folder: ubuntu
     checkmk_agent_version: 2.4.0p15
     checkmk_agent_server: checkmk.local.kaneworld.org
     checkmk_agent_registration_server: checkmk.local.kaneworld.org:8005
-    # checkmk_user: murrykane
-    # checkmk_pass: i4eKFBOODdZ&KNuS
     checkmk_agent_site: KaneCo
 
   tasks:
