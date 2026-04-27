@@ -6,6 +6,7 @@ all:
         raptor.kane.mk:
         stargate.kane.mk:
         auth.kane.mk:
+        docker-ceph.kane.mk:
     pbs_servers:
       hosts:
         pbs.kane.mk:
@@ -27,6 +28,7 @@ all:
         stargate.kane.mk:
         netbird.kane.mk:
         auth.kane.mk:
+        docker-ceph.kane.mk:
       vars:
         #ansible_python_interpreter: auto_silent
         ansible_python_interpreter: /usr/bin/python3
@@ -80,6 +82,7 @@ all:
         raptor.kane.mk:
         netbird.kane.mk:
         murdognas.kane.mk:
+        docker-ceph.kane.mk:
       vars:
         docker_allowed_subnets:
           - 192.168.1.0/24
