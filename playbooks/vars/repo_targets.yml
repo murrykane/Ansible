@@ -16,6 +16,7 @@ repos:
       - raptor.kane.mk
       - stargate.kane.mk
       - auth.kane.mk
+      - docker-ceph.kane.mk
 
   - name: homelab
     src: "{{ repo_base_path }}/homelab"
@@ -24,6 +25,7 @@ repos:
       - raptor.kane.mk
       - stargate.kane.mk
       - auth.kane.mk
+      - docker-ceph.kane.mk
 
   - name: scripts
     src: "{{ repo_base_path }}/scripts"
@@ -32,6 +34,7 @@ repos:
       - raptor.kane.mk
       - stargate.kane.mk
       - auth.kane.mk
+      - docker-ceph.kane.mk
 
   - name: terraform
     src: "{{ repo_base_path }}/terraform"
@@ -40,4 +43,5 @@ repos:
       - raptor.kane.mk
       - stargate.kane.mk
       - auth.kane.mk
+      - docker-ceph.kane.mk
 
