@@ -291,3 +291,9 @@ records:
   - zone: kane.mk
     name: auth
     ip: 192.168.1.147
+  - zone: kane.mk
+    name: docker-ceph
+    ip: 192.168.1.162
+  - zone: kane.mk
+    name: claude-code
+    ip: 192.168.1.156
