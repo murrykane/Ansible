@@ -121,6 +121,26 @@
         group: repogroup
         recurse: yes
 
+    # #need to set certain files to 600 like cf_token and acme.json for traefik
+    # - name: Set Private files to correct permissions ( cf_token and acme.json 600)
+    #   ansible.builtin.command:
+    #     cmd: find "{{ repo_base_path }}" -type f \(-name "cf-token" -o -name "acme.json" \) -exec chmod 0600 {} +
+
+    - name: Find private files
+      ansible.builtin.find:
+        paths: "{{ repo_base_path }}"
+        patterns:
+          - "cf-token"
+          - "acme.json"
+        recurse: true
+      register: private_files
+
+    - name: Set private files to 600
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        mode: "0600"
+      loop: "{{ private_files.files }}"
+
 # setup repogroup and permissions on target servers before pushing repos
 - name: Setup repo group and permissions on target servers
   hosts: repo_servers
