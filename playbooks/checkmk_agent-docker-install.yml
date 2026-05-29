@@ -8,7 +8,7 @@
     checkmk_os: "ubuntu-24.04"
     checkmk_arch: "amd64"
     #checkmk_url: "https://checkmk.local.kaneworld.org/KaneCo/check_mk/agents/check-mk-agent_2.4.0p25-1_all.deb"  ### MOVED INTO VARIABLES in Semaphore for better security
-    checkmk_deb_file: "/tmp/checkmk-${checkmk_version}.deb"
+    checkmk_deb_file: "/tmp/checkmk-{{ checkmk_version }}.deb"
     checkmk_folder: ubuntu
     checkmk_agent_version: 2.4.0p15
     checkmk_agent_server: checkmk.local.kaneworld.org
@@ -16,6 +16,10 @@
     checkmk_agent_site: KaneCo
 
   tasks:
+
+    - name: include vars
+      ansible.builtin.include_vars: vars/checkmk_secrets.yml
+
     - name: Ensure dependencies are installed
       apt:
         name:
@@ -53,9 +57,6 @@
         name: "{{ ansible_hostname }}"
         folder: "{{ checkmk_folder }}"
         state: "present"
-
-    - name: include vars
-      ansible.builtin.include_vars: vars/checkmk_secrets.yml
 
     - name: "Start activation on a specific site"
       checkmk.general.activation:
@@ -145,6 +146,15 @@
       - kaneserver.kane.mk
 
   tasks:
+
+    # -------------------------------------------------------------------------
+    # 1A. Add a tag to the Docker *node* host in Checkmk so it is easily
+    #    identifiable as a Docker host (explicit_host_conf tag).
+    #    Requires a custom host tag group to exist in Checkmk first.
+    # -------------------------------------------------------------------------
+    - name: include vars
+      ansible.builtin.include_vars: vars/checkmk_secrets.yml
+
     # -------------------------------------------------------------------------
     # 1. Install the Python docker SDK so mk_docker.py can query the daemon
     #
@@ -228,14 +238,6 @@
       when: inventory_hostname not in checkmk_skip_apt_hosts
       # validate_certs: false handles self-signed certs on internal Checkmk servers.
       # Remove this line if your server uses a trusted certificate.
-
-    # -------------------------------------------------------------------------
-    # 4. Add a tag to the Docker *node* host in Checkmk so it is easily
-    #    identifiable as a Docker host (explicit_host_conf tag).
-    #    Requires a custom host tag group to exist in Checkmk first.
-    # -------------------------------------------------------------------------
-    - name: include vars
-      ansible.builtin.include_vars: vars/checkmk_secrets.yml
 
     - name: "Build docker node tag attribute dict"
       ansible.builtin.set_fact:
