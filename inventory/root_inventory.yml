@@ -28,7 +28,7 @@ all:
         stargate.kane.mk:
         dns-primary.kane.mk:
         dns-secondary.kane.mk:
-        netbird.kane.mk:
+        #netbird.kane.mk:
         auth.kane.mk:
       vars:
         #ansible_python_interpreter: auto_silent
@@ -79,7 +79,7 @@ all:
         cyborg.kane.mk:
         auth.kane.mk:
         raptor.kane.mk:
-        netbird.kane.mk:
+        #netbird.kane.mk:
         murdognas.kane.mk:
       vars:
         docker_allowed_subnets:

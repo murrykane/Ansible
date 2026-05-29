@@ -110,12 +110,12 @@ all:
         ansible_user: murry
         ansible_become: true 
         ansible_become_method: sudo
-    netbird:
-      hosts:
-        netbird.kane.mk:
-      vars:
-        #ansible_python_interpreter: auto_silent
-        ansible_python_interpreter: /usr/bin/python3
-        ansible_user: semaphore
-        ansible_become: true 
-        ansible_become_method: sudo
+    # netbird:
+    #   hosts:
+    #     netbird.kane.mk:
+    #   vars:
+    #     #ansible_python_interpreter: auto_silent
+    #     ansible_python_interpreter: /usr/bin/python3
+    #     ansible_user: semaphore
+    #     ansible_become: true 
+    #     ansible_become_method: sudo

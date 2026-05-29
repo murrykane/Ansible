@@ -26,7 +26,7 @@ all:
         #utilserver.kane.mk:
         unifi.kane.mk:
         stargate.kane.mk:
-        netbird.kane.mk:
+        #netbird.kane.mk:
         auth.kane.mk:
         docker-ceph.kane.mk:
       vars:
@@ -80,7 +80,7 @@ all:
         cyborg.kane.mk:
         auth.kane.mk:
         raptor.kane.mk:
-        netbird.kane.mk:
+        #netbird.kane.mk:
         murdognas.kane.mk:
         docker-ceph.kane.mk:
       vars:
