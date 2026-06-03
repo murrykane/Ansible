@@ -297,3 +297,6 @@ records:
   - zone: kane.mk
     name: claude-code
     ip: 192.168.1.156
+  - zone: kane.mk
+    name: pangolin
+    ip: 159.54.163.87
