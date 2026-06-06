@@ -1,4 +1,4 @@
-ct_backup_path: /mnt/mini-backups/ct
-vm_backup_path: /mnt/mini-backups/vm
-ct_count: 1
+ct_backup_path: /mnt/pbs-data/datastore/ct
+vm_backup_path: /mnt/pbs-data/datastore/vm
+ct_count: 2
 vm_count: 8
