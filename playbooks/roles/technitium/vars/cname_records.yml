@@ -339,3 +339,6 @@ records:
   - zone: pangolin.kaneworld.org
     name: paperless
     ip: pangolin.kane.mk
+  - zone: local.kaneworld.org
+    name: navidrome
+    ip: raptor.kane.mk
