@@ -343,5 +343,5 @@ records:
     name: navidrome
     ip: raptor.kane.mk
   - zone: local.kaneworld.org
-    name: lidarr
+    name: lidarr-prod-2
     ip: kaneserver.kane.mk
