@@ -333,12 +333,15 @@ records:
   - zone: local.kaneworld.org
     name: traefik8-metrics
     ip: docker-ceph.kane.mk  
-  - zone: pangolin.kaneworld.org
-    name: immich
-    ip: pangolin.kane.mk
-  - zone: pangolin.kaneworld.org
-    name: paperless
-    ip: pangolin.kane.mk
+  # - zone: pangolin.kaneworld.org
+  #   name: immich
+  #   ip: pangolin.kane.mk
+  # - zone: pangolin.kaneworld.org
+  #   name: paperless
+  #   ip: pangolin.kane.mk
   - zone: local.kaneworld.org
     name: navidrome
     ip: raptor.kane.mk
+  - zone: local.kaneworld.org
+    name: lidarr
+    ip: kaneserver.kane.mk
