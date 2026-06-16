@@ -5,11 +5,21 @@
   tasks:
   - name: Start all containers for Docker
     block:
+      # - name: Get list of all containers
+      #   #shell: docker ps -aq
+      #   shell: "{{ docker_bin | default('docker') }} ps -aq"
+      #   register: container_list
+
       - name: Get list of all containers
-        #shell: docker ps -aq
-        shell: "{{ docker_bin | default('docker') }} ps -aq"
+        shell: /share/CACHEDEV1_DATA/.qpkg/container-station/bin/docker ps -aq
         register: container_list
-  
+        when: inventory_hostname in groups['qnap']
+
+      - name: Get list of all containers
+        shell: docker ps -aq
+        register: container_list
+        when: inventory_hostname not in groups['qnap']
+
       - name: Start containers
         docker_container:
           name: "{{ item }}"
