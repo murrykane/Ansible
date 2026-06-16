@@ -73,6 +73,7 @@ all:
         ansible_become_method: sudo
         ansible_become_user: admin
         ansible_python_interpreter: /share/CACHEDEV1_DATA/.qpkg/Python3/opt/python3/bin/python3  
+        docker_bin: /share/CACHEDEV1_DATA/.qpkg/container-station/bin/docker
     docker:
       children:
         qnap:
