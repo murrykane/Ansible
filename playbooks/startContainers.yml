@@ -5,30 +5,49 @@
   tasks:
   - name: Start all containers for Docker
     block:
-      - name: Get list of all containers
-        shell:
-          cmd: docker ps -aq
-        environment:
-          PATH: "{{ '/share/CACHEDEV1_DATA/.qpkg/container-station/bin:' + ansible_env.PATH if inventory_hostname in groups['qnap'] else ansible_env.PATH }}"
-        register: container_list
 
-      # - name: Get list of all containers
-      #   shell: /share/CACHEDEV1_DATA/.qpkg/container-station/bin/docker ps -aq
-      #   register: container_list
-      #   when: inventory_hostname in groups['qnap']
+      - name: Get list of all containers (qnap)
+        shell: /share/CACHEDEV1_DATA/.qpkg/container-station/bin/docker ps -aq
+        register: container_list_qnap
+        when: inventory_hostname in groups['qnap']
 
-      # - name: Get list of all containers
-      #   shell: docker ps -aq
-      #   register: container_list
-      #   when: inventory_hostname not in groups['qnap']
+      - name: Get list of all containers (linux)
+        shell: docker ps -aq
+        register: container_list_linux
+        when: inventory_hostname not in groups['qnap']
 
       - name: Start containers
         docker_container:
           name: "{{ item }}"
           state: started
           comparisons:
-            '*': ignore  # by default, ignore *all* options (including image)
-        loop: "{{ container_list.stdout_lines }}"
+            '*': ignore
+        loop: "{{ (container_list_qnap.stdout_lines if inventory_hostname in groups['qnap'] else container_list_linux.stdout_lines) }}"
+
+      # - name: Get list of all containers
+      #   shell:
+      #     cmd: docker ps -aq
+      #   environment:
+      #     PATH: "{{ '/share/CACHEDEV1_DATA/.qpkg/container-station/bin:' + ansible_env.PATH if inventory_hostname in groups['qnap'] else ansible_env.PATH }}"
+      #   register: container_list
+
+      # # - name: Get list of all containers
+      # #   shell: /share/CACHEDEV1_DATA/.qpkg/container-station/bin/docker ps -aq
+      # #   register: container_list
+      # #   when: inventory_hostname in groups['qnap']
+
+      # # - name: Get list of all containers
+      # #   shell: docker ps -aq
+      # #   register: container_list
+      # #   when: inventory_hostname not in groups['qnap']
+
+      # - name: Start containers
+      #   docker_container:
+      #     name: "{{ item }}"
+      #     state: started
+      #     comparisons:
+      #       '*': ignore  # by default, ignore *all* options (including image)
+      #   loop: "{{ container_list.stdout_lines }}"
       
       #- name: Start containers one
       #  docker_container:
