@@ -10,7 +10,8 @@
   - name: Start all containers for Docker
     block:
       - name: Get list of all containers
-        shell: docker ps -aq
+        #shell: docker ps -aq
+        shell: "{{ docker_bin | default('docker') }} ps -aq"
         register: container_list
   
       - name: Put containers to desired state
