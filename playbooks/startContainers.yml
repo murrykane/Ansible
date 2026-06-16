@@ -6,8 +6,10 @@
   - name: Start all containers for Docker
     block:
       - name: Get list of all containers
-        #shell: docker ps -aq
-        shell: "{{ docker_bin | default('docker') }} ps -aq"
+        shell:
+          cmd: docker ps -aq
+        environment:
+          PATH: "{{ '/share/CACHEDEV1_DATA/.qpkg/container-station/bin:' + ansible_env.PATH if inventory_hostname in groups['qnap'] else ansible_env.PATH }}"
         register: container_list
 
       # - name: Get list of all containers
