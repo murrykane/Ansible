@@ -31,11 +31,13 @@
       ansible.builtin.set_fact:
         checkmk_labels_merged: >-
           {{
-            group_names
-            | map('extract', hostvars[inventory_hostname], 'checkmk_host_labels')
-            | select('defined')
-            | list
-            | combine_flattened
+            dict(
+              group_names
+              | map('extract', hostvars[inventory_hostname], 'checkmk_host_labels')
+              | select('defined')
+              | map('items')
+              | sum(start=[])
+            )
           }}
 
     - name: Download Checkmk .deb package
