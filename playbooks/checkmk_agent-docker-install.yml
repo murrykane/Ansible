@@ -29,16 +29,7 @@
 
     - name: "Build merged host labels from all matching groups"
       ansible.builtin.set_fact:
-        checkmk_labels_merged: >-
-          {{
-            dict(
-              group_names
-              | map('extract', hostvars[inventory_hostname], 'checkmk_host_labels')
-              | select('defined')
-              | map('items')
-              | sum(start=[])
-            )
-          }}
+        checkmk_labels_merged: "{{ checkmk_host_labels | default({}) }}"
 
     - name: "Debug label merge"
       ansible.builtin.debug:
