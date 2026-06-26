@@ -27,6 +27,17 @@
           - gdebi-core
         update_cache: yes
 
+    - name: "Build merged host labels from all matching groups"
+      ansible.builtin.set_fact:
+        checkmk_labels_merged: >-
+          {{
+            group_names
+            | map('extract', hostvars[inventory_hostname], 'checkmk_host_labels')
+            | select('defined')
+            | list
+            | combine_flattened
+          }}
+
     - name: Download Checkmk .deb package
       get_url:
         url: "{{ checkmk_url }}"
@@ -48,7 +59,7 @@
         enabled: true
         state: started
 
-    - name: "Create a host with IP address."
+    - name: "Create a host with IP address and labels."
       checkmk.general.host:
         server_url: "https://{{ checkmk_agent_server }}"
         site: "{{ checkmk_agent_site }}"
@@ -56,6 +67,7 @@
         automation_secret: "{{ checkmk_pass }}"
         name: "{{ ansible_hostname }}"
         folder: "{{ checkmk_folder }}"
+        labels: "{{ checkmk_labels_merged | default({}) }}"
         state: "present"
 
     - name: "Start activation on a specific site"
@@ -300,6 +312,22 @@
     # -------------------------------------------------------------------------
     # 7. Register each container as a host in Checkmk (CRE manual piggyback)
     # -------------------------------------------------------------------------
+    # - name: "Create Checkmk host for each Docker container (piggyback, no IP, no agent)"
+    #   checkmk.general.host:
+    #     server_url: "https://{{ checkmk_agent_server }}"
+    #     site: "{{ checkmk_agent_site }}"
+    #     automation_user: "{{ checkmk_user }}"
+    #     automation_secret: "{{ checkmk_pass }}"
+    #     name: "{{ item }}"
+    #     folder: "/{{ checkmk_docker_folder }}"
+    #     attributes:
+    #       tag_address_family: "no-ip"
+    #       tag_agent: "no-agent"
+    #       parents:
+    #         - "{{ ansible_hostname }}"
+    #     state: "present"
+    #   loop: "{{ docker_container_names.stdout_lines }}"
+    #   when: docker_container_names.stdout_lines | length > 0
     - name: "Create Checkmk host for each Docker container (piggyback, no IP, no agent)"
       checkmk.general.host:
         server_url: "https://{{ checkmk_agent_server }}"
@@ -308,6 +336,9 @@
         automation_secret: "{{ checkmk_pass }}"
         name: "{{ item }}"
         folder: "/{{ checkmk_docker_folder }}"
+        labels:
+          role: docker-container
+          parent_host: "{{ ansible_hostname }}"   # handy for filtering by node
         attributes:
           tag_address_family: "no-ip"
           tag_agent: "no-agent"
