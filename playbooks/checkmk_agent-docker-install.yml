@@ -339,17 +339,17 @@
         automation_secret: "{{ checkmk_pass }}"
         name: "{{ item }}"
         folder: "/{{ checkmk_docker_folder }}"
-        labels:
-          role: docker-container
-          parent_host: "{{ ansible_hostname }}"   # handy for filtering by node
         attributes:
           tag_address_family: "no-ip"
           tag_agent: "no-agent"
           parents:
             - "{{ ansible_hostname }}"
+          labels:
+            role: docker-container
+            parent_host: "{{ ansible_hostname }}"
         state: "present"
       loop: "{{ docker_container_names.stdout_lines }}"
-      when: docker_container_names.stdout_lines | length > 0
+      when: docker_container_names.stdout_lines | length > 0 
 
     # -------------------------------------------------------------------------
     # 8. Activate changes so new hosts become visible
