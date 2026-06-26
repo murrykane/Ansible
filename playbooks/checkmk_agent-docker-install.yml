@@ -69,7 +69,8 @@
         automation_secret: "{{ checkmk_pass }}"
         name: "{{ ansible_hostname }}"
         folder: "{{ checkmk_folder }}"
-        labels: "{{ checkmk_labels_merged | default({}) }}"
+        attributes:
+          labels: "{{ checkmk_labels_merged | default({}) }}"
         state: "present"
 
     - name: "Start activation on a specific site"
