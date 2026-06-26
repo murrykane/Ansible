@@ -40,6 +40,13 @@
             )
           }}
 
+    - name: "Debug label merge"
+      ansible.builtin.debug:
+        msg:
+          - "group_names: {{ group_names }}"
+          - "checkmk_host_labels: {{ checkmk_host_labels | default('NOT SET') }}"
+          - "checkmk_labels_merged: {{ checkmk_labels_merged | default('NOT SET') }}"
+
     - name: Download Checkmk .deb package
       get_url:
         url: "{{ checkmk_url }}"
