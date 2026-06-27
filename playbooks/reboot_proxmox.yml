@@ -1,5 +1,5 @@
 #- hosts: ubuntu:prox:debian
-- hosts: proxmini.kane.mk
+- hosts: mini.kane.mk
   become: yes
 
   vars:
