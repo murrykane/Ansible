@@ -300,3 +300,6 @@ records:
   - zone: kane.mk
     name: pangolin
     ip: 159.54.163.87
+  - zone: kane.mk
+    name: docker-dev
+    ip: 192.168.1.107
