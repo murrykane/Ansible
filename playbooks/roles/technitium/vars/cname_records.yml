@@ -333,6 +333,15 @@ records:
   - zone: local.kaneworld.org
     name: traefik8-metrics
     ip: docker-ceph.kane.mk  
+  - zone: local.kaneworld.org
+    name: traefik-dev-1
+    ip: docker-dev.kane.mk
+  - zone: local.kaneworld.org
+    name: traefik-dev-1-widget
+    ip: docker-dev.kane.mk
+  - zone: local.kaneworld.org
+    name: traefik-dev-1-metrics
+    ip: docker-dev.kane.mk
   # - zone: pangolin.kaneworld.org
   #   name: immich
   #   ip: pangolin.kane.mk
@@ -345,3 +354,6 @@ records:
   - zone: local.kaneworld.org
     name: lidarr-prod-2
     ip: kaneserver.kane.mk
+  - zone: local.kaneworld.org
+    name: wallos
+    ip: docker-dev.kane.mk
