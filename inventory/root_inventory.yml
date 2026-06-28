@@ -6,6 +6,7 @@ all:
         raptor.kane.mk:
         stargate.kane.mk:
         auth.kane.mk:
+        docker-dev.kane.mk:
     pbs_servers:
       hosts:
         pbs.kane.mk:
@@ -30,6 +31,7 @@ all:
         dns-secondary.kane.mk:
         #netbird.kane.mk:
         auth.kane.mk:
+        docker-dev.kane.mk:
       vars:
         #ansible_python_interpreter: auto_silent
         ansible_python_interpreter: /usr/bin/python3
@@ -73,6 +75,9 @@ all:
         ansible_become_user: admin
         ansible_python_interpreter: /share/CACHEDEV1_DATA/.qpkg/Python3/opt/python3/bin/python3  
     docker:
+      children:
+        qnap:
+        unraid:
       hosts:
         mkserver.kane.mk: 
         #utilserver.kane.mk:
@@ -81,6 +86,7 @@ all:
         raptor.kane.mk:
         #netbird.kane.mk:
         murdognas.kane.mk:
+        docker-dev.kane.mk:
       vars:
         docker_allowed_subnets:
           - 192.168.1.0/24

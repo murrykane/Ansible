@@ -7,6 +7,7 @@ all:
         stargate.kane.mk:
         auth.kane.mk:
         docker-ceph.kane.mk:
+        docker-dev.kane.mk:
     pbs_servers:
       hosts:
         pbs.kane.mk:
@@ -29,6 +30,7 @@ all:
         #netbird.kane.mk:
         auth.kane.mk:
         docker-ceph.kane.mk:
+        docker-dev.kane.mk:
       vars:
         #ansible_python_interpreter: auto_silent
         ansible_python_interpreter: /usr/bin/python3
@@ -74,6 +76,9 @@ all:
         ansible_env:
           PATH: "/share/CACHEDEV1_DATA/.qpkg/Portainer:/share/CACHEDEV1_DATA/.qpkg/container-station/bin:/usr/local/bin:/usr/bin:/bin"
     docker:
+      children:
+        qnap:
+        unraid:
       hosts:
         mkserver.kane.mk: 
         #utilserver.kane.mk:
@@ -83,6 +88,7 @@ all:
         #netbird.kane.mk:
         murdognas.kane.mk:
         docker-ceph.kane.mk:
+        docker-dev.kane.mk:
       vars:
         docker_allowed_subnets:
           - 192.168.1.0/24
