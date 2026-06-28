@@ -337,10 +337,10 @@ records:
     name: traefik-dev-1
     ip: docker-dev.kane.mk
   - zone: local.kaneworld.org
-    name: traefik-dev-1-widget
+    name: tk-dev-1-widget
     ip: docker-dev.kane.mk
   - zone: local.kaneworld.org
-    name: traefik-dev-1-metrics
+    name: tk-dev-1-metrics
     ip: docker-dev.kane.mk
   # - zone: pangolin.kaneworld.org
   #   name: immich
