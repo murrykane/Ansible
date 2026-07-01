@@ -1,4 +1,6 @@
 ct_backup_path: /mnt/pbs-data/datastore/ct
 vm_backup_path: /mnt/pbs-data/datastore/vm
+host_backup_path: /mnt/pbs-data/datastore/host
 ct_count: 2
-vm_count: 8
+vm_count: 9
+host_count: 0

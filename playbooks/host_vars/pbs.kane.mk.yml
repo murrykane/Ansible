@@ -1,4 +1,6 @@
 ct_backup_path: /mnt/unraid-backups/pbs/ct
 vm_backup_path: /mnt/unraid-backups/pbs/vm
+host_backup_path: /mnt/unraid-backups/pbs/host
 ct_count: 2
 vm_count: 8
+host_count: 3
