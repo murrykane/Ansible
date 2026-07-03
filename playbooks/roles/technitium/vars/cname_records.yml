@@ -308,10 +308,10 @@ records:
     ip: murdognas.kane.mk
   - zone: local.kaneworld.org
     name: traefik7-widget
-    ip: kaneserver.kane.mk
+    ip: murdognas.kane.mk
   - zone: local.kaneworld.org
     name: traefik7-metrics
-    ip: kaneserver.kane.mk
+    ip: murdognas.kane.mk
   - zone: local.kaneworld.org
     name: fileflows
     ip: kaneserver.kane.mk
