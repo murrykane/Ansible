@@ -303,3 +303,6 @@ records:
   - zone: kane.mk
     name: docker-dev
     ip: 192.168.1.107
+  - zone: kane.mk
+    name: kane-pangolin
+    ip: 100.77.15.11
