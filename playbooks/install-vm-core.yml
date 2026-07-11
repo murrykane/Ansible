@@ -32,6 +32,7 @@
           - apache2-utils
           - tree
           - net-tools
+          - btop
         update_cache: true
 
     - name: Ensure SSH service is running and enabled
