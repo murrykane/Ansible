@@ -357,3 +357,6 @@ records:
   - zone: local.kaneworld.org
     name: wallos
     ip: docker-dev.kane.mk
+  - zone: local.kaneworld.org
+    name: infisical
+    ip: infisical.local.kaneworld.org
