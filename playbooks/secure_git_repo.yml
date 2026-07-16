@@ -60,8 +60,7 @@
       - ansible
       - terraform
       - homelab
-      - kaneworld
-      - murdog
+      - MurDog
 
     git_repo_path: "{{ sourcecontrol_base }}/{{ repo_name }}"
 
@@ -256,12 +255,14 @@
     - name: Run gitleaks against the working tree now
       ansible.builtin.command: >
         {{ gitleaks_install_dir }}/gitleaks detect
-        --source {{ git_repo_path }}
+        --source .
         --config {{ gitleaks_config_path }}
         --no-git
         --report-format json
         --report-path /tmp/gitleaks_report.json
         --exit-code 0
+      args:
+        chdir: "{{ git_repo_path }}"
       changed_when: false
 
     - name: Read scan report
