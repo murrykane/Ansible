@@ -28,7 +28,7 @@
 #     Name:   repo_name
 #     Title:  "Which sourcecontrol repo?"
 #     Type:   enum  (renders as a dropdown)
-#     Values: scripts,ansible,terraform,homelab,murdog
+#     Values: scripts,ansible,terraform,homelab,MurDog
 #   Semaphore passes the selected value in as -e repo_name=<selection>, which
 #   this playbook resolves against sourcecontrol_base below. No editing the
 #   playbook per-repo required.
@@ -37,7 +37,6 @@
 # `hosts:` line below to match your actual inventory alias if different).
 
 - name: Deploy pre-commit secret scanning (gitleaks) on kaneserver
-  #hosts: kaneserver.kane.mk
   hosts: "{{ scriptinventory | default('kaneserver.kane.mk') }}"
   become: true
   gather_facts: true
@@ -54,7 +53,7 @@
       - ansible
       - terraform
       - homelab
-      - murdog
+      - MurDog
 
     git_repo_path: "{{ sourcecontrol_base }}/{{ repo_name }}"
 
@@ -202,11 +201,15 @@
           # Installed by Ansible (secure-git-repo.yml) - edit the playbook, not this file.
           set -euo pipefail
 
-          GITLEAKS_BIN="{{ gitleaks_symlink }}"
+          # Deliberately NOT using {{ gitleaks_symlink }} here - that lives under
+          # /usr/local/bin, which is tmpfs on Unraid and gets wiped on reboot.
+          # This path is on the array and survives reboots.
+          GITLEAKS_BIN="{{ gitleaks_install_dir }}/gitleaks"
           CONFIG="{{ gitleaks_config_path }}"
 
           if [ ! -x "$GITLEAKS_BIN" ]; then
             echo "gitleaks not found at $GITLEAKS_BIN - refusing to commit until it's installed." >&2
+            echo "Re-run the secure-git-repo Semaphore task to reinstall it." >&2
             exit 1
           fi
 
@@ -227,12 +230,12 @@
         insertafter: EOF
         block: |
           [alias]
-            addsafe = "!f() { git add \"$@\" && {{ gitleaks_symlink }} protect --staged --config {{ gitleaks_config_path }} --redact -v || (git reset -- \"$@\" && echo 'Secret detected - files unstaged automatically.'); }; f"
+            addsafe = "!f() { git add \"$@\" && {{ gitleaks_install_dir }}/gitleaks protect --staged --config {{ gitleaks_config_path }} --redact -v || (git reset -- \"$@\" && echo 'Secret detected - files unstaged automatically.'); }; f"
 
     # ---------- Scan the current working tree ----------
     - name: Run gitleaks against the working tree now
       ansible.builtin.command: >
-        {{ gitleaks_symlink }} detect
+        {{ gitleaks_install_dir }}/gitleaks detect
         --source {{ git_repo_path }}
         --config {{ gitleaks_config_path }}
         --no-git
@@ -290,3 +293,4 @@
           rotating the actual credential, since it's already exposed to
           anyone with repo access: {{ tracked_secret_files }}
       when: tracked_secret_files | length > 0
+
