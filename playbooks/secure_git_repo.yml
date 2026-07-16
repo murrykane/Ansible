@@ -60,7 +60,8 @@
       - ansible
       - terraform
       - homelab
-      - MurDog
+      - murdog
+      - kaneworld
 
     git_repo_path: "{{ sourcecontrol_base }}/{{ repo_name }}"
 
