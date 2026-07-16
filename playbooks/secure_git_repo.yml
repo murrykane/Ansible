@@ -11,7 +11,14 @@
 #   2. Deploys a repo-specific .gitleaks.toml with rules tuned for your
 #      .env / cf_secret naming conventions, on top of gitleaks' default ruleset.
 #   3. Installs a `pre-commit` git hook that runs `gitleaks protect --staged`
-#      and REFUSES the commit if a secret is detected.
+#      and REFUSES the commit if a secret is detected. The hook resolves
+#      gitleaks via PATH first, so it works correctly whether you're committing
+#      via SSH directly on kaneserver, OR from a client machine that has the
+#      repo mapped/mounted (e.g. Windows over CIFS). In the latter case,
+#      gitleaks must ALSO be installed on that client machine and be on its
+#      PATH - see https://github.com/gitleaks/gitleaks/releases for Windows
+#      builds. Without that, the hook will correctly refuse to commit rather
+#      than silently skip the scan.
 #   4. Adds a `git addsafe` alias as a belt-and-braces option for people who
 #      like to check before they even git add.
 #   5. Runs an immediate scan of the working tree. Any UNTRACKED file that
@@ -201,15 +208,27 @@
           # Installed by Ansible (secure-git-repo.yml) - edit the playbook, not this file.
           set -euo pipefail
 
-          # Deliberately NOT using {{ gitleaks_symlink }} here - that lives under
-          # /usr/local/bin, which is tmpfs on Unraid and gets wiped on reboot.
-          # This path is on the array and survives reboots.
-          GITLEAKS_BIN="{{ gitleaks_install_dir }}/gitleaks"
-          CONFIG="{{ gitleaks_config_path }}"
+          # This hook runs wherever `git commit` actually executes - which may
+          # be kaneserver itself (SSH) OR a client machine that has this repo
+          # mapped/mounted (e.g. Windows over CIFS, using Git for Windows'
+          # bash). A hardcoded Unraid path only works in the former case, so:
+          #   1. Prefer whatever "gitleaks" resolves to on PATH - this is what
+          #      makes it work from a Windows client, PROVIDED gitleaks.exe is
+          #      installed there and on that machine's PATH.
+          #   2. Fall back to the known persistent install path, for when this
+          #      runs directly on kaneserver via SSH without the /usr/local/bin
+          #      symlink in PATH.
+          REPO_ROOT="$(git rev-parse --show-toplevel)"
+          CONFIG="$REPO_ROOT/.gitleaks.toml"
 
-          if [ ! -x "$GITLEAKS_BIN" ]; then
-            echo "gitleaks not found at $GITLEAKS_BIN - refusing to commit until it's installed." >&2
-            echo "Re-run the secure-git-repo Semaphore task to reinstall it." >&2
+          if command -v gitleaks >/dev/null 2>&1; then
+            GITLEAKS_BIN="$(command -v gitleaks)"
+          elif [ -x "{{ gitleaks_install_dir }}/gitleaks" ]; then
+            GITLEAKS_BIN="{{ gitleaks_install_dir }}/gitleaks"
+          else
+            echo "gitleaks not found on PATH, and not found at {{ gitleaks_install_dir }}/gitleaks" >&2
+            echo "If you're committing from a Windows client, install gitleaks.exe there and add it to your PATH." >&2
+            echo "If you're on kaneserver directly, re-run the secure-git-repo Semaphore task." >&2
             exit 1
           fi
 
@@ -230,7 +249,7 @@
         insertafter: EOF
         block: |
           [alias]
-            addsafe = "!f() { git add \"$@\" && {{ gitleaks_install_dir }}/gitleaks protect --staged --config {{ gitleaks_config_path }} --redact -v || (git reset -- \"$@\" && echo 'Secret detected - files unstaged automatically.'); }; f"
+            addsafe = "!f() { git add \"$@\" && gitleaks protect --staged --config \"$(git rev-parse --show-toplevel)/.gitleaks.toml\" --redact -v || (git reset -- \"$@\" && echo 'Secret detected - files unstaged automatically.'); }; f"
 
     # ---------- Scan the current working tree ----------
     - name: Run gitleaks against the working tree now
@@ -293,4 +312,3 @@
           rotating the actual credential, since it's already exposed to
           anyone with repo access: {{ tracked_secret_files }}
       when: tracked_secret_files | length > 0
-
