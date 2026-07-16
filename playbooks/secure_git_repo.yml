@@ -1,0 +1,292 @@
+---
+# secure-git-repo.yml
+#
+# Deploys gitleaks-based secret scanning on the host where the source-controlled
+# repo lives (e.g. kaneserver.kane.mk), so secrets like .env / cf_secret / keys
+# never make it into a commit in the first place.
+#
+# What this does:
+#   1. Installs the gitleaks binary to a persistent, array-backed path
+#      (important on Unraid - / and /usr/local are tmpfs and wiped on reboot).
+#   2. Deploys a repo-specific .gitleaks.toml with rules tuned for your
+#      .env / cf_secret naming conventions, on top of gitleaks' default ruleset.
+#   3. Installs a `pre-commit` git hook that runs `gitleaks protect --staged`
+#      and REFUSES the commit if a secret is detected.
+#   4. Adds a `git addsafe` alias as a belt-and-braces option for people who
+#      like to check before they even git add.
+#   5. Runs an immediate scan of the working tree. Any UNTRACKED file that
+#      trips a rule gets its path appended to .gitignore automatically.
+#   6. Any ALREADY-TRACKED file that trips a rule is only reported, never
+#      auto-modified - .gitignore can't retroactively remove something from
+#      history, so that needs a manual git-filter-repo/BFG pass + rotation.
+#
+# Usage (CLI):
+#   ansible-playbook -i inventory secure-git-repo.yml -e repo_name=ansible
+#
+# Usage (Semaphore):
+#   Create a Task Template against this playbook, then add a Survey Variable:
+#     Name:   repo_name
+#     Title:  "Which sourcecontrol repo?"
+#     Type:   enum  (renders as a dropdown)
+#     Values: scripts,ansible,terraform,homelab,murdog
+#   Semaphore passes the selected value in as -e repo_name=<selection>, which
+#   this playbook resolves against sourcecontrol_base below. No editing the
+#   playbook per-repo required.
+#
+# Requires: your inventory has a host/group called "kaneserver" (rename the
+# `hosts:` line below to match your actual inventory alias if different).
+
+- name: Deploy pre-commit secret scanning (gitleaks) on kaneserver
+  #hosts: kaneserver.kane.mk
+  hosts: "{{ scriptinventory | default('kaneserver.kane.mk') }}"
+  become: true
+  gather_facts: true
+
+  vars:
+    # --- EDIT THESE FOR YOUR ENVIRONMENT ---
+    sourcecontrol_base: "/mnt/user/data/sourcecontrol"
+
+    # repo_name is supplied via Semaphore survey (or -e repo_name=... on the CLI).
+    # "workspaces" is deliberately excluded - that's VSCode scratch space, not a repo.
+    repo_name: ""
+    allowed_repos:
+      - scripts
+      - ansible
+      - terraform
+      - homelab
+      - murdog
+
+    git_repo_path: "{{ sourcecontrol_base }}/{{ repo_name }}"
+
+    gitleaks_version: "8.21.2"          # bump as needed; check https://github.com/gitleaks/gitleaks/releases
+    gitleaks_install_dir: "/mnt/user/AppData/gitleaks/bin"   # persistent on Unraid array, NOT /usr/local/bin
+    gitleaks_symlink: "/usr/local/bin/gitleaks"               # convenience symlink (recreated by this playbook each run)
+    gitleaks_config_path: "{{ git_repo_path }}/.gitleaks.toml"
+
+    # Baseline patterns always kept in .gitignore, regardless of scan results
+    baseline_gitignore_patterns:
+      - ".env"
+      - ".env.*"
+      - "*cf_secret*"
+      - "*_secret*"
+      - "*.pem"
+      - "*_rsa"
+      - "*_rsa.pub"
+      - "id_ed25519*"
+      - "*.key"
+      - "secrets.yml"
+      - "vault_pass*"
+
+  tasks:
+    # ---------- Validate the survey input before doing anything else ----------
+    - name: Ensure repo_name was supplied
+      ansible.builtin.fail:
+        msg: >-
+          repo_name is required - pass it via Semaphore survey or
+          -e repo_name=<one of: {{ allowed_repos | join(', ') }}>
+      when: not repo_name
+
+    - name: Ensure repo_name is a known, allowed repo
+      ansible.builtin.fail:
+        msg: >-
+          '{{ repo_name }}' is not in the allowed repo list
+          ({{ allowed_repos | join(', ') }}). If you just added a new repo
+          under {{ sourcecontrol_base }}, add it to allowed_repos in this
+          playbook first - this whitelist is intentional so a typo can't
+          point the scan/hooks at an arbitrary path.
+      when: repo_name not in allowed_repos
+
+    # ---------- Install gitleaks ----------
+    - name: Determine gitleaks release arch string
+      ansible.builtin.set_fact:
+        gitleaks_arch: "{{ 'x64' if ansible_architecture == 'x86_64' else 'arm64' }}"
+
+    - name: Ensure persistent install dir exists
+      ansible.builtin.file:
+        path: "{{ gitleaks_install_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Check currently installed gitleaks version
+      ansible.builtin.command: "{{ gitleaks_install_dir }}/gitleaks version"
+      register: gitleaks_current
+      changed_when: false
+      failed_when: false
+
+    - name: Install gitleaks if missing or wrong version
+      when: gitleaks_version not in (gitleaks_current.stdout | default(''))
+      block:
+        - name: Download gitleaks release tarball
+          ansible.builtin.get_url:
+            url: "https://github.com/gitleaks/gitleaks/releases/download/v{{ gitleaks_version }}/gitleaks_{{ gitleaks_version }}_linux_{{ gitleaks_arch }}.tar.gz"
+            dest: "/tmp/gitleaks_{{ gitleaks_version }}.tar.gz"
+            mode: "0644"
+
+        - name: Extract gitleaks binary
+          ansible.builtin.unarchive:
+            src: "/tmp/gitleaks_{{ gitleaks_version }}.tar.gz"
+            dest: "{{ gitleaks_install_dir }}"
+            remote_src: true
+            include:
+              - gitleaks
+
+        - name: Ensure gitleaks binary is executable
+          ansible.builtin.file:
+            path: "{{ gitleaks_install_dir }}/gitleaks"
+            mode: "0755"
+
+    - name: Symlink gitleaks into PATH
+      ansible.builtin.file:
+        src: "{{ gitleaks_install_dir }}/gitleaks"
+        dest: "{{ gitleaks_symlink }}"
+        state: link
+        force: true
+
+    # ---------- Sanity check the repo ----------
+    - name: Confirm target path is a git repo
+      ansible.builtin.stat:
+        path: "{{ git_repo_path }}/.git"
+      register: repo_git_dir
+
+    - name: Fail fast if not a git repo
+      ansible.builtin.fail:
+        msg: >-
+          {{ git_repo_path }} (repo_name={{ repo_name }}) has no .git
+          directory. Clone/init it first, then re-run.
+      when: not repo_git_dir.stat.exists
+
+    # ---------- Deploy config ----------
+    - name: Deploy repo-specific gitleaks config
+      ansible.builtin.copy:
+        dest: "{{ gitleaks_config_path }}"
+        mode: "0644"
+        content: |
+          title = "kaneworld gitleaks config"
+
+          [extend]
+          useDefault = true
+
+          [[rules]]
+          id = "generic-dotenv-file"
+          description = "Any .env style file"
+          regex = '''(?i)^.*\.env(\..*)?$'''
+          path = '''(^|/)\.env(\..*)?$'''
+
+          [[rules]]
+          id = "cf-secret-file"
+          description = "Cloudflare secret / token file"
+          regex = '''(?i)cf[_-]?secret'''
+          path = '''(?i)cf[_-]?secret'''
+
+          [allowlist]
+          description = "Paths gitleaks should never scan"
+          paths = [
+            '''\.git/''',
+          ]
+
+    - name: Ensure baseline secret patterns are in .gitignore
+      ansible.builtin.lineinfile:
+        path: "{{ git_repo_path }}/.gitignore"
+        create: true
+        line: "{{ item }}"
+        insertafter: EOF
+      loop: "{{ baseline_gitignore_patterns }}"
+
+    # ---------- Install hooks ----------
+    - name: Deploy pre-commit hook (blocks commit on detected secret)
+      ansible.builtin.copy:
+        dest: "{{ git_repo_path }}/.git/hooks/pre-commit"
+        mode: "0755"
+        content: |
+          #!/usr/bin/env bash
+          # Installed by Ansible (secure-git-repo.yml) - edit the playbook, not this file.
+          set -euo pipefail
+
+          GITLEAKS_BIN="{{ gitleaks_symlink }}"
+          CONFIG="{{ gitleaks_config_path }}"
+
+          if [ ! -x "$GITLEAKS_BIN" ]; then
+            echo "gitleaks not found at $GITLEAKS_BIN - refusing to commit until it's installed." >&2
+            exit 1
+          fi
+
+          echo "Running gitleaks on staged changes..."
+          if ! "$GITLEAKS_BIN" protect --staged --config "$CONFIG" --redact -v; then
+            echo ""
+            echo "COMMIT BLOCKED: gitleaks found a likely secret in your staged changes."
+            echo "Rotate/remove the secret or add the file to .gitignore, then re-stage."
+            exit 1
+          fi
+
+          exit 0
+
+    - name: Add a `git addsafe` alias (scan-then-stage convenience)
+      ansible.builtin.blockinfile:
+        path: "{{ git_repo_path }}/.git/config"
+        marker: "# {mark} ANSIBLE MANAGED - gitleaks addsafe alias"
+        insertafter: EOF
+        block: |
+          [alias]
+            addsafe = "!f() { git add \"$@\" && {{ gitleaks_symlink }} protect --staged --config {{ gitleaks_config_path }} --redact -v || (git reset -- \"$@\" && echo 'Secret detected - files unstaged automatically.'); }; f"
+
+    # ---------- Scan the current working tree ----------
+    - name: Run gitleaks against the working tree now
+      ansible.builtin.command: >
+        {{ gitleaks_symlink }} detect
+        --source {{ git_repo_path }}
+        --config {{ gitleaks_config_path }}
+        --no-git
+        --report-format json
+        --report-path /tmp/gitleaks_report.json
+        --exit-code 0
+      changed_when: false
+
+    - name: Read scan report
+      ansible.builtin.command: cat /tmp/gitleaks_report.json
+      register: gitleaks_report_raw
+      changed_when: false
+
+    - name: Parse findings into a unique file list
+      ansible.builtin.set_fact:
+        gitleaks_found_files: >-
+          {{ (gitleaks_report_raw.stdout | from_json) | map(attribute='File') | unique | list
+             if (gitleaks_report_raw.stdout | trim) not in ['', '[]'] else [] }}
+
+    - name: Check git-tracked status of each finding
+      ansible.builtin.command: "git -C {{ git_repo_path }} ls-files --error-unmatch {{ item }}"
+      register: tracked_check
+      loop: "{{ gitleaks_found_files }}"
+      changed_when: false
+      failed_when: false
+      when: gitleaks_found_files | length > 0
+
+    - name: Build untracked-secret-file list
+      ansible.builtin.set_fact:
+        untracked_secret_files: "{{ tracked_check.results | default([]) | selectattr('rc', 'defined') | selectattr('rc', 'ne', 0) | map(attribute='item') | list }}"
+
+    - name: Build already-tracked-secret-file list
+      ansible.builtin.set_fact:
+        tracked_secret_files: "{{ tracked_check.results | default([]) | selectattr('rc', 'defined') | selectattr('rc', 'eq', 0) | map(attribute='item') | list }}"
+
+    - name: Add newly discovered untracked secret files to .gitignore
+      ansible.builtin.lineinfile:
+        path: "{{ git_repo_path }}/.gitignore"
+        create: true
+        line: "{{ item }}"
+        insertafter: EOF
+      loop: "{{ untracked_secret_files }}"
+
+    - name: Report untracked files that were added to .gitignore
+      ansible.builtin.debug:
+        msg: "Added to .gitignore (was untracked, now excluded): {{ untracked_secret_files }}"
+      when: untracked_secret_files | length > 0
+
+    - name: WARN about secrets already committed to history
+      ansible.builtin.debug:
+        msg: >-
+          WARNING: these files are already tracked in git history and matched
+          a secret rule. .gitignore does NOT remove them from history - you'll
+          need `git filter-repo` (or BFG Repo-Cleaner) to purge them, plus
+          rotating the actual credential, since it's already exposed to
+          anyone with repo access: {{ tracked_secret_files }}
+      when: tracked_secret_files | length > 0
