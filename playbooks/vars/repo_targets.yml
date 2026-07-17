@@ -17,6 +17,7 @@ repos:
       - stargate.kane.mk
       - auth.kane.mk
       - docker-ceph.kane.mk
+      - docker-dev.kane.mk
 
   - name: homelab
     src: "{{ repo_base_path }}/homelab"
@@ -26,6 +27,7 @@ repos:
       - stargate.kane.mk
       - auth.kane.mk
       - docker-ceph.kane.mk
+      - docker-dev.kane.mk
 
   - name: scripts
     src: "{{ repo_base_path }}/scripts"
@@ -35,6 +37,7 @@ repos:
       - stargate.kane.mk
       - auth.kane.mk
       - docker-ceph.kane.mk
+      - docker-dev.kane.mk
 
   - name: terraform
     src: "{{ repo_base_path }}/terraform"
@@ -44,6 +47,7 @@ repos:
       - stargate.kane.mk
       - auth.kane.mk
       - docker-ceph.kane.mk
+      - docker-dev.kane.mk
 
   - name: kaneworld
     src: "{{ repo_base_path }}/kaneworld"
@@ -53,3 +57,4 @@ repos:
       - stargate.kane.mk
       - auth.kane.mk
       - docker-ceph.kane.mk
+      - docker-dev.kane.mk
