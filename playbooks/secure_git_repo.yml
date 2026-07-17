@@ -180,6 +180,12 @@
           path = '''(^|/)\.env(\..*)?$'''
 
           [[rules]]
+          id = "generic-pub-file"
+          description = "Any .pub style file"
+          regex = '''(?i)^.*\.pub$'''
+          path = '''(^|/)\.pub$'''
+
+          [[rules]]
           id = "cf-secret-file"
           description = "Cloudflare secret / token file"
           regex = '''(?i)cf[_-]?secret'''
