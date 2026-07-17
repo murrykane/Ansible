@@ -221,7 +221,7 @@
 # ---------------------------------------------------------------------------
 - name: Sync matched kaneworld repo directories into live container directories
   #hosts: mkserver.kane.mk,docker-ceph.kane.mk,auth.kane.mk,docker-dev.kane.mk,cyborg.kane.mk,kaneserver.kane.mk,murdognas.kane.mk
-  hosts: docker 
+  hosts: repo_servers
   gather_facts: false
   vars:
     containers_base_path: /home/murry/containers
