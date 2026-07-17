@@ -78,7 +78,7 @@
       - "*_secret*"
       - "*.pem"
       - "*_rsa"
-      - "*_rsa.pub"
+      - "*.pub"
       - "id_ed25519*"
       - "*.key"
       - "secrets.yml"
