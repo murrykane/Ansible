@@ -45,3 +45,11 @@ repos:
       - auth.kane.mk
       - docker-ceph.kane.mk
 
+  - name: kaneworld
+    src: "{{ repo_base_path }}/kaneworld"
+    targets:
+      - mkserver.kane.mk
+      - raptor.kane.mk
+      - stargate.kane.mk
+      - auth.kane.mk
+      - docker-ceph.kane.mk
