@@ -205,3 +205,63 @@
       loop_control:
         label: "{{ item.name }} → {{ inventory_hostname }}"
       become: true
+
+# ---------------------------------------------------------------------------
+# NEW PLAY: overlay matched kaneworld repo directories onto live container dirs
+#
+# For each docker host, find the immediate subdirectories under
+# /home/murry/containers/ (these are the compose project directories you run
+# `docker compose up/down/pull` against) and the immediate subdirectories
+# under /opt/repos/kaneworld/ (the freshly pushed, gitleaks-cleaned repo).
+# Where a directory name exists in BOTH, source control wins for anything
+# it tracks: repo files overwrite the matching live files. NOTHING IS
+# DELETED — data directories, .env files, acme.json, and anything else
+# sitting in the live container directory that isn't tracked in the repo
+# is left completely untouched (no --delete flag on rsync).
+# ---------------------------------------------------------------------------
+- name: Sync matched kaneworld repo directories into live container directories
+  #hosts: mkserver.kane.mk,docker-ceph.kane.mk,auth.kane.mk,docker-dev.kane.mk,cyborg.kane.mk,kaneserver.kane.mk,murdognas.kane.mk
+  hosts: docker 
+  gather_facts: false
+  vars:
+    containers_base_path: /home/murry/containers
+    kaneworld_repo_path: /opt/repos/kaneworld
+ 
+  tasks:
+    - name: Find live container directories on this host
+      ansible.builtin.find:
+        paths: "{{ containers_base_path }}"
+        file_type: directory
+        recurse: false
+      register: container_dirs
+ 
+    - name: Find kaneworld repo directories on this host
+      ansible.builtin.find:
+        paths: "{{ kaneworld_repo_path }}"
+        file_type: directory
+        recurse: false
+      register: repo_dirs
+ 
+    - name: Determine directory names present in both locations
+      ansible.builtin.set_fact:
+        matched_containers: >-
+          {{
+            (container_dirs.files | map(attribute='path') | map('basename') | list)
+            | intersect(repo_dirs.files | map(attribute='path') | map('basename') | list)
+          }}
+ 
+    - name: Show which containers matched a repo directory
+      ansible.builtin.debug:
+        msg: "{{ matched_containers }}"
+ 
+    # - name: Overlay matched repo directories onto the live container directories
+    #   ansible.builtin.command:
+    #     cmd: >
+    #       rsync -a
+    #       "{{ kaneworld_repo_path }}/{{ item }}/"
+    #       "{{ containers_base_path }}/{{ item }}/"
+    #   loop: "{{ matched_containers }}"
+    #   loop_control:
+    #     label: "{{ item }}"
+    #   changed_when: true
+ 
