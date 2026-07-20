@@ -51,7 +51,7 @@
         content: "{{ homepage_env.stdout }}"
         dest: "{{ home_dir }}/homepage-prod-1/.env"
         mode: "0400"
-        user: murry
+        owner: murry
         group: murry
 
     - name: Show reboot flag and status for this host
