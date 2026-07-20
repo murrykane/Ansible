@@ -257,7 +257,7 @@
     # - name: Overlay matched repo directories onto the live container directories
     #   ansible.builtin.command:
     #     cmd: >
-    #       rsync -a
+    #       rsync -ar
     #       "{{ kaneworld_repo_path }}/{{ item }}/"
     #       "{{ containers_base_path }}/{{ item }}/"
     #   loop: "{{ matched_containers }}"
