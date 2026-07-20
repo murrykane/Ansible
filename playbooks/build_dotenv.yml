@@ -14,7 +14,7 @@
           - "infisical_url: {{ infisical_url }}"
           - "infisical_client_id: {{ infisical_client_id }}"
           - "infisical_client_secret: {{ infisical_client_secret }}"
-          - "homelab_project_id: {{ homelab_project_id }}"
+          - "homelab_project_id: {{ infisical_project_id }}"
 
     - name: Authenticate with Infisical and get access token
       ansible.builtin.command:
@@ -27,7 +27,7 @@
           --client-secret={{ infisical_client_secret }} 
           --silent --plain
       register: infisical_token
-      no_log: true    # keeps the token out of Ansible logs
+      no_log: false    # keeps the token out of Ansible logs
 
     - name: Export homepage secrets to .env
       ansible.builtin.command:
@@ -35,12 +35,12 @@
           infisical export
           --token={{ infisical_token.stdout }}
           --domain={{ infisical_url }}
-          --projectId={{ homelab_project_id }}
+          --projectId={{ infisical_project_id }}
           --env=prod
           --path=/homepage
           --format=dotenv
       register: homepage_env
-      no_log: true
+      no_log: false
 
     - name: Show reboot flag and status for this host
       ansible.builtin.debug:
