@@ -1,0 +1,40 @@
+infisical_containers:
+  - project: portainer-prod-1
+    path: /portainer-prod-1
+    env: prod
+  - project: homepage-prod-1
+    path: /homepage
+    env: prod
+  - project: traefik-prod-1
+    path: /traefik/instance-1
+    env: prod
+  - project: dozzle-prod-1
+    path: /dozzle-prod-1
+    env: prod
+  - project: cloudflare-prod-1
+    path: /cloudflared-prod-1
+    env: prod
+  - project: speedtest-tracker
+    path: /speedtest-prod-1
+    env: prod
+  - project: gotify
+    path: /gotify-prod-1
+    env: prod
+  - project: nextcloud-prod-1
+    path: /nextcloud-prod-1
+    env: prod
+  - project: grafana-monitoring
+    path: /grafana-monitoring
+    env: prod
+  - project: crowdsec-prod-1
+    path: /crowdsec/instance-1
+    env: prod
+  - project: vaultwarden-prod-1
+    path: /vaultwarden-prod-1
+    env: prod
+  - project: kuma-prod-1
+    path: /kuma-prod-1
+    env: prod
+  - project: mailrise-prod-1
+    path: /mailrise-prod-1
+    env: prod

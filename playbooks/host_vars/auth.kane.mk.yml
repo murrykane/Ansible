@@ -1,0 +1,13 @@
+infisical_containers:
+  - project: portainer-prod-6
+    path: /portainer-prod-6
+    env: prod
+  - project: traefik-prod-6
+    path: /traefik/instance-6
+    env: prod
+  - project: crowdsec-prod-6
+    path: /crowdsec/instance-6
+    env: prod
+  - project: authentik-prod-2
+    path: /authentik-prod-2
+    env: prod

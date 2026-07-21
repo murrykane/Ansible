@@ -1,0 +1,12 @@
+home_dir: /share/homes/MurryKane/containers
+
+infisical_containers:
+  - project: traefik-prod-7
+    path: /traefik/instance-7
+    env: prod
+  - project: crowdsec-prod-7
+    path: /crowdsec/instance-7
+    env: prod
+  - project: promtail-prod-5
+    path: /promtail-prod-5
+    env: prod

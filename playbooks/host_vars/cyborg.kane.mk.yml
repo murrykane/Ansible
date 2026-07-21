@@ -1,0 +1,43 @@
+infisical_containers:
+  - project: portainer-prod-3
+    path: /portainer-prod-3
+    env: prod
+  - project: checkmk-prod-1
+    path: /checkmk
+    env: prod
+  - project: newt-prod-1
+    path: /newt/instance-1
+    env: prod
+  - project: traefik-prod-3
+    path: /traefik/instance-3
+    env: prod
+  - project: n8n
+    path: /n8n
+    env: prod
+  - project: linkwarden-prod-1
+    path: /linkwarden-prod-1
+    env: prod
+  - project: loki-prod-4
+    path: /loki-prod-4
+    env: prod
+  - project: sterlingpdf-prod-1        # typo in the actual compose label - see note below
+    path: /stirlingpdf-prod-1
+    env: prod
+  - project: scanopy-prod-1
+    path: /scanopy-prod-1
+    env: prod
+  - project: crowdsec-prod-3
+    path: /crowdsec/instance-3
+    env: prod
+  - project: semaphore-prod-1
+    path: /semaphore-prod-1
+    env: prod
+  - project: dockhand
+    path: /dockhand
+    env: prod
+  - project: it-tools
+    path: /it-tools-prod-1
+    env: prod
+  - project: atlas
+    path: /atlas/instance-1
+    env: prod

@@ -1,0 +1,19 @@
+infisical_containers:
+  - project: traefik-prod-4
+    path: /traefik/instance-4
+    env: prod
+  - project: crowdsec-prod-4
+    path: /crowdsec/instance-4
+    env: prod
+  - project: autoheal
+    path: /autoheal-prod-1
+    env: prod
+  - project: paperless
+    path: /paperless
+    env: prod
+  - project: navidrome-prod-1
+    path: /navidrome-prod-1
+    env: prod
+  - project: immich
+    path: /immich
+    env: prod
