@@ -1,9 +1,9 @@
 infisical_containers:
   - project: infisical
-    path: /infisical-dev
+    path: /infisical-dev-1
     env: dev
   - project: security-dev-1
-    path: /security/dev-1
+    path: /security-dev-1
     env: dev
   - project: wallos
     path: /wallos-dev-1
