@@ -18,6 +18,7 @@ repos:
       - auth.kane.mk
       - docker-ceph.kane.mk
       - docker-dev.kane.mk
+      - cyborg.kane.mk
 
   - name: homelab
     src: "{{ repo_base_path }}/homelab"
@@ -28,6 +29,7 @@ repos:
       - auth.kane.mk
       - docker-ceph.kane.mk
       - docker-dev.kane.mk
+      - cyborg.kane.mk
 
   - name: scripts
     src: "{{ repo_base_path }}/scripts"
@@ -38,6 +40,7 @@ repos:
       - auth.kane.mk
       - docker-ceph.kane.mk
       - docker-dev.kane.mk
+      - cyborg.kane.mk
 
   - name: terraform
     src: "{{ repo_base_path }}/terraform"
@@ -48,6 +51,7 @@ repos:
       - auth.kane.mk
       - docker-ceph.kane.mk
       - docker-dev.kane.mk
+      - cyborg.kane.mk
 
   - name: kaneworld
     src: "{{ repo_base_path }}/kaneworld"
@@ -58,3 +62,4 @@ repos:
       - auth.kane.mk
       - docker-ceph.kane.mk
       - docker-dev.kane.mk
+      - cyborg.kane.mk
