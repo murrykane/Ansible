@@ -358,5 +358,8 @@ records:
     name: wallos
     ip: docker-dev.kane.mk
   - zone: local.kaneworld.org
-    name: infisical
+    name: infisical-dev-1
     ip: docker-dev.kane.mk
+  - zone: local.kaneworld.org
+    name: infisical-prod-1
+    ip: cyborg.kane.mk
