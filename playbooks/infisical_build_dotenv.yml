@@ -11,6 +11,26 @@
           #- "infisical_client_secret: {{ infisical_client_secret }}"
           #- "homelab_project_id: {{ infisical_project_id }}"
 
+    - name: Check if Infisical CLI is installed
+      ansible.builtin.command: infisical --version
+      register: infisical_check
+      failed_when: false
+      changed_when: false
+
+    - name: Install Infisical CLI repository
+      ansible.builtin.shell: |
+        curl -1sLf 'https://artifacts-cli.infisical.com/setup.deb.sh' | sudo -E bash
+      when: infisical_check.rc != 0
+      args:
+        creates: /etc/apt/sources.list.d/infisical-infisical-cli.list
+
+    - name: Install Infisical CLI
+      ansible.builtin.apt:
+        name: infisical
+        update_cache: true
+      become: true
+      when: infisical_check.rc != 0
+
     - name: Authenticate with Infisical and get access token
       ansible.builtin.command:
         cmd: >
