@@ -2,6 +2,15 @@
 
   tasks:
 
+    - name: Show some variables for this host
+      ansible.builtin.debug:
+        msg:
+          - "home_dir: {{ home_dir }}"
+          - "infisical_url: {{ infisical_url }}"
+          #- "infisical_client_id: {{ infisical_client_id }}"
+          #- "infisical_client_secret: {{ infisical_client_secret }}"
+          #- "homelab_project_id: {{ infisical_project_id }}"
+
     - name: Authenticate with Infisical and get access token
       ansible.builtin.command:
         cmd: >

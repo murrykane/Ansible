@@ -1,5 +1,5 @@
 home_dir: /home/murry/containers
 infisical_url: "https://infisical.local.kaneworld.org"
-infisical_project_id: "{{ infisical_project_id }}"
-infisical_client_id: "{{ infisical_client_id }}"
-infisical_client_secret: "{{ infisical_client_secret }}"
+# infisical_project_id: "{{ vault_infisical_project_id }}"
+# infisical_client_id: "{{ vault_infisical_client_id }}"
+# infisical_client_secret: "{{ infisical_client_secret }}"
