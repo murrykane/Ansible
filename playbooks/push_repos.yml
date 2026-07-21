@@ -254,14 +254,14 @@
       ansible.builtin.debug:
         msg: "{{ matched_containers }}"
  
-    # - name: Overlay matched repo directories onto the live container directories
-    #   ansible.builtin.command:
-    #     cmd: >
-    #       rsync -ar
-    #       "{{ kaneworld_repo_path }}/{{ item }}/"
-    #       "{{ containers_base_path }}/{{ item }}/"
-    #   loop: "{{ matched_containers }}"
-    #   loop_control:
-    #     label: "{{ item }}"
-    #   changed_when: true
+    - name: Overlay matched repo directories onto the live container directories
+      ansible.builtin.command:
+        cmd: >
+          rsync -ar
+          "{{ kaneworld_repo_path }}/{{ item }}/"
+          "{{ containers_base_path }}/{{ item }}/"
+      loop: "{{ matched_containers }}"
+      loop_control:
+        label: "{{ item }}"
+      changed_when: true
  
