@@ -21,7 +21,7 @@
           --client-secret={{ infisical_client_secret }}
           --silent --plain
       register: infisical_token
-      no_log: true
+      no_log: false
 
     - name: Ensure project directories exist
       ansible.builtin.file:
