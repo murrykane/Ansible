@@ -25,33 +25,33 @@
       loop_control:
         label: "{{ item.project }}"
 
-    - name: Export and write .env per project
-      block:
-
-        - name: Export secrets from Infisical
-          ansible.builtin.command:
-            cmd: >
-              infisical export
-              --token={{ infisical_token.stdout }}
-              --domain={{ infisical_url }}
-              --projectId={{ infisical_project_id }}
-              --env={{ item.env }}
-              --path={{ item.path }}
-              --format=dotenv
-          register: project_env
-          no_log: true
-
-        - name: Write rendered .env
-          ansible.builtin.copy:
-            content: "{{ project_env.stdout }}"
-            dest: "{{ home_dir }}/{{ item.project }}/.env"
-            mode: "0400"
-            owner: murry
-            group: murry
-
+    - name: Export secrets from Infisical
+      ansible.builtin.command:
+        cmd: >
+          infisical export
+          --token={{ infisical_token.stdout }}
+          --domain={{ infisical_url }}
+          --projectId={{ infisical_project_id }}
+          --env={{ item.env }}
+          --path={{ item.path }}
+          --format=dotenv
+      register: project_env
+      no_log: true
       loop: "{{ infisical_containers }}"
       loop_control:
         label: "{{ item.project }}"
+
+    - name: Write rendered .env
+      ansible.builtin.copy:
+        content: "{{ item.stdout }}"
+        dest: "{{ home_dir }}/{{ item.item.project }}/.env"
+        mode: "0400"
+        owner: murry
+        group: murry
+      loop: "{{ project_env.results }}"
+      loop_control:
+        label: "{{ item.item.project }}"
+      no_log: true
 
     - name: Show summary
       ansible.builtin.debug:
