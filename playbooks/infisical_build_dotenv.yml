@@ -41,7 +41,7 @@
           --client-secret={{ infisical_client_secret }}
           --silent --plain
       register: infisical_token
-      no_log: false
+      no_log: true
 
     - name: Ensure project directories exist
       ansible.builtin.file:
@@ -80,7 +80,25 @@
       loop: "{{ project_env.results }}"
       loop_control:
         label: "{{ item.item.project }}"
+      register: env_write_results
       no_log: true
+
+    # - name: Recycle containers for changed projects only
+    #   ansible.builtin.shell:
+    #     cmd: docker compose down && docker compose up -d
+    #     chdir: "{{ home_dir }}/{{ item.item.item.project }}"
+    #   loop: "{{ env_write_results.results }}"
+    #   loop_control:
+    #     label: "{{ item.item.item.project }}"
+    #   when: item.changed
+
+    - name: Show docker changes found for changed projects only
+      ansible.builtin.debug:
+        msg: "Docker Recycle Needed for Container: {{ home_dir }}/{{ item.item.item.project }}"
+      loop: "{{ env_write_results.results }}"
+      loop_control:
+        label: "{{ item.item.item.project }}"
+      when: item.changed
 
     - name: Show summary
       ansible.builtin.debug:
