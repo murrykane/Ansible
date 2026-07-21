@@ -8,6 +8,7 @@ all:
         auth.kane.mk:
         docker-ceph.kane.mk:
         docker-dev.kane.mk:
+        cyborg.kane.mk:
     pbs_servers:
       hosts:
         pbs.kane.mk:
