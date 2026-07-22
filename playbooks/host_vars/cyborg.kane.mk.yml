@@ -41,3 +41,6 @@ infisical_containers:
   - project: atlas-prod-1
     path: /atlas-prod-1
     env: prod
+  - project: infisical-prod-1
+    path: /infisical-prod-1
+    env: prod
