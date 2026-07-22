@@ -20,7 +20,7 @@ infisical_containers:
   - project: loki-prod-4
     path: /loki-prod-4
     env: prod
-  - project: sterlingpdf-prod-1        # typo in the actual compose label - see note below
+  - project: stirlingpdf-prod-1        # typo in the actual compose label - see note below
     path: /stirlingpdf-prod-1
     env: prod
   - project: scanopy-prod-1
