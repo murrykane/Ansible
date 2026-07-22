@@ -7,6 +7,7 @@
         msg:
           - "home_dir: {{ home_dir }}"
           - "infisical_url: {{ infisical_url }}"
+          - "Output file: {{ output_file }}"
           #- "infisical_client_id: {{ infisical_client_id }}"
           #- "infisical_client_secret: {{ infisical_client_secret }}"
           #- "homelab_project_id: {{ infisical_project_id }}"
@@ -65,15 +66,15 @@
           --path={{ item.path }}
           --format=dotenv
       register: project_env
-      no_log: true
+      no_log: false
       loop: "{{ infisical_containers }}"
       loop_control:
         label: "{{ item.project }}"
 
-    - name: Write rendered .env
+    - name: Write rendered {{ output_file }} files
       ansible.builtin.copy:
         content: "{{ item.stdout }}"
-        dest: "{{ home_dir }}/{{ item.item.project }}/.env"
+        dest: "{{ home_dir }}/{{ item.item.project }}/{{ output_file }}"
         mode: "0400"
         owner: murry
         group: murry
@@ -102,64 +103,5 @@
 
     - name: Show summary
       ansible.builtin.debug:
-        msg: "Wrote .env files for: {{ infisical_containers | map(attribute='project') | list }}"
+        msg: "Wrote {{ output_file }} files for: {{ infisical_containers | map(attribute='project') | list }}"
 
-# - hosts: "{{ scriptinventory }}"
-#   #become: yes
-
-#   vars:
-#     home_dir: /home/murry/containers 
-
-#   tasks:
-
-#     - name: Show reboot flag and status for this host
-#       ansible.builtin.debug:
-#         msg:
-#           - "home_dir: {{ home_dir }}"
-#           - "infisical_url: {{ infisical_url }}"
-#           #- "infisical_client_id: {{ infisical_client_id }}"
-#           #- "infisical_client_secret: {{ infisical_client_secret }}"
-#           #- "homelab_project_id: {{ infisical_project_id }}"
-
-#     - name: Authenticate with Infisical and get access token
-#       ansible.builtin.command:
-#         cmd: >
-#           infisical login
-#           --domain={{ infisical_url }}
-#           --method=universal-auth
-#           --client-id={{ infisical_client_id }}
-#           --client-secret={{ infisical_client_secret }} 
-#           --silent --plain
-#       register: infisical_token
-#       no_log: true    # keeps the token out of Ansible logs
-
-#     - name: Export homepage secrets to .env
-#       ansible.builtin.command:
-#         cmd: >
-#           infisical export
-#           --token={{ infisical_token.stdout }}
-#           --domain={{ infisical_url }}
-#           --projectId={{ infisical_project_id }}
-#           --env=prod
-#           --path=/homepage
-#           --format=dotenv
-#       register: homepage_env
-#       no_log: true
-
-#     # - name: Show reboot flag and status for this host
-#     #   ansible.builtin.debug:
-#     #     msg:
-#     #       - "Env: {{ homepage_env.stdout }}"
-
-#     - name: Write rendered .env
-#       ansible.builtin.copy:
-#         content: "{{ homepage_env.stdout }}"
-#         dest: "{{ home_dir }}/homepage-prod-1/.env"
-#         mode: "0400"
-#         owner: murry
-#         group: murry
-
-#     - name: Show reboot flag and status for this host
-#       ansible.builtin.debug:
-#         msg:
-#           - "Created {{ home_dir }}/homepage-prod-1/.env."
