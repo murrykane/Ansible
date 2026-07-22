@@ -6,13 +6,13 @@ infisical_containers:
     path: /checkmk
     env: prod
   - project: newt-prod-1
-    path: /newt/instance-1
+    path: /newt-prod-1
     env: prod
   - project: traefik-prod-3
-    path: /traefik/instance-3
+    path: /traefik-prod-3
     env: prod
-  - project: n8n
-    path: /n8n
+  - project: n8n-prod-1
+    path: /n8n-prod-1
     env: prod
   - project: linkwarden-prod-1
     path: /linkwarden-prod-1
@@ -27,17 +27,17 @@ infisical_containers:
     path: /scanopy-prod-1
     env: prod
   - project: crowdsec-prod-3
-    path: /crowdsec/instance-3
+    path: /crowdsec-prod-3
     env: prod
   - project: semaphore-prod-1
     path: /semaphore-prod-1
     env: prod
-  - project: dockhand
-    path: /dockhand
+  - project: dockhand-prod-1
+    path: /dockhand-prod-1
     env: prod
-  - project: it-tools
+  - project: it-tools-prod-1
     path: /it-tools-prod-1
     env: prod
-  - project: atlas
-    path: /atlas/instance-1
+  - project: atlas-prod-1
+    path: /atlas-prod-1
     env: prod
