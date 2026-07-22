@@ -1,10 +1,10 @@
 infisical_containers:
-  - project: infisical
+  - project: infisical-dev-1
     path: /infisical-dev-1
     env: dev
   - project: security-dev-1
     path: /security-dev-1
     env: dev
-  - project: wallos
+  - project: wallos-dev-1
     path: /wallos-dev-1
     env: dev

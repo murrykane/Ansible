@@ -2,17 +2,17 @@ home_dir: /mnt/user/AppData
 
 infisical_containers:
   - project: traefik-prod-5      # bundles traefik + its bouncer + crowdsec, unlike other hosts
-    path: /traefik/instance-5
+    path: /traefik-prod-5
     env: prod
-  - project: torrenting
-    path: /torrenting
+  - project: torrenting-prod-1
+    path: /torrenting-prod-1
     env: prod
-  - project: portainer
+  - project: portainer-prod-5
     path: /portainer-prod-5
     env: prod
   - project: houndarr-prod-1
     path: /houndarr-prod-1
     env: prod
-  - project: checkmk
-    path: /checkmk-agent          # kept distinct from cyborg's /checkmk (checkmk-prod-1)
+  - project: checkmk-agent-prod-1
+    path: /checkmk-agent-prod-1          # kept distinct from cyborg's /checkmk (checkmk-prod-1)
     env: prod

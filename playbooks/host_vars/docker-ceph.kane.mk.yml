@@ -1,12 +1,12 @@
 infisical_containers:
   - project: newt-prod-2
-    path: /newt/instance-2
+    path: /newt-prod-2
     env: prod
   - project: traefik-prod-8
-    path: /traefik/instance-8
+    path: /traefik-prod-8
     env: prod
   - project: crowdsec-prod-8
-    path: /crowdsec/instance-8
+    path: /crowdsec-prod-8
     env: prod
   - project: mariadb-prod-1
     path: /mariadb-prod-1
@@ -14,6 +14,6 @@ infisical_containers:
   - project: postgres-prod-1       # once you fix the compose label
     path: /postgres-prod-1
     env: prod
-  - project: atlas
-    path: /atlas/instance-2
+  - project: atlas-prod-2
+    path: /atlas-prod-2
     env: prod
