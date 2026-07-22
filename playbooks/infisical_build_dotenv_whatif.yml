@@ -1,0 +1,105 @@
+- hosts: "{{ scriptinventory }}"
+
+  tasks:
+
+    - name: Show some variables for this host
+      ansible.builtin.debug:
+        msg:
+          - "home_dir: {{ home_dir }}"
+          - "infisical_url: {{ infisical_url }}"
+          #- "infisical_client_id: {{ infisical_client_id }}"
+          #- "infisical_client_secret: {{ infisical_client_secret }}"
+          #- "homelab_project_id: {{ infisical_project_id }}"
+
+    - name: Check if Infisical CLI is installed
+      ansible.builtin.command: infisical --version
+      register: infisical_check
+      failed_when: false
+      changed_when: false
+
+    - name: Install Infisical CLI repository
+      ansible.builtin.shell: |
+        curl -1sLf 'https://artifacts-cli.infisical.com/setup.deb.sh' | sudo -E bash
+      when: infisical_check.rc != 0
+      args:
+        creates: /etc/apt/sources.list.d/infisical-infisical-cli.list
+
+    - name: Install Infisical CLI
+      ansible.builtin.apt:
+        name: infisical
+        update_cache: true
+      become: true
+      when: infisical_check.rc != 0
+
+    - name: Authenticate with Infisical and get access token
+      ansible.builtin.command:
+        cmd: >
+          infisical login
+          --domain={{ infisical_url }}
+          --method=universal-auth
+          --client-id={{ infisical_client_id }}
+          --client-secret={{ infisical_client_secret }}
+          --silent --plain
+      register: infisical_token
+      no_log: true
+
+    - name: Ensure project directories exist
+      ansible.builtin.file:
+        path: "{{ home_dir }}/{{ item.project }}"
+        state: directory
+        owner: murry
+        group: murry
+        mode: "0750"
+      loop: "{{ infisical_containers }}"
+      loop_control:
+        label: "{{ item.project }}"
+
+    - name: Export secrets from Infisical
+      ansible.builtin.command:
+        cmd: >
+          infisical export
+          --token={{ infisical_token.stdout }}
+          --domain={{ infisical_url }}
+          --projectId={{ infisical_project_id }}
+          --env={{ item.env }}
+          --path={{ item.path }}
+          --format=dotenv
+      register: project_env
+      no_log: true
+      loop: "{{ infisical_containers }}"
+      loop_control:
+        label: "{{ item.project }}"
+
+    - name: Write rendered .env
+      ansible.builtin.copy:
+        content: "{{ item.stdout }}"
+        dest: "{{ home_dir }}/{{ item.item.project }}/testing.txt"
+        mode: "0400"
+        owner: murry
+        group: murry
+      loop: "{{ project_env.results }}"
+      loop_control:
+        label: "{{ item.item.project }}"
+      register: env_write_results
+      no_log: true
+
+    # - name: Recycle containers for changed projects only
+    #   ansible.builtin.shell:
+    #     cmd: docker compose down && docker compose up -d
+    #     chdir: "{{ home_dir }}/{{ item.item.item.project }}"
+    #   loop: "{{ env_write_results.results }}"
+    #   loop_control:
+    #     label: "{{ item.item.item.project }}"
+    #   when: item.changed
+
+    - name: Show docker changes found for changed projects only
+      ansible.builtin.debug:
+        msg: "Docker Recycle Needed for Container: {{ home_dir }}/{{ item.item.item.project }}"
+      loop: "{{ env_write_results.results }}"
+      loop_control:
+        label: "{{ item.item.item.project }}"
+      when: item.changed
+
+    - name: Show summary
+      ansible.builtin.debug:
+        msg: "Wrote .env files for: {{ infisical_containers | map(attribute='project') | list }}"
