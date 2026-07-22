@@ -3,7 +3,7 @@ infisical_containers:
     path: /portainer-prod-3
     env: prod
   - project: checkmk-prod-1
-    path: /checkmk
+    path: /checkmk-prod-1
     env: prod
   - project: newt-prod-1
     path: /newt-prod-1
