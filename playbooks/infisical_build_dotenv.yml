@@ -13,7 +13,7 @@
           #- "homelab_project_id: {{ infisical_project_id }}"
 
     - name: Check if Infisical CLI is installed
-      ansible.builtin.command: infisical --version
+      ansible.builtin.command: "{{ infisical_bin }} --version"
       register: infisical_check
       failed_when: false
       changed_when: false

@@ -1,6 +1,7 @@
 home_dir: /share/homes/MurryKane/containers
 infisical_owner: MurryKane
 infisical_group: everyone
+infisical_bin: /usr/local/bin/infisical
 
 infisical_containers:
   - project: traefik-prod-7
