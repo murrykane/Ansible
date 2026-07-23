@@ -48,8 +48,8 @@
       ansible.builtin.file:
         path: "{{ home_dir }}/{{ item.project }}"
         state: directory
-        owner: murry
-        group: murry
+        owner: "{{ infisical_owner }}"
+        group: "{{ infisical_group }}"
         mode: "0750"
       loop: "{{ infisical_containers }}"
       loop_control:
@@ -76,8 +76,8 @@
         content: "{{ item.stdout }}"
         dest: "{{ home_dir }}/{{ item.item.project }}/{{ output_file }}"
         mode: "0400"
-        owner: murry
-        group: murry
+        owner: "{{ infisical_owner }}"
+        group: "{{ infisical_group }}"
       loop: "{{ project_env.results }}"
       loop_control:
         label: "{{ item.item.project }}"

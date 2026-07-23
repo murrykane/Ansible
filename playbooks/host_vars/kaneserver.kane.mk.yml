@@ -1,4 +1,6 @@
 home_dir: /mnt/user/AppData
+infisical_owner: murrykane
+infisical_group: users
 
 infisical_containers:
   - project: traefik-prod-5      # bundles traefik + its bouncer + crowdsec, unlike other hosts
