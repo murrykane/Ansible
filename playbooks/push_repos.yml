@@ -83,6 +83,7 @@
     #####  SLOW end ###############
 
     # lets remove .git and .gitignore files and set permissions on the rest of the tree using native find and chmod since the ansible file module is very slow on large trees
+    # adding .ENV files as we will manage these with infisical now!!!
     - name: Find files to remove 
       ansible.builtin.find: 
         paths: "{{ repo_base_path }}" 
@@ -90,6 +91,7 @@
           - ".git"
           - ".gitignore"
           - "README.md"
+          - ".env"
         file_type: any
         hidden: true
         recurse: yes
