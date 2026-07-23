@@ -42,7 +42,7 @@
           --client-secret={{ infisical_client_secret }}
           --silent --plain
       register: infisical_token
-      no_log: true
+      no_log: "{{ infisical_log }}"
 
     - name: Ensure project directories exist
       ansible.builtin.file:
@@ -66,7 +66,7 @@
           --path={{ item.path }}
           --format=dotenv
       register: project_env
-      no_log: false
+      no_log: "{{ infisical_log }}"
       loop: "{{ infisical_containers }}"
       loop_control:
         label: "{{ item.project }}"
@@ -82,7 +82,7 @@
       loop_control:
         label: "{{ item.item.project }}"
       register: env_write_results
-      no_log: true
+      no_log: "{{ infisical_log }}"
 
     # - name: Recycle containers for changed projects only
     #   ansible.builtin.shell:
