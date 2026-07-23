@@ -35,7 +35,7 @@
     - name: Authenticate with Infisical and get access token
       ansible.builtin.command:
         cmd: >
-          infisical login
+          {{ infisical_bin }} login
           --domain={{ infisical_url }}
           --method=universal-auth
           --client-id={{ infisical_client_id }}
@@ -58,7 +58,7 @@
     - name: Export secrets from Infisical
       ansible.builtin.command:
         cmd: >
-          infisical export
+          {{ infisical_bin }} export
           --token={{ infisical_token.stdout }}
           --domain={{ infisical_url }}
           --projectId={{ infisical_project_id }}
