@@ -116,7 +116,7 @@
           --path=/traefik
           --plain --silent
       register: cf_token
-      no_log: true
+      no_log: "{{ infisical_log }}"
       loop: "{{ infisical_containers | selectattr('project', 'match', '^traefik') | list }}"
       loop_control:
         label: "{{ item.project }}"
@@ -131,5 +131,5 @@
       loop: "{{ cf_token.results }}"
       loop_control:
         label: "{{ item.item.project }}"
-      no_log: true
+      no_log: "{{ infisical_log }}"
 
