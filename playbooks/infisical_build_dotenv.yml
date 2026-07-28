@@ -105,3 +105,31 @@
       ansible.builtin.debug:
         msg: "Wrote {{ output_file }} files for: {{ infisical_containers | map(attribute='project') | list }}"
 
+    - name: Fetch shared Cloudflare API token
+      ansible.builtin.command:
+        cmd: >
+          {{ infisical_bin }} secrets get CF_DNS_API_TOKEN
+          --token={{ infisical_token.stdout }}
+          --domain={{ infisical_url }}
+          --projectId={{ infisical_project_id }}
+          --env={{ item.env }}
+          --path=/traefik
+          --plain --silent
+      register: cf_token
+      no_log: true
+      loop: "{{ infisical_containers | selectattr('project', 'match', '^traefik') | list }}"
+      loop_control:
+        label: "{{ item.project }}"
+
+    - name: Write cf-token file for each traefik instance
+      ansible.builtin.copy:
+        content: "{{ item.stdout | trim }}"
+        dest: "{{ home_dir }}/{{ item.item.project }}/cf-token"
+        mode: "0400"
+        owner: "{{ infisical_owner }}"
+        group: "{{ infisical_group }}"
+      loop: "{{ cf_token.results }}"
+      loop_control:
+        label: "{{ item.item.project }}"
+      no_log: true
+
