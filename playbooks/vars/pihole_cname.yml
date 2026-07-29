@@ -1,0 +1,369 @@
+pihole_cname_entries:
+  - domain: proxmox.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: pihole2.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: pihole3.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: router.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: unraid.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: influxdb.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: prometheus.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: arris.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: nas.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: qvr.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: kemp.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: false
+  - domain: ansible.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: false
+  - domain: unifi.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: monitoring.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: homepage.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: speedtest.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: sonarr.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: radarr.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: prowlarr.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: qbittorrent.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: homeassist.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: nas-portainer.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: vaultwarden.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: bazarr.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: nextcloud.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: jellyseerr.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: ups.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: nodered.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: hahome.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: bosmox.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: tdarr.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: coco.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: minijellyfin.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: fileflow.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: authentik.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: pbs.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: cadvisor-unraid.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: pihole5.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: pihole6.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: slzb-06.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: semaphore.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: mini-portainer.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: traefik-prod-2.local.kaneworld.org
+    target: UtilServer.kane.mk
+    TTL:
+    exists: true
+  - domain: cadvisor-prod-2.local.kaneworld.org
+    target: UtilServer.kane.mk
+    TTL:
+    exists: true
+  - domain: fileflows-prod-1.local.kaneworld.org
+    target: UtilServer.kane.mk
+    TTL:
+    exists: true
+  - domain: jellyseerr-prod-1.local.kaneworld.org
+    target: UtilServer.kane.mk
+    TTL:
+    exists: true
+  - domain: krusader-prod-1.local.kaneworld.org
+    target: UtilServer.kane.mk
+    TTL:
+    exists: true
+  - domain: node_exporter-prod-2.local.kaneworld.org
+    target: UtilServer.kane.mk
+    TTL:
+    exists: true
+  - domain: portainer-prod-2.local.kaneworld.org
+    target: UtilServer.kane.mk
+    TTL:
+    exists: true
+  - domain: promtail-prod-2.local.kaneworld.org
+    target: UtilServer.kane.mk
+    TTL:
+    exists: true
+  - domain: prowlarr-prod-1.local.kaneworld.org
+    target: UtilServer.kane.mk
+    TTL:
+    exists: true
+  - domain: qbittorrent-prod-1.local.kaneworld.org
+    target: UtilServer.kane.mk
+    TTL:
+    exists: true
+  - domain: radarr-prod-1.local.kaneworld.org
+    target: UtilServer.kane.mk
+    TTL:
+    exists: true
+  - domain: recyclarr-prod-1.local.kaneworld.org
+    target: UtilServer.kane.mk
+    TTL:
+    exists: true
+  - domain: sonarr-prod-1.local.kaneworld.org
+    target: UtilServer.kane.mk
+    TTL:
+    exists: true
+  - domain: traefik-prod-3.local.kaneworld.org
+    target: cyborg.kane.mk
+    TTL:
+    exists: true
+  - domain: portainer-prod-3.local.kaneworld.org
+    target: cyborg.kane.mk
+    TTL:
+    exists: true
+  - domain: semaphore-prod-1.local.kaneworld.org
+    target: cyborg.kane.mk
+    TTL:
+    exists: true
+  - domain: traefik-prod-1.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: portainer-prod-1.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: homepage-prod-1.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: kuma-prod-1.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: unifi-prod-1.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: vaultwarden-prod-1.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: cadvisor-prod-1.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: traefik3-widget.local.kaneworld.org
+    target: cyborg.kane.mk
+    TTL:
+    exists: true
+  - domain: traefik1-widget.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: traefik2-widget.local.kaneworld.org
+    target: UtilServer.kane.mk
+    TTL:
+    exists: true
+  - domain: alertmanager.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: checkmk.local.kaneworld.org
+    target: cyborg.kane.mk
+    TTL:
+    exists: true
+  - domain: semaphore-api.local.kaneworld.org
+    target: cyborg.kane.mk
+    TTL:
+    exists: true
+  - domain: loki-prod-4.local.kaneworld.org
+    target: cyborg.kane.mk
+    TTL:
+    exists: true
+  - domain: huntarr-prod-1.local.kaneworld.org
+    target: UtilServer.kane.mk
+    TTL:
+    exists: true
+  - domain: traefik1-metrics.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: traefik2-metrics.local.kaneworld.org
+    target: UtilServer.kane.mk
+    TTL:
+    exists: true
+  - domain: traefik3-metrics.local.kaneworld.org
+    target: cyborg.kane.mk
+    TTL:
+    exists: true
+  - domain: monitoring-widget.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: it-tools.local.kaneworld.org
+    target: cyborg.kane.mk
+    TTL:
+    exists: true
+  - domain: pihole1.local.kaneworld.org
+    target: traefik4.kane.mk
+    exists: true
+    TTL:
+  - domain: traefik4.local.kaneworld.org
+    target: traefik4.kane.mk
+    exists: true
+    TTL:
+  - domain: rancher.local.kaneworld.org
+    target: traefik4.kane.mk
+    exists: true
+    TTL:
+  - domain: nvidia.local.kaneworld.org
+    target: kaneworld.org
+    exists: true
+    TTL:
+  - domain: n8n.local.kaneworld.org
+    target: cyborg.kane.mk
+    exists: true
+    TTL: 60
+  - domain: gotify.local.kaneworld.org
+    target: kaneworld.org
+    TTL:
+    exists: true
+  - domain: stirlingpdf.local.kaneworld.org
+    target: cyborg.kane.mk
+    exists: true
+    TTL: 60
+  - domain: linkwarden.local.kaneworld.org
+    target: cyborg.kane.mk
+    exists: true
+    TTL: 60
+  - domain: jellyfin.local.kaneworld.org
+    target: kaneworld.org
+    exists: true
+    TTL: 60
+  - domain: tinymedia.local.kaneworld.org
+    target: kaneworld.org
+    exists: true
+    TTL: 60
+  - domain: filebot.local.kaneworld.org
+    target: kaneworld.org
+    exists: true
+    TTL: 60
+  - domain: apprise.local.kaneworld.org
+    target: kaneworld.org
+    exists: true
+    TTL: 60
+  - domain: dns-primary.local.kaneworld.org
+    target: kaneworld.org
+    exists: true
+    TTL: 60
+  - domain: dns-secondary.local.kaneworld.org
+    target: kaneworld.org
+    exists: true
+    TTL: 60

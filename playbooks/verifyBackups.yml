@@ -1,0 +1,80 @@
+---
+- hosts: pbs_servers
+  become: true
+  vars:
+    container_home: '/home/murry/containers/'
+    def_ct_count: 1
+    def_vm_count: 1
+    # ct_count: "{{ ct_count | default(def_ct_count) }}"
+    # vm_count: "{{ vm_count | default(def_vm_count) }}"
+    # ct_count: "{{  ct_count if ct_count is defined else def_ct_count }}"
+    # vm_count: "{{ vm_count if vm_count is defined else def_vm_count }}"
+
+  tasks:
+
+
+    # - name: Set ct_count and vm_count dynamically
+    #   set_fact:
+    #     ct_count: "{{ ct_count | default(def_ct_count) | int }}"
+    #     vm_count: "{{ vm_count | default(def_vm_count) | int }}"
+
+    # - name: Convert ct_count and vm_count to integers
+    #   set_fact:
+    #     ct_count: "{{ ct_count | int }}"
+    #     vm_count: "{{ vm_count | int }}"
+
+    - name: Debug ct_count and vm_count types
+      debug:
+        msg:
+          - "ct_count: {{ ct_count }} (type: {{ ct_count | type_debug }})"
+          - "vm_count: {{ vm_count }} (type: {{ vm_count | type_debug }})"
+
+
+    - name: Find Containers less than 24 hours old
+      find:
+        #paths: /unraid-backups/pbs/ct  # Change this to the directory you want to check
+        #patterns: '^vzdump-qemu.*'
+        #patterns: '^vzdump.*'
+        paths: "{{ ct_backup_path }}"
+        file_type: directory
+        age: -24h
+        #use_regex: true
+        use_regex: false
+      register: recent_ct_dirs
+
+    - name: Find VM's less than 24 hours old
+      find:
+        #paths: /unraid-backups/pbs/vm  # Change this to the directory you want to check
+        #patterns: '^vzdump-qemu.*'
+        #patterns: '^vzdump.*'
+        paths: "{{ vm_backup_path }}"
+        file_type: directory
+        age: -24h
+        #use_regex: true
+        use_regex: false
+      register: recent_vm_dirs
+
+    - name: Send a message to the Discord channel with specific username and avatar
+      community.general.discord:
+        webhook_id: "{{ webhook_id }}"
+        webhook_token: "{{ webhook_token }}"
+        content: "Backups where not made less then 24 hours ago!"
+        username: Ansible
+        #avatar_url: "https://docs.ansible.com/ansible/latest/_static/images/Ansible-Mark-RGB_Black.png"
+        avatar_url: "https://pantheon.tech/wp-content/uploads/2019/04/ansible.png"
+      when: (recent_ct_dirs.matched | int) < (ct_count | int) or (recent_vm_dirs.matched | int) < (vm_count | int)
+
+    - name: Check if recent files are found
+      fail:
+        msg: "No files less than 24 hours old found in the directory."
+      when: (recent_ct_dirs.matched | int) < (ct_count | int) or (recent_vm_dirs.matched | int) < (vm_count | int)
+
+    - name: Debug container files
+      debug:
+        var: recent_ct_dirs.files
+      when: (recent_ct_dirs.matched | int) >= ( ct_count | int)
+
+    - name: Debug VM's files
+      debug:
+        var: recent_vm_dirs.files
+      when: (recent_vm_dirs.matched | int) >= ( vm_count | int)

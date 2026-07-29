@@ -1,0 +1,7 @@
+    pihole_configs:
+      - url: "https://pihole3.local.kaneworld.org"
+        password: "{{ pihole_password_1 }}"
+      - url: "https://pihole5.local.kaneworld.org"
+        password: "{{ pihole_password_2 }}"
+      - url: "https://pihole6.local.kaneworld.org"
+        password: "{{ pihole_password_3 }}"

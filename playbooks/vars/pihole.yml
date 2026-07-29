@@ -1,0 +1,325 @@
+pihole_dns_entries:
+  - domain: kane.mk
+    ip: 192.168.1.1
+    exists: true
+  - domain: kaneworld.org
+    ip: 192.168.1.234
+    exists: true
+  - domain: murdogap.kane.mk
+    ip: 192.168.1.170
+    exists: true
+  - domain: uswfmtv1.kane.mk
+    ip: 192.168.107.57
+    exists: true
+  - domain: uswfmtv2.kane.mk
+    ip: 192.168.107.58
+    exists: true
+  - domain: murpad.kane.mk
+    ip: 192.168.1.111
+    exists: true
+  - domain: adrianasmac.kane.mk
+    ip: 192.168.1.197
+    exists: false
+  - domain: adrianamac.kane.mk
+    ip: 192.168.1.187
+    exists: true
+  - domain: adrianasphone.kane.mk
+    ip: 192.168.1.205
+    exists: true
+  - domain: aliciasipad.kane.mk
+    ip: 192.168.1.130
+    exists: true
+  - domain: aliciasiphone.kane.mk
+    ip: 192.168.1.98
+    exists: true
+  - domain: aliciasmac.kane.mk
+    ip: 192.168.1.197
+    exists: true
+  - domain: aliciaspc.kane.mk
+    ip: 192.168.1.217
+    exists: true
+  - domain: amazonfirecube.kane.mk
+    ip: 192.168.107.53
+    exists: true
+  - domain: amazonfireoffice.kane.mk
+    ip: 192.168.107.75
+    exists: true
+  - domain: amazongarage.kane.mk
+    ip: 192.168.107.72
+    exists: true
+  - domain: amazonhallway.kane.mk
+    ip: 192.168.107.44
+    exists: true
+  - domain: amazonkitchen.kane.mk
+    ip: 192.168.107.86
+    exists: true
+  - domain: amazonmaster.kane.mk
+    ip: 192.168.107.32
+    exists: true
+  - domain: amazonoffice.kane.mk
+    ip: 192.168.107.31
+    exists: true
+  - domain: amazonpatio.kane.mk
+    ip: 192.168.107.40
+    exists: true
+  - domain: amazonplugoffice.kane.mk
+    ip: 192.168.107.36
+    exists: true
+  - domain: applemini.kane.mk
+    ip: 192.168.1.226
+    exists: true
+  - domain: appletv.kane.mk
+    ip: 192.168.107.61
+    exists: true
+  - domain: brendensphone.kane.mk
+    ip: 192.168.1.101
+    exists: true
+  - domain: camerabackyard.kane.mk
+    ip: 192.168.1.135
+    exists: true
+  - domain: cameradoorbell.kane.mk
+    ip: 192.168.1.154
+    exists: true
+  - domain: camerafront.kane.mk
+    ip: 192.168.1.70
+    exists: true
+  - domain: cameragarage.kane.mk
+    ip: 192.168.1.64
+    exists: true
+  - domain: cameragate.kane.mk
+    ip: 192.168.1.137
+    exists: true
+  - domain: camerapatio.kane.mk
+    ip: 192.168.1.192
+    exists: true
+  - domain: fileflow.kane.mk
+    ip: 192.168.1.113
+    exists: true
+  - domain: flumemurdog.kane.mk
+    ip: 192.168.107.33
+    exists: true
+  - domain: goveefense1.kane.mk
+    ip: 192.168.107.82
+    exists: true
+  - domain: goveefense2.kane.mk
+    ip: 192.168.107.83
+    exists: true
+  - domain: goveegazebo.kane.mk
+    ip: 192.168.107.85
+    exists: true
+  - domain: goveespare.kane.mk
+    ip: 192.168.107.84
+    exists: true
+  - domain: hahome.kane.mk
+    ip: 192.168.1.209
+    exists: true
+  - domain: hp8715.kane.mk
+    ip: 192.168.1.102
+    exists: true
+  - domain: homepage.kane.mk
+    ip: 192.168.1.234
+    exists: true
+  - domain: jfmini.kane.mk
+    ip: 192.168.1.230
+    exists: false
+  - domain: pihole1.kane.mk
+    ip: 192.168.1.27
+    exists: true
+  - domain: pihole2.kane.mk
+    ip: 192.168.1.60
+    exists: false
+  - domain: pihole3.kane.mk
+    ip: 192.168.1.145
+    exists: true
+  - domain: pihole4.kane.mk
+    ip: 192.168.1.44
+    exists: false
+  - domain: pihole5.kane.mk
+    ip: 192.168.1.3
+    exists: true
+  - domain: pihole6.kane.mk
+    ip: 192.168.1.115
+    exists: true
+  - domain: playstation5.kane.mk
+    ip: 192.168.1.202
+    exists: true
+  - domain: portainermini.kane.mk
+    ip: 192.168.1.234
+    exists: true
+  - domain: proxmini.kane.mk
+    ip: 192.168.1.10
+    exists: true
+  - domain: rachiomurdog.kane.mk
+    ip: 192.168.107.46
+    exists: true
+  - domain: router.kane.mk
+    ip: 192.168.1.1
+    exists: true
+  - domain: speedtest.kane.mk
+    ip: 192.168.1.66
+    exists: true
+  - domain: tvalicia.kane.mk
+    ip: 192.168.107.67
+    exists: true
+  - domain: tvlivingroom.kane.mk
+    ip: 192.168.107.69
+    exists: true
+  - domain: tvloft.kane.mk
+    ip: 192.168.107.45
+    exists: true
+  - domain: tvmaster.kane.mk
+    ip: 192.168.107.58
+    exists: true
+  - domain: tvpatio.kane.mk
+    ip: 192.168.107.54
+    exists: true
+  - domain: teckinbugzap.kane.mk
+    ip: 192.168.107.57
+    exists: true
+  - domain: teckinlivingroom.kane.mk
+    ip: 192.168.107.59
+    exists: true
+  - domain: teckinmaster.kane.mk
+    ip: 192.168.107.30
+    exists: true
+  - domain: teckinspare.kane.mk
+    ip: 192.168.107.35
+    exists: true
+  - domain: tivodvroffice.kane.mk
+    ip: 192.168.107.47
+    exists: false
+  - domain: tivolivingroom.kane.mk
+    ip: 192.168.107.49
+    exists: false
+  - domain: tivomaster.kane.mk
+    ip: 192.168.107.52
+    exists: false
+  - domain: tivopatio.kane.mk
+    ip: 192.168.107.55
+    exists: false
+  - domain: usw24poe.kane.mk
+    ip: 192.168.1.42
+    exists: true
+  - domain: uswfmattic.kane.mk
+    ip: 192.168.1.175
+    exists: true
+  - domain: uswfmgarage.kane.mk
+    ip: 192.168.1.59
+    exists: true
+  - domain: uswfmtv.kane.mk
+    ip: 192.168.1.186
+    exists: true
+  - domain: utilserver.kane.mk
+    ip: 192.168.1.65
+    exists: true
+  - domain: vickysipad.kane.mk
+    ip: 192.168.1.100
+    exists: true
+  - domain: vickysphone.kane.mk
+    ip: 192.168.1.99
+    exists: true
+  - domain: yamaha.kane.mk
+    ip: 192.168.107.48
+    exists: true
+  - domain: arris.kane.mk
+    ip: 192.168.100.1
+    exists: true
+  - domain: authentik.kane.mk
+    ip: 192.168.1.122
+    exists: true
+  - domain: coco.kane.mk
+    ip: 192.168.1.15
+    exists: true
+  - domain: kuma.kane.mk
+    ip: 192.168.1.152
+    exists: true
+  - domain: mini.kane.mk
+    ip: 192.168.1.10
+    exists: true
+  - domain: MyQ.kane.mk
+    ip: 192.168.107.55
+    exists: true
+  - domain: pbs.kane.mk
+    ip: 192.168.1.97
+    exists: true
+  - domain: slzb-06.kane.mk
+    ip: 192.168.1.114
+    exists: true
+  - domain: cyborg.kane.mk
+    ip: 192.168.1.191
+    exists: true
+  - domain: rke2-prod-1.kane.mk
+    ip: 192.168.1.239
+    exists: true
+  - domain: rke2-prod-2.kane.mk
+    ip: 192.168.1.236
+    exists: true
+  - domain: rke2-prod-3.kane.mk
+    ip: 192.168.1.169
+    exists: true
+  - domain: rke2-prod-4.kane.mk
+    ip: 192.168.1.218
+    exists: true
+  - domain: rke2-prod-5.kane.mk
+    ip: 192.168.1.227
+    exists: true
+  - domain: rke2-prod-6.kane.mk
+    ip: 192.168.1.173
+    exists: true
+  - domain: rke2-prod-7.kane.mk
+    ip: 192.168.1.208
+    exists: true
+  - domain: longhorn-prod-1.kane.mk
+    ip: 192.168.1.41
+    exists: true
+  - domain: longhorn-prod-2.kane.mk
+    ip: 192.168.1.197
+    exists: true
+  - domain: longhorn-prod-3.kane.mk
+    ip: 192.168.1.216
+    exists: true
+  - domain: longhorn-prod-4.kane.mk
+    ip: 192.168.1.213
+    exists: true
+  - domain: longhorn-prod-5.kane.mk
+    ip: 192.168.1.211
+    exists: false
+  - domain: kube-vip.kane.mk
+    ip: 192.168.1.25
+    exists: true
+  - domain: traefik4.kane.mk
+    ip: 192.168.1.26
+    exists: true
+  - domain: unifi.kane.mk
+    ip: 192.168.1.228
+    exists: true
+  - domain: nvidia.kane.mk
+    ip: 192.168.1.9
+    exists: true
+  - domain: murrypc.kane.mk
+    ip: 192.168.1.242
+    exists: true
+  - domain: nvidia-pve-exporter.kane.mk
+    ip: 192.168.1.243
+    exists: true
+  - domain: pihole2.kane.mk
+    ip: 192.168.1.90
+    exists: true
+  - domain: stargate.kane.mk
+    ip: 192.168.1.188
+    exists: true
+  - domain: jellyfin.kane.mk
+    ip: 192.168.1.20
+    exists: true
+  - domain: tinymedia.kane.mk
+    ip: 192.168.1.20
+    exists: true
+  - domain: filebot.kane.mk
+    ip: 192.168.1.20
+    exists: true
+  - domain: dns-primary.kane.mk
+    ip: 192.168.1.205
+    exists: true
+  - domain: dns-secondary.kane.mk
+    ip: 192.168.1.206
+    exists: true

@@ -1,0 +1,24 @@
+---
+- hosts: 'mkserver.kane.mk'
+  become: true
+  tasks:
+
+    - name: Execute Python script for Unifi Controller Port power recycle
+      command: python3 /home/murry/scripts/unifi_powercycle_final.py
+      register: script_result
+      ignore_errors: true  # Ignore errors to handle them manually
+
+    - name: Send a message to the Discord channel with specific username and avatar
+      community.general.discord:
+        webhook_id: "{{ webhook_id }}"
+        webhook_token: "{{ webhook_token }}"
+        content: "Unifi Controller port recycle attempt didn't work, please review and fix accordingly!"
+        username: Ansible
+        #avatar_url: "https://docs.ansible.com/ansible/latest/_static/images/Ansible-Mark-RGB_Black.png"
+        avatar_url: "https://pantheon.tech/wp-content/uploads/2019/04/ansible.png"
+      when: script_result.rc != 0
+
+    - name: Validate return code
+      fail:
+        msg: "Python script exited with non-zero return code: {{ script_result.rc }}"
+      when: script_result.rc != 0

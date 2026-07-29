@@ -1,0 +1,9 @@
+---
+install_directory: '~/docker/technitium'
+#base_address: 'https://192.168.1.215:53443'
+base_address: "{{ dns_base_address }}"
+default_blocking_time: "{{ dns_blocking_time }}"
+
+dns_configurations:
+  token: "{{ dns_token }}"
+  admin_password: "{{ dns_password }}"

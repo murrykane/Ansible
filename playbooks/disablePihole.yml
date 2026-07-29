@@ -1,0 +1,85 @@
+---
+- name: Call PiHoles to Disable for a short time
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+
+    - name: Perform Pi-hole API tasks
+      block:
+        - name: Obtain session ID from Pi-hole
+          uri:
+            url: "{{ item.url }}/api/auth"
+            method: POST
+            body: "{{ {'password': item.password } | to_json }}"
+            headers:
+              Content-Type: "application/json"
+            return_content: yes
+            status_code: 200
+            validate_certs: no  # Disable SSL verification if needed
+          register: auth_response
+          with_items: "{{ pihole_configs }}"
+          loop_control:
+            loop_var: item
+
+        - name: Set session ID for each Pi-hole instance
+          set_fact:
+            session_sids: "{{ session_sids | default({}) | combine({item.item.url: item.json.session.sid}) }}"
+          with_items: "{{ auth_response.results }}"
+          loop_control:
+            loop_var: item
+
+        # - name: Set session ID for each Pi-hole instance
+        #   set_fact:
+        #     session_sids: "{{ session_sids | default({}) | combine({item.url: auth_response.json.session.sid}) }}"
+        #   #when: auth_response.status == 200
+        #   with_items: "{{ pihole_configs }}"
+        #   loop_control:
+        #     loop_var: item
+
+        - name: Debug response from Pi-hole auth request
+          debug:
+            msg: "auth_response for {{ item.url }}: {{ auth_response }}"
+          with_items: "{{ auth_response.results }}"
+          loop_control:
+            loop_var: item
+
+        - name: Disable blocking for 15 minutes
+          uri:
+            url: "{{ item.url }}/api/dns/blocking?sid={{ session_sids[item.url] }}"
+            method: POST
+            #body: '{"blocking": false, "timer": {{ time_to_unblock }}}'
+            body: "{{ {'blocking': false, 'timer': time_to_unblock } | to_json }}"
+            headers:
+              Content-Type: "application/json"
+            return_content: yes
+            status_code: 200
+            validate_certs: no
+          with_items: "{{ pihole_configs }}"
+          loop_control:
+            loop_var: item
+
+        - name: Logout from Pi-hole session
+          uri:
+            url: "{{ item.url }}/api/auth?sid={{ session_sids[item.url] }}"
+            method: DELETE
+            status_code: 204
+            validate_certs: no
+          with_items: "{{ pihole_configs }}"
+          loop_control:
+            loop_var: item
+
+      when: pihole_configs is defined
+
+      # Optional: Handle errors in block execution
+      rescue:
+        - name: Print error message
+          debug:
+            #msg: "An error occurred with Pi-hole URL {{ item.url }}"
+            msg: "An error occurred with Pi-hole URL"
+
+      always:
+        - name: Always print a message after block completion
+          debug:
+            #msg: "Completed tasks for {{ item.url }}"
+            msg: "Completed tasks"

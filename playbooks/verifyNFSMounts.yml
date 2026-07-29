@@ -1,0 +1,27 @@
+---
+- hosts: "{{ scriptinventory }}"
+  become: true
+  vars:
+    mount_points:
+      - /Media
+      - /unraid-backups
+      - /backups
+
+    discord_webhook_id: "{{ webhook_id }}"
+    discord_webhook_token: "{{ webhook_token }}"
+    discord_user: "Ansible"
+    discord_avatar: "https://pantheon.tech/wp-content/uploads/2019/04/ansible.png"
+
+  tasks:
+    - name: Ensure tree is installed
+      package:
+        name: tree
+        state: present
+
+    - name: Check NFS mounts
+      include_tasks: nfs_check_task.yml
+      loop: "{{ mount_points }}"
+      loop_control:
+        loop_var: mount_point
+
+

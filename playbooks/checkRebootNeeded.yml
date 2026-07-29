@@ -1,0 +1,38 @@
+---
+- name: Check if Ubuntu host needs a reboot
+  hosts: "{{ scriptinventory }}"
+  become: true
+  tasks:
+    - name: Update package list and upgrade packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Check if a reboot is required
+      stat:
+        path: /var/run/reboot-required
+      register: reboot_flag
+
+    - name: Display reboot requirement status
+      debug:
+        msg: "Reboot required: {{ reboot_flag.stat.exists }}"
+
+    - name: Reboot Check
+      block:
+
+        - name: Perform Discord Notify
+          community.general.discord:
+            webhook_id: "{{ webhook_id }}"
+            webhook_token: "{{ webhook_token }}"
+            content: "{{ discord_message }}"
+            username: Ansible
+            avatar_url: "https://pantheon.tech/wp-content/uploads/2019/04/ansible.png"
+
+        - name: Discord message has been sent
+          debug:
+            msg: "Reboot message sent to discord"
+
+      when: reboot_flag.stat.exists
+
+  vars:
+    discord_message: "A reboot is required on [{{ inventory_hostname }}] since this host runs Ansible itself, manual reboot will be needed...."
