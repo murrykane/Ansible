@@ -43,6 +43,10 @@
     body_format: json
   register: zones_list_response
 
+- name: debug zone list
+  debug:
+    var: zones_list_response.json.response.zones
+
 - name: get current records in each zone
   uri:
     url: "{{ base_address }}/api/zones/records/get?token={{ dns_configurations.token }}&domain={{ item.name }}&listZone=true"
@@ -51,7 +55,7 @@
     status_code: 200
     validate_certs: false
     body_format: json
-  when: item.type == "Primary" and item.internal == false
+  when: item.type == "Primary" and (item.internal | default(false)) == false
   loop: "{{ zones_list_response.json.response.zones }}"
   register: list_records_response
 
