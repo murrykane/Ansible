@@ -1,0 +1,57 @@
+---
+- hosts: "{{ scriptinventory }}"
+  become: yes
+
+  vars:
+    reboot_delay: 90
+    discord_message: "A reboot is required on [{{ inventory_hostname }}] Based on reboot flag [ {{ reboot_flag }}] the reboot will occur in delay [{{ reboot_delay }}] seconds."
+    #reboot_flag: true
+    # NOTE: reboot_flag intentionally NOT set here — it comes from group_vars
+    # (ubuntu_hosts = true, proxmox_hosts = false) so it's automatic per host group
+
+  tasks:
+    - name: Upgrade all packages
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: dist
+
+    - name: Check reboot status
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+        get_checksum: false
+      changed_when: reboot.stat.exists
+      register: reboot
+      notify:
+        - Perform Discord Notify
+
+    # - name: Show reboot flag and status for this host
+    #   ansible.builtin.debug:
+    #     msg: "Host: {{ inventory_hostname }} | reboot_flag: {{ reboot_flag }} | reboot_required: {{ reboot.stat.exists }}"
+    - name: Show reboot flag and status for this host
+      ansible.builtin.debug:
+        msg:
+          - "reboot_flag: {{ reboot_flag }}"
+          - "reboot_required: {{ reboot.stat.exists }}"
+
+    - name: Perform reboot when needed
+      ansible.builtin.command: /bin/true
+      changed_when: reboot.stat.exists and reboot_flag | bool
+      when: reboot.stat.exists and reboot_flag | bool
+      notify: Perform reboot
+
+  handlers:
+    - name: Perform reboot
+      ansible.builtin.reboot:
+        post_reboot_delay: "{{ reboot_delay }}"
+        pre_reboot_delay: "{{ reboot_delay }}"
+      # when: >
+      #   reboot.stat.exists
+
+    #- name: Send a message to the Discord channel with specific username and avatar
+    - name: Perform Discord Notify
+      community.general.discord:
+        webhook_id: "1149362209001054268"
+        webhook_token: "{{ discord_webhook_token }}"
+        content: "{{ discord_message }}"
+        username: Ansible
+        avatar_url: "https://pantheon.tech/wp-content/uploads/2019/04/ansible.png"
