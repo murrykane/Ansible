@@ -143,8 +143,6 @@
   vars:
     checkmk_agent_server: checkmk.local.kaneworld.org
     checkmk_agent_site: KaneCo
-    # checkmk_user: murrykane
-    # checkmk_pass: i4eKFBOODdZ&KNuS
     # Folder in Checkmk where docker container hosts will be created.
     # Create this folder manually in Checkmk UI first, or adjust to an existing path.
     checkmk_docker_folder: Docker
