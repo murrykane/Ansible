@@ -91,7 +91,8 @@
           - ".git"
           - ".gitignore"
           - "README.md"
-          - ".env"
+          - ".env"                 #managed with infisical now
+          - "cf-token"             #managed with infisical now
         file_type: any
         hidden: true
         recurse: yes
