@@ -10,8 +10,8 @@
 
     - name: Send a message to the Discord channel with specific username and avatar
       community.general.discord:
-        webhook_id: "{{ webhook_id }}"
-        webhook_token: "{{ webhook_token }}"
+        webhook_id: "{{ discord_webhook_id }}"
+        webhook_token: "{{ discord_token }}"
         content: "Unifi Controller port recycle attempt didn't work, please review and fix accordingly!"
         username: Ansible
         #avatar_url: "https://docs.ansible.com/ansible/latest/_static/images/Ansible-Mark-RGB_Black.png"
