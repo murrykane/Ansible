@@ -5,7 +5,7 @@
     mount_points:
       - /Media
       - /unraid-backups
-      - /backups
+      #- /backups
 
     discord_webhook_id: "{{ webhook_id }}"
     discord_webhook_token: "{{ webhook_token }}"
