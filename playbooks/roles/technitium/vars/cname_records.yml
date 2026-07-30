@@ -363,3 +363,6 @@ records:
   - zone: local.kaneworld.org
     name: infisical-prod-1
     ip: cyborg.kane.mk
+  - zone: local.kaneworld.org
+    name: vscode-dev
+    ip: claude-code.kane.mk
