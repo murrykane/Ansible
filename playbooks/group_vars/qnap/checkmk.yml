@@ -1,3 +1,4 @@
 checkmk_host_labels:
   role: qnap
   os: qnap
+  severity: critical

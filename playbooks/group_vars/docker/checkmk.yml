@@ -1,2 +1,3 @@
 checkmk_host_labels:
   docker_node: "true"
+  severity: minor

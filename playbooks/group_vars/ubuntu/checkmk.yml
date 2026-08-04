@@ -1,3 +1,4 @@
 checkmk_host_labels:
   role: ubuntu-vm
   os: ubuntu
+  severity: critical

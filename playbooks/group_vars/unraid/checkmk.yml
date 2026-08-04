@@ -1,3 +1,4 @@
 checkmk_host_labels:
   role: unraid
   os: unraid
+  severity: critical
