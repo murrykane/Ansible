@@ -461,7 +461,7 @@
         key: "{{ item }}"
         path: /root/.git_known_hosts
         state: present
-      loop: "{{ github_keyscan.stdout_lines }}"
+      loop: "{{ github_keyscan.stdout_lines | reject('match', '^#') | list }}"
       when: provision_ci | default(false) | bool
 
     - name: Bootstrap CI files via branch + PR
