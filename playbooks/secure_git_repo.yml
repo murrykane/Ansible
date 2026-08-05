@@ -448,10 +448,21 @@
             commit -m "ci: add gitleaks secret scanning workflow"
           changed_when: true
 
+        # - name: Push bootstrap branch
+        #   ansible.builtin.command: >
+        #     git -C {{ git_repo_path }} push -u origin
+        #     ci/gitleaks-bootstrap --force-with-lease
+        #   changed_when: true
+
         - name: Push bootstrap branch
           ansible.builtin.command: >
             git -C {{ git_repo_path }} push -u origin
             ci/gitleaks-bootstrap --force-with-lease
+          environment:
+            # Pin to the account-level key generated for root on this host -
+            # don't rely on root's default SSH resolution matching whatever
+            # got set up in /root/.ssh/config, in case that ever drifts.
+            GIT_SSH_COMMAND: "ssh -i /root/.ssh/id_ed25519_github -o IdentitiesOnly=yes"
           changed_when: true
 
         - name: Open PR via GitHub API
