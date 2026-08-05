@@ -49,6 +49,11 @@
   gather_facts: true
 
   vars:
+
+    provision_ci: false                 # survey var; true = deploy+PR the workflow
+    github_pat: ""                      # from Infisical - repo-scoped fine-grained PAT
+    #discord_webhook_notify_repo_secret: "DISCORD_WEBHOOK_URL"
+
     # --- EDIT THESE FOR YOUR ENVIRONMENT ---
     sourcecontrol_base: "/mnt/user/data/sourcecontrol"
 
@@ -361,3 +366,104 @@
           rotating the actual credential, since it's already exposed to
           anyone with repo access: {{ tracked_secret_files }}
       when: tracked_secret_files | length > 0
+
+    ##################
+    # added based on new logic 
+    ##################
+
+    # ---------- Provision repo-level CI: gitleaks workflow + PR ----------
+    - name: Ensure .github/workflows directory exists in repo
+      ansible.builtin.file:
+        path: "{{ git_repo_path }}/.github/workflows"
+        state: directory
+        mode: "0755"
+      when: provision_ci | default(false) | bool
+
+    - name: Deploy gitleaks GitHub Actions workflow (verbatim - no Jinja templating)
+      ansible.builtin.copy:
+        src: files/gitleaks-github-workflow.yml
+        dest: "{{ git_repo_path }}/.github/workflows/gitleaks.yml"
+        mode: "0644"
+      when: provision_ci | default(false) | bool
+
+    - name: Check whether CI files actually changed
+      ansible.builtin.command: >
+        git -C {{ git_repo_path }} status --porcelain
+        .github/workflows/gitleaks.yml .gitleaks.toml
+      register: ci_git_status
+      changed_when: false
+      when: provision_ci | default(false) | bool
+
+    - name: Bootstrap CI files via branch + PR
+      when:
+        - provision_ci | default(false) | bool
+        - ci_git_status.stdout | trim != ''
+      block:
+        - name: Create/reset bootstrap branch
+          ansible.builtin.command: "git -C {{ git_repo_path }} checkout -B ci/gitleaks-bootstrap"
+          changed_when: true
+
+        - name: Stage CI files
+          ansible.builtin.command: >
+            git -C {{ git_repo_path }} add
+            .github/workflows/gitleaks.yml .gitleaks.toml
+          changed_when: true
+
+        - name: Commit CI files
+          ansible.builtin.command: >
+            git -C {{ git_repo_path }}
+            -c user.name="ansible-bot"
+            -c user.email="ansible-bot@kane.mk"
+            commit -m "ci: add gitleaks secret scanning workflow"
+          changed_when: true
+
+        - name: Push bootstrap branch
+          ansible.builtin.command: >
+            git -C {{ git_repo_path }} push -u origin
+            ci/gitleaks-bootstrap --force-with-lease
+          changed_when: true
+
+        - name: Open PR via GitHub API
+          ansible.builtin.uri:
+            url: "https://api.github.com/repos/murrykane/{{ repo_name }}/pulls"
+            method: POST
+            headers:
+              Authorization: "Bearer {{ github_pat }}"
+              Accept: "application/vnd.github+json"
+            body_format: json
+            body:
+              title: "ci: add gitleaks secret scanning workflow"
+              head: "ci/gitleaks-bootstrap"
+              base: "main"
+              body: >-
+                Adds .github/workflows/gitleaks.yml, provisioned by
+                secure-git-repo.yml. This blocks merging to main on a
+                detected secret and posts to Discord - pair it with a
+                branch-protection rule on main requiring the `gitleaks`
+                check, if that isn't set already.
+            status_code: [201, 422]   # 422 = a PR for this branch already exists, not fatal
+          register: pr_result
+
+        - name: Report PR outcome
+          ansible.builtin.debug:
+            msg: >-
+              {{ pr_result.json.html_url if pr_result.status == 201
+                 else 'ci/gitleaks-bootstrap already has an open PR (or another 422 reason) - check GitHub.' }}
+
+        - name: Return to the branch you started on
+          ansible.builtin.command: "git -C {{ git_repo_path }} checkout -"
+          changed_when: false
+
+    # ---------- OPTIONAL: also provision the Discord webhook repo secret ----------
+    # Uncomment if `gh` CLI is installed and authenticated (gh auth login) on
+    # the host this playbook runs on. Requires discord_webhook_url as a var,
+    # also sourced from Infisical - don't inline the real webhook URL here.
+    #
+    # - name: Set DISCORD_WEBHOOK_URL repo secret via gh CLI
+    #   ansible.builtin.command: >
+    #     gh secret set {{ discord_webhook_notify_repo_secret }}
+    #     --repo murrykane/{{ repo_name }}
+    #     --body "{{ discord_webhook_url }}"
+    #   when: provision_ci | default(false) | bool
+    #   changed_when: true
+    #   no_log: true   # don't let the webhook URL land in Semaphore's task output
