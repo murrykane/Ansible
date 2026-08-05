@@ -386,6 +386,37 @@
         mode: "0644"
       when: provision_ci | default(false) | bool
 
+    # Insert this block into secure-git-repo.yml immediately after:
+    #   "Fail fast if not a git repo"
+    # and BEFORE:
+    #   "Deploy repo-specific gitleaks config"
+    #
+    # Why: the play runs as root (become: true), but the repo directory on the
+    # Unraid array is owned by a different uid. Since a Git security fix a few
+    # years back, git refuses to operate inside a repo it doesn't consider
+    # "owned" by the current user unless that path is explicitly allowlisted -
+    # hence "detected dubious ownership". This bit both the new CI-bootstrap
+    # git commands AND (silently, until now) the existing "Check git-tracked
+    # status of each finding" task further down whenever gitleaks_found_files
+    # was non-empty - it just hadn't been exercised yet.
+    #
+    # Using --add (not a plain `git config --global safe.directory <path>`)
+    # because that OVERWRITES the setting rather than appending, which would
+    # clobber safe.directory entries from other repos (scripts, terraform,
+    # homelab, murdog, kaneworld) each time you run this against a different
+    # repo_name.
+ 
+    - name: Check existing git safe.directory entries
+      ansible.builtin.command: git config --global --get-all safe.directory
+      register: safe_dirs
+      changed_when: false
+      failed_when: false   # rc=1 just means no entries exist yet - not an error
+ 
+    - name: Mark repo path as a git safe.directory (avoids 'dubious ownership' when running as root against a non-root-owned path)
+      ansible.builtin.command: "git config --global --add safe.directory {{ git_repo_path }}"
+      when: git_repo_path not in (safe_dirs.stdout_lines | default([]))
+      changed_when: true
+
     - name: Check whether CI files actually changed
       ansible.builtin.command: >
         git -C {{ git_repo_path }} status --porcelain
