@@ -26,22 +26,43 @@
 #   6. Any ALREADY-TRACKED file that trips a rule is only reported, never
 #      auto-modified - .gitignore can't retroactively remove something from
 #      history, so that needs a manual git-filter-repo/BFG pass + rotation.
+#   7. (when provision_ci=true) Deploys a gitleaks GitHub Actions workflow
+#      into the repo, opens a PR against main, and restores repo ownership
+#      afterward so client machines (Windows/VSCode over CIFS) can keep
+#      committing to the share without permission errors.
 #
 # Usage (CLI):
 #   ansible-playbook -i inventory secure-git-repo.yml -e repo_name=ansible
 #
 # Usage (Semaphore):
-#   Create a Task Template against this playbook, then add a Survey Variable:
+#   Create a Task Template against this playbook, then add Survey Variables:
 #     Name:   repo_name
 #     Title:  "Which sourcecontrol repo?"
 #     Type:   enum  (renders as a dropdown)
-#     Values: scripts,ansible,terraform,homelab,MurDog
-#   Semaphore passes the selected value in as -e repo_name=<selection>, which
-#   this playbook resolves against sourcecontrol_base below. No editing the
-#   playbook per-repo required.
+#     Values: scripts,ansible,terraform,homelab,murdog,kaneworld
+#
+#     Name:   provision_ci
+#     Title:  "Provision gitleaks GitHub Actions workflow + PR?"
+#     Type:   boolean
+#     Default: false
+#   Semaphore passes these in as -e repo_name=<selection> -e provision_ci=<bool>,
+#   which this playbook resolves against sourcecontrol_base below. No editing
+#   the playbook per-repo required.
 #
 # Requires: your inventory has a host/group called "kaneserver" (rename the
 # `hosts:` line below to match your actual inventory alias if different).
+#
+# Requires for provision_ci=true:
+#   - github_pat sourced from Infisical (fine-grained PAT, Contents=RW,
+#     Pull requests=RW), scoped to the repos this playbook touches.
+#   - root@<host> has an account-level SSH key registered on your GitHub
+#     account (not a per-repo deploy key - those can't be reused across
+#     repos) at /root/.ssh/id_ed25519_github.
+#   - DISCORD_WEBHOOK_URL must be added as a repo secret manually per repo
+#     (Settings -> Secrets and variables -> Actions) - not automated here,
+#     see the optional gh-secret-set task at the bottom.
+#   - A branch-protection rule on main requiring the `gitleaks` status check
+#     is a one-time manual GitHub UI step per repo, also not automated here.
 
 - name: Deploy pre-commit secret scanning (gitleaks) on kaneserver
   hosts: "{{ scriptinventory | default('kaneserver.kane.mk') }}"
@@ -174,6 +195,38 @@
           directory. Clone/init it first, then re-run.
       when: not repo_git_dir.stat.exists
 
+    # ---------- Git environment fixes (apply to EVERY repo, every run) ----------
+    # root (via become: true) is not the uid that owns these repos on the
+    # Unraid array, and these repos are also opened directly from Windows/
+    # VSCode over the same Samba share. Both of the tasks below fix
+    # environment quirks that otherwise break git for one side or the other.
+
+    - name: Check existing git safe.directory entries
+      ansible.builtin.command: git config --global --get-all safe.directory
+      register: safe_dirs
+      changed_when: false
+      failed_when: false   # rc=1 just means no entries exist yet - not an error
+
+    - name: Mark repo path as a git safe.directory (avoids 'dubious ownership' when running as root against a non-root-owned path)
+      ansible.builtin.command: "git config --global --add safe.directory {{ git_repo_path }}"
+      when: git_repo_path not in (safe_dirs.stdout_lines | default([]))
+      changed_when: true
+      # Using --add (not a plain `git config --global safe.directory <path>`)
+      # because that OVERWRITES the setting rather than appending, which
+      # would clobber safe.directory entries from other repos each time
+      # this runs against a different repo_name.
+
+    - name: Check current core.fileMode setting
+      ansible.builtin.command: "git -C {{ git_repo_path }} config --get core.fileMode"
+      register: filemode_check
+      changed_when: false
+      failed_when: false   # unset returns rc=1 - not an error, just means it's on the (default true) setting
+
+    - name: Disable filemode tracking (Samba/CIFS shares don't reliably preserve exec bits, causing every tracked file to show as falsely 'modified')
+      ansible.builtin.command: "git -C {{ git_repo_path }} config core.fileMode false"
+      when: filemode_check.stdout | trim != 'false'
+      changed_when: true
+
     # ---------- Deploy config ----------
     - name: Deploy repo-specific gitleaks config
       ansible.builtin.copy:
@@ -229,7 +282,7 @@
           description = "WireGuard config/backup - contains PrivateKey by nature, flagged on presence not content pattern"
           path = '''(^|/)wg\d*\.conf([._-]?(backup|bak|save|old|orig))?$'''
           regex = '''(?s).+'''
- 
+
           [[rules]]
           id = "traefik-acme-storage"
           description = "Traefik ACME storage (acme.json) - contains account + cert private keys, flagged on presence not content pattern"
@@ -367,10 +420,6 @@
           anyone with repo access: {{ tracked_secret_files }}
       when: tracked_secret_files | length > 0
 
-    ##################
-    # added based on new logic 
-    ##################
-
     # ---------- Provision repo-level CI: gitleaks workflow + PR ----------
     - name: Ensure .github/workflows directory exists in repo
       ansible.builtin.file:
@@ -386,43 +435,33 @@
         mode: "0644"
       when: provision_ci | default(false) | bool
 
-    # Insert this block into secure-git-repo.yml immediately after:
-    #   "Fail fast if not a git repo"
-    # and BEFORE:
-    #   "Deploy repo-specific gitleaks config"
-    #
-    # Why: the play runs as root (become: true), but the repo directory on the
-    # Unraid array is owned by a different uid. Since a Git security fix a few
-    # years back, git refuses to operate inside a repo it doesn't consider
-    # "owned" by the current user unless that path is explicitly allowlisted -
-    # hence "detected dubious ownership". This bit both the new CI-bootstrap
-    # git commands AND (silently, until now) the existing "Check git-tracked
-    # status of each finding" task further down whenever gitleaks_found_files
-    # was non-empty - it just hadn't been exercised yet.
-    #
-    # Using --add (not a plain `git config --global safe.directory <path>`)
-    # because that OVERWRITES the setting rather than appending, which would
-    # clobber safe.directory entries from other repos (scripts, terraform,
-    # homelab, murdog, kaneworld) each time you run this against a different
-    # repo_name.
- 
-    - name: Check existing git safe.directory entries
-      ansible.builtin.command: git config --global --get-all safe.directory
-      register: safe_dirs
-      changed_when: false
-      failed_when: false   # rc=1 just means no entries exist yet - not an error
- 
-    - name: Mark repo path as a git safe.directory (avoids 'dubious ownership' when running as root against a non-root-owned path)
-      ansible.builtin.command: "git config --global --add safe.directory {{ git_repo_path }}"
-      when: git_repo_path not in (safe_dirs.stdout_lines | default([]))
-      changed_when: true
-
     - name: Check whether CI files actually changed
       ansible.builtin.command: >
         git -C {{ git_repo_path }} status --porcelain
         .github/workflows/gitleaks.yml .gitleaks.toml
       register: ci_git_status
       changed_when: false
+      when: provision_ci | default(false) | bool
+
+    - name: Capture original repo ownership (to restore after root touches .git/refs and .git/objects)
+      ansible.builtin.stat:
+        path: "{{ git_repo_path }}"
+      register: repo_owner_stat
+      when: provision_ci | default(false) | bool
+
+    - name: Ensure root's known_hosts trusts github.com (avoids interactive host-key prompt hanging under Ansible)
+      ansible.builtin.command: ssh-keyscan -H github.com
+      register: github_keyscan
+      changed_when: false
+      when: provision_ci | default(false) | bool
+
+    - name: Add github.com to a WRITABLE known_hosts path (not /root/.ssh - that's symlinked to the boot flash on Unraid, which is vfat and can't support the atomic rewrite known_hosts needs)
+      ansible.builtin.known_hosts:
+        name: github.com
+        key: "{{ item }}"
+        path: /root/.git_known_hosts
+        state: present
+      loop: "{{ github_keyscan.stdout_lines }}"
       when: provision_ci | default(false) | bool
 
     - name: Bootstrap CI files via branch + PR
@@ -448,21 +487,17 @@
             commit -m "ci: add gitleaks secret scanning workflow"
           changed_when: true
 
-        # - name: Push bootstrap branch
-        #   ansible.builtin.command: >
-        #     git -C {{ git_repo_path }} push -u origin
-        #     ci/gitleaks-bootstrap --force-with-lease
-        #   changed_when: true
-
-        - name: Push bootstrap branch
+        - name: Push bootstrap branch (explicit SSH URL, NOT the stored 'origin' remote - origin's protocol/state is shared config on this Samba path and varies per repo)
           ansible.builtin.command: >
-            git -C {{ git_repo_path }} push -u origin
-            ci/gitleaks-bootstrap --force-with-lease
+            git -C {{ git_repo_path }} push
+            git@github.com:murrykane/{{ repo_name }}.git
+            ci/gitleaks-bootstrap:ci/gitleaks-bootstrap
+            --force-with-lease
           environment:
-            # Pin to the account-level key generated for root on this host -
-            # don't rely on root's default SSH resolution matching whatever
-            # got set up in /root/.ssh/config, in case that ever drifts.
-            GIT_SSH_COMMAND: "ssh -i /root/.ssh/id_ed25519_github -o IdentitiesOnly=yes"
+            GIT_SSH_COMMAND: >-
+              ssh -i /root/.ssh/id_ed25519_github -o IdentitiesOnly=yes
+              -o UserKnownHostsFile=/root/.git_known_hosts
+              -o StrictHostKeyChecking=accept-new
           changed_when: true
 
         - name: Open PR via GitHub API
@@ -495,6 +530,19 @@
         - name: Return to the branch you started on
           ansible.builtin.command: "git -C {{ git_repo_path }} checkout -"
           changed_when: false
+
+      always:
+        # Runs whether the block above succeeded, failed, or was skipped
+        # part-way through - restores whatever uid/gid the repo had before
+        # root created new refs/objects, so a client machine (e.g. over
+        # CIFS/VSCode) can still write to those refs afterward.
+        - name: Restore original owner:group on the whole repo
+          ansible.builtin.file:
+            path: "{{ git_repo_path }}"
+            owner: "{{ repo_owner_stat.stat.pw_name }}"
+            group: "{{ repo_owner_stat.stat.gr_name }}"
+            recurse: true
+          when: repo_owner_stat.stat is defined
 
     # ---------- OPTIONAL: also provision the Discord webhook repo secret ----------
     # Uncomment if `gh` CLI is installed and authenticated (gh auth login) on
