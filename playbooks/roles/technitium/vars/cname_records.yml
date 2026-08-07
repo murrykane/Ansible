@@ -365,4 +365,4 @@ records:
     ip: cyborg.kane.mk
   - zone: local.kaneworld.org
     name: vscode-dev
-    ip: claude-code.kane.mk
+    ip: mkserver.kane.mk
