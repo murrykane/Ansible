@@ -12,10 +12,11 @@
     #     post_reboot_delay: "{{ reboot_delay }}"
     #     pre_reboot_delay: "{{ reboot_delay }}"
 
-    - name: Perform Discord Notify
+    - name: Send a message to the Discord channel with specific username and avatar
       community.general.discord:
-        webhook_id: "1149362209001054268"
-        webhook_token: "{{ discord_webhook_token }}"
+        webhook_id: "{{ webhook_id }}"
+        webhook_token: "{{ webhook_token }}"
         content: "{{ discord_message }}"
         username: Ansible
         avatar_url: "https://pantheon.tech/wp-content/uploads/2019/04/ansible.png"
+
