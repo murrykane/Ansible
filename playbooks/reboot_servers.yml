@@ -1,0 +1,21 @@
+#- hosts: ubuntu:prox:debian
+- hosts: "{{ scriptinventory }}"
+  become: yes
+
+  vars:
+    reboot_delay: 90
+    discord_message: "Server {{ scriptinventory }} has been issued a reboot and is now online."
+
+  tasks:
+    # - name: Perform reboot
+    #   ansible.builtin.reboot:
+    #     post_reboot_delay: "{{ reboot_delay }}"
+    #     pre_reboot_delay: "{{ reboot_delay }}"
+
+    - name: Perform Discord Notify
+      community.general.discord:
+        webhook_id: "1149362209001054268"
+        webhook_token: "{{ discord_webhook_token }}"
+        content: "{{ discord_message }}"
+        username: Ansible
+        avatar_url: "https://pantheon.tech/wp-content/uploads/2019/04/ansible.png"
