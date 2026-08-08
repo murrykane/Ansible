@@ -7,10 +7,10 @@
     discord_message: "Server {{ scriptinventory }} has been issued a reboot and is now online."
 
   tasks:
-    # - name: Perform reboot
-    #   ansible.builtin.reboot:
-    #     post_reboot_delay: "{{ reboot_delay }}"
-    #     pre_reboot_delay: "{{ reboot_delay }}"
+    - name: Perform reboot
+      ansible.builtin.reboot:
+        post_reboot_delay: "{{ reboot_delay }}"
+        pre_reboot_delay: "{{ reboot_delay }}"
 
     - name: Send a message to the Discord channel with specific username and avatar
       community.general.discord:
