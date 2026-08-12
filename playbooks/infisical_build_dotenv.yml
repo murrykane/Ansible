@@ -116,7 +116,9 @@
       loop: "{{ dockhand_containers }}"
       loop_control:
         label: "{{ item.project }}"
-      when: dockhand_containers | length > 0
+      when: 
+        - dockhand_writer | default(false)
+        - dockhand_containers | length > 0
 
     - name: Export secrets from Infisical for dockhand stacks
       ansible.builtin.command:
@@ -133,7 +135,9 @@
       loop: "{{ dockhand_containers }}"
       loop_control:
         label: "{{ item.project }}"
-      when: dockhand_containers | length > 0
+      when: 
+        - dockhand_writer | default(false)
+        - dockhand_containers | length > 0
 
     - name: Write rendered {{ output_file }} files for dockhand stacks
       ansible.builtin.copy:
@@ -147,7 +151,9 @@
         label: "{{ item.item.project }}"
       register: dockhand_env_write_results
       no_log: "{{ infisical_log }}"
-      when: dockhand_containers | length > 0
+      when: 
+        - dockhand_writer | default(false)
+        - dockhand_containers | length > 0
 
     # - name: Recycle dockhand stacks for changed projects only
     #   ansible.builtin.shell:
@@ -156,12 +162,16 @@
     #   loop: "{{ dockhand_env_write_results.results | default([]) }}"
     #   loop_control:
     #     label: "{{ item.item.item.project }}"
-    #   when: dockhand_containers | length > 0 and item.changed
+    # when: 
+    #   - dockhand_writer | default(false)
+    #   - dockhand_containers | length > 0
 
     - name: Show summary for dockhand stacks
       ansible.builtin.debug:
         msg: "Wrote {{ output_file }} files for dockhand: {{ dockhand_containers | map(attribute='project') | list }}"
-      when: dockhand_containers | length > 0
+      when: 
+        - dockhand_writer | default(false)
+        - dockhand_containers | length > 0
     # end added for dockhand secret builds.....
 
     - name: Fetch shared Cloudflare API token
