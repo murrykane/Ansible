@@ -8,3 +8,6 @@ infisical_log: false
 # infisical_project_id: "{{ vault_infisical_project_id }}"
 # infisical_client_id: "{{ vault_infisical_client_id }}"
 # infisical_client_secret: "{{ infisical_client_secret }}"
+
+dockhand_containers: []
+dockhand_home_dir: /opt/repos/kaneworld
