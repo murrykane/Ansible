@@ -48,7 +48,8 @@ infisical_containers:
 #added for dockhand secret builds.....
 dockhand_owner: "semaphore"   # e.g. dockhand, or a UID-based service account
 dockhand_group: "repogroup"
-dockhand_containers: "{{ infisical_containers }}"
+dockhand_writer: true
+# dockhand_containers: "{{ infisical_containers }}"   # now its all.yml group_vars to include all containers from all hosts, not just this host.  This is so we can build all .env files for all dockhand stacks on cyborg in one run of the playbook.
 # if we need it different then all currently managed containers
 # dockhand_containers:
 #   - project: paperless-prod-1
