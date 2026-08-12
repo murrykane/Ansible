@@ -44,3 +44,17 @@ infisical_containers:
   - project: infisical-prod-1
     path: /infisical-prod-1
     env: prod
+
+#added for dockhand secret builds.....
+dockhand_owner: "semaphore"   # e.g. dockhand, or a UID-based service account
+dockhand_group: "repogroup"
+dockhand_containers: "{{ infisical_containers }}"
+# if we need it different then all currently managed containers
+# dockhand_containers:
+#   - project: paperless-prod-1
+#     env: prod
+#     path: /paperless
+#   - project: linkwarden-prod-1
+#     env: prod
+#     path: /linkwarden
+#   # ...one entry per dockhand-managed stack on cyborg
