@@ -84,14 +84,14 @@
       register: env_write_results
       no_log: "{{ infisical_log }}"
 
-    # - name: Recycle containers for changed projects only
-    #   ansible.builtin.shell:
-    #     cmd: docker compose down && docker compose up -d
-    #     chdir: "{{ home_dir }}/{{ item.item.item.project }}"
-    #   loop: "{{ env_write_results.results }}"
-    #   loop_control:
-    #     label: "{{ item.item.item.project }}"
-    #   when: item.changed
+    - name: Recycle containers for changed projects only
+      ansible.builtin.shell:
+        cmd: docker compose down && docker compose up -d
+        chdir: "{{ home_dir }}/{{ item.item.item.project }}"
+      loop: "{{ env_write_results.results }}"
+      loop_control:
+        label: "{{ item.item.item.project }}"
+      when: item.changed
 
     - name: Show docker changes found for changed projects only
       ansible.builtin.debug:
