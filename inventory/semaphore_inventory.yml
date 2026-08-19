@@ -51,6 +51,16 @@ all:
         ansible_user: semaphore
         ansible_become: true
         ansible_become_method: sudo
+    prox-cluster:
+      hosts:
+        coco.kane.mk:
+        apex.kane.mk:
+        athena.kane.mk:
+      vars:
+        ansible_python_interpreter: auto_silent
+        ansible_user: semaphore
+        ansible_become: true
+        ansible_become_method: sudo
     windows:
       hosts:
         murrypc.kane.mk: 
