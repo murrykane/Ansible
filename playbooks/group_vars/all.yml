@@ -5,10 +5,6 @@ infisical_group: murry
 infisical_bin: infisical
 infisical_log: false
 
-# infisical_project_id: "{{ vault_infisical_project_id }}"
-# infisical_client_id: "{{ vault_infisical_client_id }}"
-# infisical_client_secret: "{{ infisical_client_secret }}"
-
 dockhand_home_dir: /opt/repos/kaneworld
 dockhand_writer: false
 dockhand_containers: "{{ hostvars.values() | map(attribute='infisical_containers', default=[]) | sum(start=[]) }}"
@@ -22,6 +18,4 @@ dockhand_sync_hosts:
   - stargate.kane.mk
   - docker-ceph.kane.mk
   - docker-dev.kane.mk
-  # add/remove hosts as needed — this list is independent of where
-  # any given container actually runs, since the goal is just having
-  # a fallback compose+env pair available everywhere
+ 
