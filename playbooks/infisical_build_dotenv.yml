@@ -174,6 +174,83 @@
         - dockhand_containers | length > 0
     # end added for dockhand secret builds.....
 
+    #### added: also land .env in the kaneworld repo checkout on cyborg
+    #### (where Dockhand's compose client actually runs), then broadcast
+    #### the same content to every other docker host as a manual
+    #### `docker compose up -d` fallback path. Additive only — does not
+    #### touch the writes/vars above.
+    - name: Ensure kaneworld repo project directories exist on cyborg
+      ansible.builtin.file:
+        path: "{{ dockhand_repo_home_dir }}/{{ item.project }}"
+        state: directory
+        owner: "{{ dockhand_owner }}"
+        group: "{{ dockhand_group }}"
+        mode: "0750"
+      loop: "{{ dockhand_containers }}"
+      loop_control:
+        label: "{{ item.project }}"
+      delegate_to: "{{ dockhand_manage_host }}"
+      when:
+        - dockhand_writer | default(false)
+        - dockhand_containers | length > 0
+
+    - name: Write rendered {{ output_file }} into kaneworld repo path on cyborg
+      ansible.builtin.copy:
+        content: "{{ item.stdout }}"
+        dest: "{{ dockhand_repo_home_dir }}/{{ item.item.project }}/{{ output_file }}"
+        mode: "0400"
+        owner: "{{ dockhand_owner }}"
+        group: "{{ dockhand_group }}"
+      loop: "{{ dockhand_env.results }}"
+      loop_control:
+        label: "{{ item.item.project }}"
+      delegate_to: "{{ dockhand_manage_host }}"
+      when:
+        - dockhand_writer | default(false)
+        - dockhand_containers | length > 0
+
+    - name: Ensure kaneworld repo project directories exist on other docker hosts
+      ansible.builtin.file:
+        path: "{{ dockhand_repo_home_dir }}/{{ item.0.project }}"
+        state: directory
+        owner: "{{ dockhand_owner }}"
+        group: "{{ dockhand_group }}"
+        mode: "0750"
+      with_nested:
+        - "{{ dockhand_containers }}"
+        - "{{ dockhand_sync_hosts }}"
+      loop_control:
+        label: "{{ item.0.project }} -> {{ item.1 }}"
+      delegate_to: "{{ item.1 }}"
+      when:
+        - dockhand_writer | default(false)
+        - dockhand_containers | length > 0
+
+    - name: Broadcast rendered {{ output_file }} to other docker hosts
+      ansible.builtin.copy:
+        content: "{{ item.0.stdout }}"
+        dest: "{{ dockhand_repo_home_dir }}/{{ item.0.item.project }}/{{ output_file }}"
+        mode: "0400"
+        owner: "{{ dockhand_owner }}"
+        group: "{{ dockhand_group }}"
+      with_nested:
+        - "{{ dockhand_env.results }}"
+        - "{{ dockhand_sync_hosts }}"
+      loop_control:
+        label: "{{ item.0.item.project }} -> {{ item.1 }}"
+      delegate_to: "{{ item.1 }}"
+      when:
+        - dockhand_writer | default(false)
+        - dockhand_containers | length > 0
+
+    - name: Show summary for kaneworld repo sync
+      ansible.builtin.debug:
+        msg: "Synced {{ output_file }} for {{ dockhand_containers | map(attribute='project') | list }} to {{ dockhand_manage_host }} and {{ dockhand_sync_hosts }}"
+      when:
+        - dockhand_writer | default(false)
+        - dockhand_containers | length > 0
+    #### end kaneworld repo sync addition
+
     - name: Fetch shared Cloudflare API token
       ansible.builtin.command:
         cmd: >
@@ -201,4 +278,3 @@
       loop_control:
         label: "{{ item.item.project }}"
       no_log: "{{ infisical_log }}"
-

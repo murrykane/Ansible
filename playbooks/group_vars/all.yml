@@ -12,3 +12,16 @@ infisical_log: false
 dockhand_home_dir: /opt/repos/kaneworld
 dockhand_writer: false
 dockhand_containers: "{{ hostvars.values() | map(attribute='infisical_containers', default=[]) | sum(start=[]) }}"
+
+dockhand_manage_host: cyborg.kane.mk
+dockhand_repo_home_dir: /opt/repos/kaneworld
+dockhand_sync_hosts:
+  - mkserver.kane.mk
+  - auth.kane.mk
+  - raptor.kane.mk
+  - nas.kane.mk
+  - docker-ceph.kane.mk
+  - docker-dev.kane.mk
+  # add/remove hosts as needed — this list is independent of where
+  # any given container actually runs, since the goal is just having
+  # a fallback compose+env pair available everywhere
