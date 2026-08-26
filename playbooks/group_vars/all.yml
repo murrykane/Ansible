@@ -19,7 +19,7 @@ dockhand_sync_hosts:
   - mkserver.kane.mk
   - auth.kane.mk
   - raptor.kane.mk
-  - nas.kane.mk
+  - stargate.kane.mk
   - docker-ceph.kane.mk
   - docker-dev.kane.mk
   # add/remove hosts as needed — this list is independent of where
