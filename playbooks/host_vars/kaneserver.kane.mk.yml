@@ -9,9 +9,6 @@ infisical_containers:
   - project: torrenting-prod-1
     path: /torrenting-prod-1
     env: prod
-  - project: portainer-prod-5
-    path: /portainer-prod-5
-    env: prod
   - project: houndarr-prod-1
     path: /houndarr-prod-1
     env: prod

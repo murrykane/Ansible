@@ -1,6 +1,6 @@
 infisical_containers:
-  - project: portainer-prod-1
-    path: /portainer-prod-1
+  - project: autoheal-prod-4
+    path: /autoheal-prod-4
     env: prod
   - project: homepage-prod-1
     path: /homepage-prod-1

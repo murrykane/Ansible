@@ -1,6 +1,6 @@
 infisical_containers:
-  - project: portainer-prod-6
-    path: /portainer-prod-6
+  - project: autoheal-prod-6
+    path: /autoheal-prod-6
     env: prod
   - project: traefik-prod-6
     path: /traefik-prod-6

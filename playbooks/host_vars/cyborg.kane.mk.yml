@@ -1,12 +1,9 @@
 infisical_containers:
-  - project: portainer-prod-3
-    path: /portainer-prod-3
+  - project: autoheal-prod-1
+    path: /autoheal-prod-1
     env: prod
   - project: checkmk-prod-1
     path: /checkmk-prod-1
-    env: prod
-  - project: newt-prod-1
-    path: /newt-prod-1
     env: prod
   - project: traefik-prod-3
     path: /traefik-prod-3
@@ -37,9 +34,6 @@ infisical_containers:
     env: prod
   - project: it-tools-prod-1
     path: /it-tools-prod-1
-    env: prod
-  - project: atlas-prod-1
-    path: /atlas-prod-1
     env: prod
   - project: infisical-prod-1
     path: /infisical-prod-1
