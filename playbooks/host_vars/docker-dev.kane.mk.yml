@@ -8,3 +8,6 @@ infisical_containers:
   - project: wallos-dev-1
     path: /wallos-dev-1
     env: dev
+  - project: autoheal-dev-1
+    path: /autoheal-dev-1
+    env: dev

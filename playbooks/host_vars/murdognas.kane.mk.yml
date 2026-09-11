@@ -13,3 +13,6 @@ infisical_containers:
   - project: promtail-prod-5
     path: /promtail-prod-5
     env: prod
+  - project: autoheal-prod-7
+    path: /autoheal-prod-7
+    env: prod
