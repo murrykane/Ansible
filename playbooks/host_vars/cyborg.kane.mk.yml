@@ -1,6 +1,6 @@
 infisical_containers:
-  - project: autoheal-prod-1
-    path: /autoheal-prod-1
+  - project: autoheal-prod-2
+    path: /autoheal-prod-2
     env: prod
   - project: checkmk-prod-1
     path: /checkmk-prod-1
