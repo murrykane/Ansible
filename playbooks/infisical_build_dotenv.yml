@@ -75,7 +75,7 @@
       ansible.builtin.copy:
         content: "{{ item.stdout }}"
         dest: "{{ home_dir }}/{{ item.item.project }}/{{ output_file }}"
-        mode: "0400"
+        mode: "0440"
         owner: "{{ infisical_owner }}"
         group: "{{ infisical_group }}"
       loop: "{{ project_env.results }}"
@@ -143,7 +143,7 @@
       ansible.builtin.copy:
         content: "{{ item.stdout }}"
         dest: "{{ dockhand_home_dir }}/{{ item.item.project }}/{{ output_file }}"
-        mode: "0400"
+        mode: "0440"
         owner: "{{ dockhand_owner }}"
         group: "{{ dockhand_group }}"
       loop: "{{ dockhand_env.results }}"
@@ -198,7 +198,7 @@
       ansible.builtin.copy:
         content: "{{ item.stdout }}"
         dest: "{{ dockhand_repo_home_dir }}/{{ item.item.project }}/{{ output_file }}"
-        mode: "0400"
+        mode: "0440"
         owner: "{{ dockhand_owner }}"
         group: "{{ dockhand_group }}"
       loop: "{{ dockhand_env.results }}"
@@ -230,7 +230,7 @@
       ansible.builtin.copy:
         content: "{{ item.0.stdout }}"
         dest: "{{ dockhand_repo_home_dir }}/{{ item.0.item.project }}/{{ output_file }}"
-        mode: "0400"
+        mode: "0440"
         owner: "{{ dockhand_owner }}"
         group: "{{ dockhand_group }}"
       with_nested:
@@ -271,7 +271,7 @@
       ansible.builtin.copy:
         content: "{{ item.stdout | trim }}"
         dest: "{{ home_dir }}/{{ item.item.project }}/cf-token"
-        mode: "0400"
+        mode: "0440"
         owner: "{{ infisical_owner }}"
         group: "{{ infisical_group }}"
       loop: "{{ cf_token.results }}"
