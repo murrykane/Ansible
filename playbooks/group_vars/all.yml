@@ -6,19 +6,20 @@ infisical_bin: infisical
 infisical_log: false
 
 dockhand_home_dir: /opt/repos/kaneworld
-dockhand_writer: false
+#dockhand_writer: true
 dockhand_containers: "{{ hostvars.values() | map(attribute='infisical_containers', default=[]) | sum(start=[]) }}"
 
 dockhand_selfmanaged_containers:
   - project: dockhand-prod-1
     path: /dockhand-prod-1
+    host: cyborg.kane.mk
     env: prod
-  # this is on docker-ceph.kane.mk 
-  # - project: postgres-prod-1
-  #   path: /postgres-prod-1
-  #   env: prod
+  - project: postgres-prod-1
+    path: /postgres-prod-1
+    host: docker-ceph.kane.mk
+    env: prod
 
-dockhand_manage_host: cyborg.kane.mk
+#dockhand_manage_host: cyborg.kane.mk
 dockhand_repo_home_dir: /opt/repos/kaneworld
 dockhand_sync_hosts:
   - mkserver.kane.mk
