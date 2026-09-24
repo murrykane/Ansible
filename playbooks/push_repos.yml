@@ -30,10 +30,10 @@
         perms: false
       loop: "{{ repos }}"
 
-# set permissions on synranized repo on cyborg before pushing to other servers since the synchronize module does not preserve permissions 
+# set permissions on synranized repo on cyborg before pushing to other servers since the synchronize module does not preserve permissions
 # when pulling from a remote source (rsync -a does not work with remote sources)
 - name: Pull repos from GitHub to cyborg
-  hosts: cyborg.kane.mk    # will change permissions before pushing to all other servers 
+  hosts: cyborg.kane.mk    # will change permissions before pushing to all other servers
   gather_facts: false
   become: true
   vars_files:
@@ -84,10 +84,10 @@
 
     # lets remove .git and .gitignore files and set permissions on the rest of the tree using native find and chmod since the ansible file module is very slow on large trees
     # adding .ENV files as we will manage these with infisical now!!!
-    - name: Find files to remove 
-      ansible.builtin.find: 
-        paths: "{{ repo_base_path }}" 
-        patterns: 
+    - name: Find files to remove
+      ansible.builtin.find:
+        paths: "{{ repo_base_path }}"
+        patterns:
           - ".git"
           - ".gitignore"
           - "README.md"
@@ -204,6 +204,11 @@
           - "--exclude=.git"
           - "--exclude=.gitignore"
           - "--exclude=README.md"
+          # secrets must never be reasoned about by mtime/size-based rsync —
+          # Infisical writes are the sole authority for these files
+          - "--exclude=.env"
+          - "--exclude=cf-token"
+          - "--exclude=acme.json"
       loop: "{{ repos | selectattr('targets', 'contains', inventory_hostname) | list }}"
       loop_control:
         label: "{{ item.name }} → {{ inventory_hostname }}"
@@ -221,6 +226,12 @@
 # DELETED — data directories, .env files, acme.json, and anything else
 # sitting in the live container directory that isn't tracked in the repo
 # is left completely untouched (no --delete flag on rsync).
+#
+# .env / cf-token / acme.json are ALSO explicitly excluded here so that even
+# if one is ever accidentally present under /opt/repos/kaneworld, this
+# content-blind mtime+size rsync can never propagate it (or its mtime) onto
+# the live container directory. Infisical's own playbook is the only writer
+# for these three files.
 # ---------------------------------------------------------------------------
 - name: Sync matched kaneworld repo directories into live container directories
   #hosts: mkserver.kane.mk,docker-ceph.kane.mk,auth.kane.mk,docker-dev.kane.mk,cyborg.kane.mk,kaneserver.kane.mk,murdognas.kane.mk
@@ -229,7 +240,7 @@
   vars:
     containers_base_path: /home/murry/containers
     kaneworld_repo_path: /opt/repos/kaneworld
- 
+
   tasks:
     - name: Find live container directories on this host
       ansible.builtin.find:
@@ -237,14 +248,14 @@
         file_type: directory
         recurse: false
       register: container_dirs
- 
+
     - name: Find kaneworld repo directories on this host
       ansible.builtin.find:
         paths: "{{ kaneworld_repo_path }}"
         file_type: directory
         recurse: false
       register: repo_dirs
- 
+
     - name: Determine directory names present in both locations
       ansible.builtin.set_fact:
         matched_containers: >-
@@ -252,19 +263,21 @@
             (container_dirs.files | map(attribute='path') | map('basename') | list)
             | intersect(repo_dirs.files | map(attribute='path') | map('basename') | list)
           }}
- 
+
     - name: Show which containers matched a repo directory
       ansible.builtin.debug:
         msg: "{{ matched_containers }}"
- 
+
     - name: Overlay matched repo directories onto the live container directories
       ansible.builtin.command:
         cmd: >
           rsync --chown=murry:murry -ar
+          --exclude=.env
+          --exclude=cf-token
+          --exclude=acme.json
           "{{ kaneworld_repo_path }}/{{ item }}/"
           "{{ containers_base_path }}/{{ item }}/"
       loop: "{{ matched_containers }}"
       loop_control:
         label: "{{ item }}"
       changed_when: true
- 

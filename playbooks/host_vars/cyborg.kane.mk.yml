@@ -29,9 +29,10 @@ infisical_containers:
   - project: semaphore-prod-1
     path: /semaphore-prod-1
     env: prod
-  - project: dockhand-prod-1
-    path: /dockhand-prod-1
-    env: prod
+  # since managed by dockhand_selfmanaged_containers
+  # - project: dockhand-prod-1
+  #   path: /dockhand-prod-1
+  #   env: prod
   - project: it-tools-prod-1
     path: /it-tools-prod-1
     env: prod
