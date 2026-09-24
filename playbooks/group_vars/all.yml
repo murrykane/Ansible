@@ -5,6 +5,8 @@ infisical_group: murry
 infisical_bin: infisical
 infisical_log: false
 
+dockhand_owner: semaphore
+dockhand_group: repogroup
 dockhand_home_dir: /opt/repos/kaneworld
 dockhand_writer: true
 dockhand_containers: "{{ hostvars.values() | map(attribute='infisical_containers', default=[]) | sum(start=[]) }}"
