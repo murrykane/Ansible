@@ -11,6 +11,7 @@ infisical_containers:
   - project: mariadb-prod-1
     path: /mariadb-prod-1
     env: prod
-  - project: postgres-prod-1       # once you fix the compose label
-    path: /postgres-prod-1
-    env: prod
+  # managed by dockhand_selfmanaged_containers
+  # - project: postgres-prod-1       # once you fix the compose label
+  #   path: /postgres-prod-1
+  #   env: prod
