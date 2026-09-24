@@ -13,9 +13,10 @@ dockhand_selfmanaged_containers:
   - project: dockhand-prod-1
     path: /dockhand-prod-1
     env: prod
-  - project: postgres-prod-1
-    path: /postgres-prod-1
-    env: prod
+  # this is on docker-ceph.kane.mk 
+  # - project: postgres-prod-1
+  #   path: /postgres-prod-1
+  #   env: prod
 
 dockhand_manage_host: cyborg.kane.mk
 dockhand_repo_home_dir: /opt/repos/kaneworld
