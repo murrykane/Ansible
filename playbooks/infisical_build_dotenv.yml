@@ -113,6 +113,26 @@
     # these projects: push_repos.yml's repo sync must never be in a
     # position to touch or re-date a secret file, so there is nothing there
     # for it to find.
+    #
+    # dockhand_containers is a FLEET-WIDE union (every host's
+    # infisical_containers, summed) and carries no host-ownership info by
+    # itself. Every task below must operate only on the subset this
+    # specific host actually owns — reusing the same infisical_containers
+    # membership the plain (non-dockhand) write block above already relies
+    # on — or every host in scriptinventory will loop the entire fleet and
+    # attempt `docker compose up -d` locally for projects it doesn't own.
+    # That happened once already (see incident note); do not remove this
+    # filter.
+    - name: Restrict dockhand_containers to projects this host actually owns
+      ansible.builtin.set_fact:
+        dockhand_host_containers: >-
+          {{
+            dockhand_containers
+            | selectattr('project', 'in', (hostvars[inventory_hostname].infisical_containers | default([]) | map(attribute='project') | list))
+            | list
+          }}
+      when: dockhand_writer | default(false)
+
     - name: Ensure dockhand project directories exist
       ansible.builtin.file:
         path: "{{ dockhand_home_dir }}/{{ item.project }}"
@@ -120,12 +140,12 @@
         owner: "{{ dockhand_owner }}"
         group: "{{ dockhand_group }}"
         mode: "0750"
-      loop: "{{ dockhand_containers }}"
+      loop: "{{ dockhand_host_containers | default([]) }}"
       loop_control:
         label: "{{ item.project }}"
       when:
         - dockhand_writer | default(false)
-        - dockhand_containers | length > 0
+        - dockhand_host_containers | default([]) | length > 0
 
     - name: Export secrets from Infisical for dockhand stacks
       ansible.builtin.command:
@@ -139,12 +159,12 @@
           --format=dotenv
       register: dockhand_env
       no_log: "{{ infisical_log }}"
-      loop: "{{ dockhand_containers }}"
+      loop: "{{ dockhand_host_containers | default([]) }}"
       loop_control:
         label: "{{ item.project }}"
       when:
         - dockhand_writer | default(false)
-        - dockhand_containers | length > 0
+        - dockhand_host_containers | default([]) | length > 0
 
     - name: Write rendered {{ output_file }} files for dockhand stacks
       ansible.builtin.copy:
@@ -153,14 +173,14 @@
         mode: "0440"
         owner: "{{ dockhand_owner }}"
         group: "{{ dockhand_group }}"
-      loop: "{{ dockhand_env.results }}"
+      loop: "{{ dockhand_env.results | default([]) }}"
       loop_control:
         label: "{{ item.item.project }}"
       register: dockhand_env_write_results
       no_log: "{{ infisical_log }}"
       when:
         - dockhand_writer | default(false)
-        - dockhand_containers | length > 0
+        - dockhand_host_containers | default([]) | length > 0
 
     - name: Recycle dockhand stacks for changed projects only
       ansible.builtin.shell:
@@ -171,7 +191,7 @@
         label: "{{ item.item.item.project }}"
       when:
         - dockhand_writer | default(false)
-        - dockhand_containers | length > 0
+        - dockhand_host_containers | default([]) | length > 0
         - item.changed
 
     - name: Show docker changes found for changed dockhand projects only
@@ -182,15 +202,15 @@
         label: "{{ item.item.item.project }}"
       when:
         - dockhand_writer | default(false)
-        - dockhand_containers | length > 0
+        - dockhand_host_containers | default([]) | length > 0
         - item.changed
 
     - name: Show summary for dockhand stacks
       ansible.builtin.debug:
-        msg: "Wrote {{ output_file }} files for dockhand: {{ dockhand_containers | map(attribute='project') | list }}"
+        msg: "Wrote {{ output_file }} files for dockhand on this host: {{ dockhand_host_containers | default([]) | map(attribute='project') | list }}"
       when:
         - dockhand_writer | default(false)
-        - dockhand_containers | length > 0
+        - dockhand_host_containers | default([]) | length > 0
     # end added for dockhand secret builds.....
 
     #### added: self-managed dockhand stacks (e.g. dockhand-prod-1) whose
