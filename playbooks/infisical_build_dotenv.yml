@@ -69,7 +69,7 @@
         dockhand_stack_id_map: >-
           {{
             dict(
-              dockhand_git_stacks_raw.json | map(attribute='name') | list
+              dockhand_git_stacks_raw.json | map(attribute='stackName') | list
               | zip(dockhand_git_stacks_raw.json | map(attribute='id') | list)
             )
           }}
