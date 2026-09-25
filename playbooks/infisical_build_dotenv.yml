@@ -280,6 +280,7 @@
       when:
         - dockhand_writer | default(false)
         - dockhand_host_containers | default([]) | length > 0
+        - inventory_hostname not in ['kaneserver.kane.mk', 'murdognas.kane.mk']
 
     - name: Export secrets from Infisical for dockhand stacks
       ansible.builtin.command:
@@ -299,6 +300,7 @@
       when:
         - dockhand_writer | default(false)
         - dockhand_host_containers | default([]) | length > 0
+        - inventory_hostname not in ['kaneserver.kane.mk', 'murdognas.kane.mk']
 
     - name: Write rendered {{ output_file }} files for dockhand stacks
       ansible.builtin.copy:
@@ -315,6 +317,7 @@
       when:
         - dockhand_writer | default(false)
         - dockhand_host_containers | default([]) | length > 0
+        - inventory_hostname not in ['kaneserver.kane.mk', 'murdognas.kane.mk']
 
     # No recycle task here on purpose:
     # this is a second backup copy of the same project .env files.
@@ -328,6 +331,7 @@
       when:
         - dockhand_writer | default(false)
         - dockhand_host_containers | default([]) | length > 0
+        - inventory_hostname not in ['kaneserver.kane.mk', 'murdognas.kane.mk']
 
     ###########################################################################
     # Self-managed Dockhand stacks
