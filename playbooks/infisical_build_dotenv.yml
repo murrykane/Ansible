@@ -44,15 +44,23 @@
       register: infisical_token
       no_log: "{{ infisical_log }}"
 
-    #### added: Dockhand API stack ID lookup, used to recycle git-managed
-    #### stacks via Dockhand itself rather than a local `docker compose`
-    #### shell command. Requires dockhand_api_url and dockhand_api_token
-    #### in your vars file. ASSUMPTION TO VERIFY against your installed
-    #### Dockhand version's own API docs before relying on this: the list
-    #### endpoint path (/api/git/stacks) and that each returned object has
-    #### "name" and "id" fields — adjust the two tasks below if your
-    #### version's response shape differs.
-    - name: Fetch Dockhand git stacks for ID lookup
+    ###########################################################################
+    # Dockhand API stack lookup
+    #
+    # Fetch the Dockhand Git-managed stacks once and build a map keyed by
+    # stackName.
+    #
+    # Each map entry contains:
+    #
+    #   project-name:
+    #     id: 35
+    #     webhookEnabled: true
+    #     webhookSecret: "secret"
+    #
+    # The webhook secret is intentionally kept out of debug output.
+    ###########################################################################
+
+    - name: Fetch Dockhand git stacks for lookup
       ansible.builtin.uri:
         url: "{{ dockhand_api_url }}/api/git/stacks"
         method: GET
@@ -64,17 +72,27 @@
       no_log: "{{ infisical_log }}"
       when: dockhand_writer | default(false)
 
-    - name: Build project-name to Dockhand stack ID map
+    - name: Build project-name to Dockhand stack details map
       ansible.builtin.set_fact:
-        dockhand_stack_id_map: >-
+        dockhand_stack_map: >-
           {{
-            dict(
-              dockhand_git_stacks_raw.json | map(attribute='stackName') | list
-              | zip(dockhand_git_stacks_raw.json | map(attribute='id') | list)
-            )
+            dockhand_stack_map | default({}) | combine({
+              item.stackName: {
+                'id': item.id,
+                'webhookEnabled': item.webhookEnabled | default(false),
+                'webhookSecret': item.webhookSecret | default('')
+              }
+            })
           }}
+      loop: "{{ dockhand_git_stacks_raw.json }}"
+      loop_control:
+        label: "{{ item.stackName }}"
+      no_log: "{{ infisical_log }}"
       when: dockhand_writer | default(false)
-    #### end Dockhand API stack ID lookup
+
+    ###########################################################################
+    # End Dockhand API stack lookup
+    ###########################################################################
 
     - name: Ensure project directories exist
       ansible.builtin.file:
@@ -116,76 +134,135 @@
       register: env_write_results
       no_log: "{{ infisical_log }}"
 
-    #### .env here is now a backup copy only — Dockhand's own Infisical
-    #### secret provider resolves ${VARS} into the compose YAML at deploy
-    #### time. Recycling therefore means telling Dockhand to redeploy via
-    #### its API, not running `docker compose` locally. The two stacks
-    #### that still can't be Git-managed (dockhand_selfmanaged_containers,
-    #### below) are excluded here and keep their own local-CLI recycle.
-    - name: Recycle changed projects via Dockhand API
+    ###########################################################################
+    # Dockhand-managed Git stacks
+    #
+    # .env changes are deployed by Dockhand through its Git stack webhook.
+    # Self-managed Dockhand stacks are excluded and handled later using local
+    # docker compose.
+    ###########################################################################
+
+    - name: Trigger Dockhand webhook for changed Git stacks
       ansible.builtin.uri:
-        url: "{{ dockhand_api_url }}/api/git/stacks/{{ dockhand_stack_id_map[item.item.item.project] }}/sync"
+        url: >-
+          {{ dockhand_api_url }}/api/git/stacks/{{
+            dockhand_stack_map[item.item.item.project].id
+          }}/webhook
         method: POST
         headers:
-          Authorization: "Bearer {{ dockhand_api_token }}"
-        body_format: json
-        # forceRedeploy guarantees the redeploy happens even though the
-        # compose file in git hasn't changed — only the Infisical secret
-        # value has. VERIFY this field name against your Dockhand
-        # version's API docs; it has changed names across releases
-        # (forceRedeploy / forceRecreate).
-        body:
-          forceRedeploy: true
+          X-Gitlab-Token: >-
+            {{ dockhand_stack_map[item.item.item.project].webhookSecret }}
+          Content-Type: "application/json"
+        body: "{}"
+        body_format: raw
         status_code: 200
         return_content: true
       loop: "{{ env_write_results.results }}"
       loop_control:
         label: "{{ item.item.item.project }}"
-      register: dockhand_api_recycle_results
+      register: dockhand_webhook_results
+      no_log: true
       when:
         - item.changed
-        - item.item.item.project not in (dockhand_selfmanaged_containers | default([]) | map(attribute='project') | list)
-        - item.item.item.project in dockhand_stack_id_map
+        - item.item.item.project not in (
+            dockhand_selfmanaged_containers
+            | default([])
+            | map(attribute='project')
+            | list
+          )
+        - item.item.item.project in (dockhand_stack_map | default({}))
+        - dockhand_stack_map[item.item.item.project].webhookEnabled | bool
+        - dockhand_stack_map[item.item.item.project].webhookSecret | length > 0
 
     - name: Warn about changed projects with no matching Dockhand stack
       ansible.builtin.debug:
-        msg: "WARNING: {{ item.item.item.project }} .env changed but no matching Dockhand git stack was found by name — secret NOT applied via API. Check the stack's name in Dockhand vs this project's name."
+        msg: >-
+          WARNING: {{ item.item.item.project }} .env changed but no matching
+          Dockhand git stack was found by name — secret NOT applied via
+          Dockhand webhook. Check the stack's name in Dockhand vs this
+          project's name.
       loop: "{{ env_write_results.results }}"
       loop_control:
         label: "{{ item.item.item.project }}"
       when:
         - item.changed
-        - item.item.item.project not in (dockhand_selfmanaged_containers | default([]) | map(attribute='project') | list)
-        - item.item.item.project not in dockhand_stack_id_map
+        - item.item.item.project not in (
+            dockhand_selfmanaged_containers
+            | default([])
+            | map(attribute='project')
+            | list
+          )
+        - item.item.item.project not in (dockhand_stack_map | default({}))
+
+    - name: Warn about changed projects with webhook disabled
+      ansible.builtin.debug:
+        msg: >-
+          WARNING: {{ item.item.item.project }} .env changed and the matching
+          Dockhand stack exists, but its webhookEnabled value is false.
+          Dockhand webhook was NOT called.
+      loop: "{{ env_write_results.results }}"
+      loop_control:
+        label: "{{ item.item.item.project }}"
+      when:
+        - item.changed
+        - item.item.item.project not in (
+            dockhand_selfmanaged_containers
+            | default([])
+            | map(attribute='project')
+            | list
+          )
+        - item.item.item.project in (dockhand_stack_map | default({}))
+        - not (dockhand_stack_map[item.item.item.project].webhookEnabled | bool)
+
+    - name: Warn about changed projects with no Dockhand webhook secret
+      ansible.builtin.debug:
+        msg: >-
+          WARNING: {{ item.item.item.project }} .env changed and the matching
+          Dockhand stack has webhookEnabled=true, but webhookSecret is empty.
+          Dockhand webhook was NOT called.
+      loop: "{{ env_write_results.results }}"
+      loop_control:
+        label: "{{ item.item.item.project }}"
+      when:
+        - item.changed
+        - item.item.item.project not in (
+            dockhand_selfmanaged_containers
+            | default([])
+            | map(attribute='project')
+            | list
+          )
+        - item.item.item.project in (dockhand_stack_map | default({}))
+        - dockhand_stack_map[item.item.item.project].webhookEnabled | bool
+        - dockhand_stack_map[item.item.item.project].webhookSecret | length == 0
 
     - name: Show summary
       ansible.builtin.debug:
-        msg: "Wrote {{ output_file }} files for: {{ infisical_containers | map(attribute='project') | list }}"
+        msg: >-
+          Wrote {{ output_file }} files for:
+          {{ infisical_containers | map(attribute='project') | list }}
 
-    #### added for dockhand secret builds.....
-    # dockhand_home_dir is the single canonical .env location for
-    # dockhand-managed stacks — the live path the Docker daemon actually
-    # reads at deploy time regardless of which host Dockhand schedules the
-    # container onto. No copy is written under /opt/repos/kaneworld for
-    # these projects: push_repos.yml's repo sync must never be in a
-    # position to touch or re-date a secret file, so there is nothing there
-    # for it to find.
+    ###########################################################################
+    # Dockhand secret builds
     #
-    # dockhand_containers is a FLEET-WIDE union (every host's
-    # infisical_containers, summed) and carries no host-ownership info by
-    # itself. Every task below must operate only on the subset this
-    # specific host actually owns — reusing the same infisical_containers
-    # membership the plain (non-dockhand) write block above already relies
-    # on — or every host in scriptinventory will loop the entire fleet and
-    # attempt `docker compose up -d` locally for projects it doesn't own.
-    # That happened once already (see incident note); do not remove this
-    # filter.
+    # dockhand_home_dir is the single canonical .env location for
+    # Dockhand-managed stacks.
+    ###########################################################################
+
     - name: Restrict dockhand_containers to projects this host actually owns
       ansible.builtin.set_fact:
         dockhand_host_containers: >-
           {{
             dockhand_containers
-            | selectattr('project', 'in', (hostvars[inventory_hostname].infisical_containers | default([]) | map(attribute='project') | list))
+            | selectattr(
+                'project',
+                'in',
+                (
+                  hostvars[inventory_hostname].infisical_containers
+                  | default([])
+                  | map(attribute='project')
+                  | list
+                )
+              )
             | list
           }}
       when: dockhand_writer | default(false)
@@ -239,40 +316,26 @@
         - dockhand_writer | default(false)
         - dockhand_host_containers | default([]) | length > 0
 
-    # No recycle task here on purpose: this write is a second backup copy
-    # (kept under /opt/repos/kaneworld rather than home_dir) of the same
-    # projects the primary block above already recycles via the Dockhand
-    # API. Recycling here too would just double up the same API call.
+    # No recycle task here on purpose:
+    # this is a second backup copy of the same project .env files.
+    # The primary block above handles the Dockhand webhook/recycle.
 
     - name: Show summary for dockhand stacks
       ansible.builtin.debug:
-        msg: "Wrote {{ output_file }} files for dockhand on this host: {{ dockhand_host_containers | default([]) | map(attribute='project') | list }}"
+        msg: >-
+          Wrote {{ output_file }} for dockhand on this host:
+          {{ dockhand_host_containers | default([]) | map(attribute='project') | list }}
       when:
         - dockhand_writer | default(false)
         - dockhand_host_containers | default([]) | length > 0
-    # end added for dockhand secret builds.....
 
-    #### added: self-managed dockhand stacks — dockhand-prod-1 and
-    #### postgres-prod-1 — whose live .env/compose sit directly on their
-    #### own host rather than being Git+Infisical-managed in Dockhand
-    #### (chicken-and-egg problem: each needs its own DB/tool already
-    #### running for Dockhand to be able to manage it via Git at all).
-    #### These are the ONLY two stacks recycled by local `docker compose`
-    #### rather than the Dockhand API. Each entry now carries its own
-    #### `host:` so this one block covers any host, not just cyborg —
-    #### `dockhand_selfmanaged_containers` in your vars needs a `host:`
-    #### field added per entry, e.g.:
-    ####   dockhand_selfmanaged_containers:
-    ####     - project: dockhand-prod-1
-    ####       path: /dockhand-prod-1
-    ####       env: prod
-    ####       host: cyborg.kane.mk
-    ####     - project: postgres-prod-1
-    ####       path: /postgres-prod-1
-    ####       env: prod
-    ####       host: docker-ceph.kane.mk
-    #### `dockhand_manage_host` is no longer used by this block and can be
-    #### removed from vars.
+    ###########################################################################
+    # Self-managed Dockhand stacks
+    #
+    # These stacks are not Git-managed by Dockhand and therefore continue to
+    # use local docker compose.
+    ###########################################################################
+
     - name: Restrict self-managed stacks to the ones this host owns
       ansible.builtin.set_fact:
         dockhand_selfmanaged_host_containers: >-
@@ -332,11 +395,9 @@
         - dockhand_writer | default(false)
         - dockhand_selfmanaged_host_containers | default([]) | length > 0
 
-    # `docker compose up -d` only — no `down` first. Compose recreates just
-    # the containers whose config actually changed in place; a prior
-    # down-then-up left postgres-prod-1 removed with the recreate failing
-    # on a network pool conflict, so the down step is a real outage risk
-    # for no benefit here.
+    # docker compose up -d only.
+    # No down first because that creates an unnecessary outage risk.
+
     - name: Recycle self-managed dockhand stacks for changed projects only
       ansible.builtin.shell:
         cmd: docker compose up -d
@@ -351,7 +412,9 @@
 
     - name: Show docker changes found for changed self-managed dockhand projects only
       ansible.builtin.debug:
-        msg: "Docker Recycle Needed for Self-Managed Dockhand Stack: {{ dockhand_repo_home_dir }}/{{ item.item.item.project }}"
+        msg: >-
+          Docker Recycle Needed for Self-Managed Dockhand Stack:
+          {{ dockhand_repo_home_dir }}/{{ item.item.item.project }}
       loop: "{{ dockhand_selfmanaged_write_results.results | default([]) }}"
       loop_control:
         label: "{{ item.item.item.project }}"
@@ -362,11 +425,16 @@
 
     - name: Show summary for self-managed dockhand stacks
       ansible.builtin.debug:
-        msg: "Wrote {{ output_file }} for self-managed dockhand stacks on this host: {{ dockhand_selfmanaged_host_containers | default([]) | map(attribute='project') | list }}"
+        msg: >-
+          Wrote {{ output_file }} for self-managed dockhand stacks on this host:
+          {{ dockhand_selfmanaged_host_containers | default([]) | map(attribute='project') | list }}
       when:
         - dockhand_writer | default(false)
         - dockhand_selfmanaged_host_containers | default([]) | length > 0
-    #### end self-managed dockhand stacks
+
+    ###########################################################################
+    # Shared Cloudflare API token
+    ###########################################################################
 
     - name: Fetch shared Cloudflare API token
       ansible.builtin.command:
@@ -395,3 +463,4 @@
       loop_control:
         label: "{{ item.item.project }}"
       no_log: "{{ infisical_log }}"
+
