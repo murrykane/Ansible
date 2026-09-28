@@ -155,13 +155,18 @@
           Content-Type: "application/json"
         body: "{}"
         body_format: raw
-        status_code: 200
+        status_code:
+          - 200
+          - 201
+          - 202
+          - 204
+        timeout: 300
         return_content: true
       loop: "{{ env_write_results.results }}"
       loop_control:
         label: "{{ item.item.item.project }}"
       register: dockhand_webhook_results
-      no_log: true
+      no_log: "{{ infisical_log }}"
       when:
         - item.changed
         - item.item.item.project not in (
@@ -173,6 +178,19 @@
         - item.item.item.project in (dockhand_stack_map | default({}))
         - dockhand_stack_map[item.item.item.project].webhookEnabled | bool
         - dockhand_stack_map[item.item.item.project].webhookSecret | length > 0
+
+    - name: Debug Dockhand webhook responses
+      ansible.builtin.debug:
+        msg:
+          project: "{{ item.item.item.project }}"
+          changed: "{{ item.changed }}"
+          status: "{{ item.status | default('unknown') }}"
+          response: "{{ item.content | default('') }}"
+          msg: "{{ item.msg | default('') }}"
+      loop: "{{ dockhand_webhook_results.results | default([]) }}"
+      loop_control:
+        label: "{{ item.item.item.project }}"
+      when: dockhand_webhook_results is defined
 
     - name: Warn about changed projects with no matching Dockhand stack
       ansible.builtin.debug:
