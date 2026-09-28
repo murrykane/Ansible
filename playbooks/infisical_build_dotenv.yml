@@ -179,18 +179,18 @@
         - dockhand_stack_map[item.item.item.project].webhookEnabled | bool
         - dockhand_stack_map[item.item.item.project].webhookSecret | length > 0
 
-    - name: Debug Dockhand webhook responses
-      ansible.builtin.debug:
-        msg:
-          project: "{{ item.item.item.project }}"
-          changed: "{{ item.changed }}"
-          status: "{{ item.status | default('unknown') }}"
-          response: "{{ item.content | default('') }}"
-          msg: "{{ item.msg | default('') }}"
-      loop: "{{ dockhand_webhook_results.results | default([]) }}"
-      loop_control:
-        label: "{{ item.item.item.project }}"
-      when: dockhand_webhook_results is defined
+    # - name: Debug Dockhand webhook responses
+    #   ansible.builtin.debug:
+    #     msg:
+    #       project: "{{ item.item.item.project }}"
+    #       changed: "{{ item.changed }}"
+    #       status: "{{ item.status | default('unknown') }}"
+    #       response: "{{ item.content | default('') }}"
+    #       msg: "{{ item.msg | default('') }}"
+    #   loop: "{{ dockhand_webhook_results.results | default([]) }}"
+    #   loop_control:
+    #     label: "{{ item.item.item.project }}"
+    #   when: dockhand_webhook_results is defined
 
     - name: Warn about changed projects with no matching Dockhand stack
       ansible.builtin.debug:
