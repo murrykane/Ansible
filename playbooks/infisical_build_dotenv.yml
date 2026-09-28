@@ -1,5 +1,9 @@
 - hosts: "{{ scriptinventory }}"
 
+  vars:
+    log_output_default: true
+    log_output: "{{ (log_output | default(log_output_default, true)) | bool }}"
+
   tasks:
 
     - name: Show some variables for this host
@@ -8,6 +12,7 @@
           - "home_dir: {{ home_dir }}"
           - "infisical_url: {{ infisical_url }}"
           - "Output file: {{ output_file }}"
+          - "log output: {{ log_output }}"
           #- "infisical_client_id: {{ infisical_client_id }}"
           #- "infisical_client_secret: {{ infisical_client_secret }}"
           #- "homelab_project_id: {{ infisical_project_id }}"
@@ -42,7 +47,8 @@
           --client-secret={{ infisical_client_secret }}
           --silent --plain
       register: infisical_token
-      no_log: "{{ infisical_log }}"
+      no_log: "{{ log_output }}"
+      #no_log: "{{ infisical_log }}"
 
     ###########################################################################
     # Dockhand API stack lookup
@@ -69,7 +75,7 @@
         return_content: true
         status_code: 200
       register: dockhand_git_stacks_raw
-      no_log: "{{ infisical_log }}"
+      no_log: "{{ log_output }}"
       when: dockhand_writer | default(false)
 
     - name: Build project-name to Dockhand stack details map
@@ -87,7 +93,7 @@
       loop: "{{ dockhand_git_stacks_raw.json }}"
       loop_control:
         label: "{{ item.stackName }}"
-      no_log: "{{ infisical_log }}"
+      no_log: "{{ log_output }}"
       when: dockhand_writer | default(false)
 
     ###########################################################################
@@ -116,7 +122,7 @@
           --path={{ item.path }}
           --format=dotenv
       register: project_env
-      no_log: "{{ infisical_log }}"
+      no_log: "{{ log_output }}"
       loop: "{{ infisical_containers }}"
       loop_control:
         label: "{{ item.project }}"
@@ -132,7 +138,7 @@
       loop_control:
         label: "{{ item.item.project }}"
       register: env_write_results
-      no_log: "{{ infisical_log }}"
+      no_log: "{{ log_output }}"
 
     ###########################################################################
     # Dockhand-managed Git stacks
@@ -166,7 +172,7 @@
       loop_control:
         label: "{{ item.item.item.project }}"
       register: dockhand_webhook_results
-      no_log: "{{ infisical_log }}"
+      no_log: "{{ log_output }}"
       when:
         - item.changed
         - item.item.item.project not in (
@@ -311,7 +317,7 @@
           --path={{ item.path }}
           --format=dotenv
       register: dockhand_env
-      no_log: "{{ infisical_log }}"
+      no_log: "{{ log_output }}"
       loop: "{{ dockhand_host_containers | default([]) }}"
       loop_control:
         label: "{{ item.project }}"
@@ -331,7 +337,7 @@
       loop_control:
         label: "{{ item.item.project }}"
       register: dockhand_env_write_results
-      no_log: "{{ infisical_log }}"
+      no_log: "{{ log_output }}"
       when:
         - dockhand_writer | default(false)
         - dockhand_host_containers | default([]) | length > 0
@@ -393,7 +399,7 @@
           --path={{ item.path }}
           --format=dotenv
       register: dockhand_selfmanaged_env
-      no_log: "{{ infisical_log }}"
+      no_log: "{{ log_output }}"
       loop: "{{ dockhand_selfmanaged_host_containers | default([]) }}"
       loop_control:
         label: "{{ item.project }}"
@@ -412,7 +418,7 @@
       loop_control:
         label: "{{ item.item.project }}"
       register: dockhand_selfmanaged_write_results
-      no_log: "{{ infisical_log }}"
+      no_log: "{{ log_output }}"
       when:
         - dockhand_writer | default(false)
         - dockhand_selfmanaged_host_containers | default([]) | length > 0
@@ -469,7 +475,7 @@
           --path=/traefik
           --plain --silent
       register: cf_token
-      no_log: "{{ infisical_log }}"
+      no_log: "{{ log_output }}"
       loop: "{{ infisical_containers | selectattr('project', 'match', '^traefik') | list }}"
       loop_control:
         label: "{{ item.project }}"
@@ -484,5 +490,5 @@
       loop: "{{ cf_token.results }}"
       loop_control:
         label: "{{ item.item.project }}"
-      no_log: "{{ infisical_log }}"
+      no_log: "{{ log_output }}"
 
