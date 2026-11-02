@@ -128,3 +128,29 @@
 #     port: "12345"
 #     proto: tcp
 #     src: 192.168.1.0/24
+
+# MBK added for cAdvisor to read docker layer data
+- name: Create alloy systemd drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/alloy.service.d
+    state: directory
+    mode: '0755'
+
+- name: Allow alloy to read docker layer data for cAdvisor
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/alloy.service.d/cadvisor.conf
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [Service]
+      AmbientCapabilities=CAP_DAC_READ_SEARCH
+      CapabilityBoundingSet=CAP_DAC_READ_SEARCH
+  when: alloy_has_docker
+  register: alloy_cap_dropin
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when: alloy_cap_dropin.changed
+  notify: Restart alloy
