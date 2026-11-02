@@ -144,8 +144,8 @@
     mode: '0644'
     content: |
       [Service]
-      AmbientCapabilities=CAP_DAC_READ_SEARCH
-      CapabilityBoundingSet=CAP_DAC_READ_SEARCH
+      AmbientCapabilities=CAP_DAC_READ_SEARCH CAP_DAC_OVERRIDE
+      CapabilityBoundingSet=CAP_DAC_READ_SEARCH CAP_DAC_OVERRIDE
   when: alloy_has_docker
   register: alloy_cap_dropin
 
