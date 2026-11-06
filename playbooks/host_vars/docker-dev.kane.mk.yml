@@ -11,3 +11,6 @@ infisical_containers:
   - project: autoheal-dev-1
     path: /autoheal-dev-1
     env: dev
+  - project: beszel-dev-1
+    path: /beszel-dev-1
+    env: dev
