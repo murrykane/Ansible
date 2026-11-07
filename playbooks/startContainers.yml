@@ -2,19 +2,21 @@
 #- hosts: docker:qnap
 - hosts: docker
   become: yes
+  vars:
+    docker_bin: "{{ '/share/CACHEDEV1_DATA/.qpkg/container-station/bin/docker' if inventory_hostname in groups['qnap'] else 'docker' }}"
   tasks:
   - name: Start all containers for Docker
     block:
 
-      - name: Get list of all containers (qnap)
-        shell: /share/CACHEDEV1_DATA/.qpkg/container-station/bin/docker ps -aq
-        register: container_list_qnap
-        when: inventory_hostname in groups['qnap']
+      - name: Get stopped containers
+        shell: "{{ docker_bin }} ps -aq --filter status=exited --filter status=created"
+        register: stopped_containers
+        changed_when: false
 
-      - name: Get list of all containers (linux)
-        shell: docker ps -aq
-        register: container_list_linux
-        when: inventory_hostname not in groups['qnap']
+      - name: Get containers opted out of self-healing
+        shell: "{{ docker_bin }} ps -aq --filter label=selfheal.skip=true"
+        register: skip_containers
+        changed_when: false
 
       - name: Start containers
         docker_container:
@@ -22,5 +24,4 @@
           state: started
           comparisons:
             '*': ignore
-        loop: "{{ (container_list_qnap.stdout_lines if inventory_hostname in groups['qnap'] else container_list_linux.stdout_lines) }}"
-        
+        loop: "{{ stopped_containers.stdout_lines | difference(skip_containers.stdout_lines) }}"
