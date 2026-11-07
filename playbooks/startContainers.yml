@@ -13,10 +13,22 @@
         register: stopped_containers
         changed_when: false
 
-      - name: Get containers opted out of self-healing
-        shell: "{{ docker_bin }} ps -aq --filter label=selfheal.skip=true"
+      - name: Get containers opted out of self-healing (ID and name)
+        shell: "{{ docker_bin }} ps -a --filter label=selfheal.skip=true --format '{% raw %}{{.ID}} {{.Names}}{% endraw %}'"
         register: skip_containers
         changed_when: false
+
+      - name: Build list of skipped container IDs
+        set_fact:
+          skip_ids: "{{ skip_containers.stdout_lines | map('regex_replace', ' .*$', '') | list }}"
+
+      - name: Report skipped containers
+        debug:
+          msg: "Skipping {{ item.split(' ')[1] }} on {{ inventory_hostname }}: selfheal.skip label is set"
+        loop: "{{ skip_containers.stdout_lines }}"
+        loop_control:
+          label: "{{ item.split(' ')[1] }}"
+        when: item.split(' ')[0] in stopped_containers.stdout_lines
 
       - name: Start containers
         docker_container:
@@ -24,4 +36,4 @@
           state: started
           comparisons:
             '*': ignore
-        loop: "{{ stopped_containers.stdout_lines | difference(skip_containers.stdout_lines) }}"
+        loop: "{{ stopped_containers.stdout_lines | difference(skip_ids) }}"
