@@ -272,16 +272,34 @@
     # Dockhand-managed stacks.
     ###########################################################################
 
-    - name: Restrict dockhand_containers to projects this host actually owns
+    # - name: Restrict dockhand_containers to projects this host actually owns
+    #   ansible.builtin.set_fact:
+    #     dockhand_host_containers: >-
+    #       {{
+    #         dockhand_containers
+    #         | selectattr(
+    #             'project',
+    #             'in',
+    #             (
+    #               hostvars[inventory_hostname].infisical_containers
+    #               | default([])
+    #               | map(attribute='project')
+    #               | list
+    #             )
+    #           )
+    #         | list
+    #       }}
+    #   when: dockhand_writer | default(false)
+    - name: Build the fleet-wide set of git-managed Dockhand stacks for cyborg
       ansible.builtin.set_fact:
         dockhand_host_containers: >-
           {{
             dockhand_containers
-            | selectattr(
+            | rejectattr(
                 'project',
                 'in',
                 (
-                  hostvars[inventory_hostname].infisical_containers
+                  dockhand_selfmanaged_containers
                   | default([])
                   | map(attribute='project')
                   | list
@@ -290,7 +308,7 @@
             | list
           }}
       when: dockhand_writer | default(false)
-
+      
     - name: Ensure dockhand project directories exist
       ansible.builtin.file:
         path: "{{ dockhand_home_dir }}/{{ item.project }}"
