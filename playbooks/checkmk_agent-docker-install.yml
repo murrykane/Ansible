@@ -65,7 +65,7 @@
         site: "{{ checkmk_agent_site }}"
         automation_user: "{{ checkmk_user }}"
         automation_secret: "{{ checkmk_pass }}"
-        name: "{{ ansible_hostname }}"
+        name: "{{ ansible_hostname | lower }}"
         folder: "{{ checkmk_folder }}"
         attributes:
           labels: "{{ checkmk_labels_merged | default({}) }}"
@@ -87,7 +87,7 @@
         site: "{{ site }}"
         automation_user: "{{ automation_user }}"
         automation_secret: "{{ automation_secret }}"
-        host_name: "{{ ansible_hostname }}"
+        host_name: "{{ ansible_hostname | lower }}"
         state: "fix_all"
 
     - name: "Start activation on a specific site"
@@ -107,7 +107,7 @@
         --site "{{ site }}"
         --user "{{ automation_user }}"
         --password "{{ automation_secret }}"
-        --hostname "{{ ansible_hostname }}"
+        --hostname "{{ ansible_hostname | lower }}"
         --trust-cert
 
     - name: "Add newly discovered services, update labels and remove vanished services on host."
@@ -116,7 +116,7 @@
         site: "{{ site }}"
         automation_user: "{{ automation_user }}"
         automation_secret: "{{ automation_secret }}"
-        host_name: "{{ ansible_hostname }}"
+        host_name: "{{ ansible_hostname | lower }}"
         state: "fix_all"
 
     - name: "Start activation on a specific site"
@@ -260,7 +260,7 @@
         site: "{{ checkmk_agent_site }}"
         automation_user: "{{ checkmk_user }}"
         automation_secret: "{{ checkmk_pass }}"
-        name: "{{ ansible_hostname }}"
+        name: "{{ ansible_hostname | lower}}"
         attributes: "{{ docker_node_tag_attrs }}"
         state: "present"
 
@@ -323,7 +323,7 @@
     #       tag_address_family: "no-ip"
     #       tag_agent: "no-agent"
     #       parents:
-    #         - "{{ ansible_hostname }}"
+    #         - "{{ ansible_hostname | lower }}"
     #     state: "present"
     #   loop: "{{ docker_container_names.stdout_lines }}"
     #   when: docker_container_names.stdout_lines | length > 0
@@ -333,16 +333,16 @@
         site: "{{ checkmk_agent_site }}"
         automation_user: "{{ checkmk_user }}"
         automation_secret: "{{ checkmk_pass }}"
-        name: "{{ item }}"
+        name: "{{ item | lower}}"
         folder: "/{{ checkmk_docker_folder }}"
         attributes:
           tag_address_family: "no-ip"
           tag_agent: "no-agent"
           parents:
-            - "{{ ansible_hostname }}"
+            - "{{ ansible_hostname | lower }}"
           labels:
             role: docker-container
-            parent_host: "{{ ansible_hostname }}"
+            parent_host: "{{ ansible_hostname | lower }}"
         state: "present"
       loop: "{{ docker_container_names.stdout_lines }}"
       when: docker_container_names.stdout_lines | length > 0 
@@ -370,7 +370,7 @@
         site: "{{ site }}"
         automation_user: "{{ automation_user }}"
         automation_secret: "{{ automation_secret }}"
-        host_name: "{{ ansible_hostname }}"
+        host_name: "{{ ansible_hostname | lower }}"
         state: "fix_all"
 
     # -------------------------------------------------------------------------
@@ -382,7 +382,7 @@
         site: "{{ site }}"
         automation_user: "{{ automation_user }}"
         automation_secret: "{{ automation_secret }}"
-        host_name: "{{ item }}"
+        host_name: "{{ item | lower }}"
         state: "fix_all"
       loop: "{{ docker_container_names.stdout_lines }}"
       when: docker_container_names.stdout_lines | length > 0
