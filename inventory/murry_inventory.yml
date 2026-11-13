@@ -16,6 +16,8 @@ all:
       hosts:
         dns-primary.kane.mk: 
         dns-secondary.kane.mk:
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
     ubuntu:
       hosts:
         mkserver.kane.mk:
@@ -101,6 +103,13 @@ all:
           - "DNS:192.168.1.215"
           - "DNS:192.168.1.219"
           - "DNS:192.168.1.4"
+    checkmk:
+      children:
+        prox:
+        unraid:
+        qnap:
+        ubuntu:
+        lxc:
     unifi:
       hosts:
         unifi.kane.mk:

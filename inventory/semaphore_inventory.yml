@@ -113,11 +113,13 @@ all:
           - "DNS:192.168.1.215"
           - "DNS:192.168.1.219"
           - "DNS:192.168.1.4"
-    CheckMK:
+    checkmk:
       children:
         prox:
         unraid:
         qnap:
+        ubuntu:
+        lxc:
     unifi:
       hosts:
         unifi.kane.mk:

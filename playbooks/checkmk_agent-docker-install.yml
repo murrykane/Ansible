@@ -400,3 +400,55 @@
         sites:
           - "{{ site }}"
       run_once: true
+
+# =============================================================================
+# LABEL-ONLY UPDATE
+# Runs against all hosts in [checkmk] inventory group.
+# Used for hosts that don't run the full agent install play above
+# (proxmox, unraid, qnap) but still need labels applied in Checkmk.
+# =============================================================================
+- name: "Apply Checkmk labels to all managed hosts"
+  hosts: checkmk
+  gather_facts: false
+  vars:
+    checkmk_agent_server: checkmk.local.kaneworld.org
+    checkmk_agent_site: KaneCo
+
+  tasks:
+
+    - name: Include vars
+      ansible.builtin.include_vars: vars/checkmk_secrets.yml
+
+    - name: "Build host labels from group_vars"
+      ansible.builtin.set_fact:
+        checkmk_labels_merged: "{{ checkmk_host_labels | default({}) }}"
+
+    - name: "Debug labels (remove once confirmed working)"
+      ansible.builtin.debug:
+        msg:
+          - "host: {{ inventory_hostname }}"
+          - "groups: {{ group_names }}"
+          - "labels: {{ checkmk_labels_merged }}"
+
+    - name: "Apply labels to host in Checkmk"
+      checkmk.general.host:
+        server_url: "https://{{ checkmk_agent_server }}"
+        site: "{{ checkmk_agent_site }}"
+        automation_user: "{{ checkmk_user }}"
+        automation_secret: "{{ checkmk_pass }}"
+        name: "{{ inventory_hostname | regex_replace('\\.kane\\.mk$', '') }}"
+        attributes:
+          labels: "{{ checkmk_labels_merged }}"
+        state: "present"
+      when: checkmk_labels_merged | length > 0
+
+    - name: "Activate changes"
+      checkmk.general.activation:
+        server_url: "https://{{ checkmk_agent_server }}"
+        site: "{{ checkmk_agent_site }}"
+        automation_user: "{{ checkmk_user }}"
+        automation_secret: "{{ checkmk_pass }}"
+        force_foreign_changes: true
+        sites:
+          - "{{ checkmk_agent_site }}"
+      run_once: true
