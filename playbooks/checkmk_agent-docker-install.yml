@@ -436,7 +436,7 @@
         site: "{{ checkmk_agent_site }}"
         automation_user: "{{ checkmk_user }}"
         automation_secret: "{{ checkmk_pass }}"
-        name: "{{ inventory_hostname | regex_replace('\\.kane\\.mk$', '') }}"
+        name: "{{ inventory_hostname | regex_replace('\\.kane\\.mk$', '') | lower }}"
         attributes:
           labels: "{{ checkmk_labels_merged }}"
         state: "present"
