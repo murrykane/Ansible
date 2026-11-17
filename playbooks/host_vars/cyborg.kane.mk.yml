@@ -44,3 +44,4 @@ infisical_containers:
 dockhand_owner: "semaphore"   # e.g. dockhand, or a UID-based service account
 dockhand_group: "repogroup"
 dockhand_writer: true
+reboot_flag: false
