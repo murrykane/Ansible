@@ -59,6 +59,16 @@
         enabled: true
         state: started
 
+    # - name: "Set CheckMK agent hostname override to lowercase"
+    #   become: true
+    #   ansible.builtin.copy:
+    #     dest: /etc/check_mk/main.cfg
+    #     owner: root
+    #     group: root
+    #     mode: '0644'
+    #     content: |
+    #       hostname = "{{ ansible_hostname | lower }}"
+
     - name: "Create a host with IP address and labels."
       checkmk.general.host:
         server_url: "https://{{ checkmk_agent_server }}"

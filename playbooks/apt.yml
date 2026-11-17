@@ -55,3 +55,41 @@
         content: "{{ discord_message }}"
         username: Ansible
         avatar_url: "https://pantheon.tech/wp-content/uploads/2019/04/ansible.png"
+
+# unique to reboot cyborg.kane.mk host (Semaphore) - this is a separate playbook because it needs to run on the Semaphore host itself, 
+# and it needs to schedule a reboot after the run finishes, so that the Semaphore run can finish before the reboot occurs.
+- hosts: "{{ scriptinventory }}"
+  become: yes
+  gather_facts: false
+
+  vars:
+    semaphore_host: cyborg.kane.mk
+    reboot_delay_minutes: 1
+
+  tasks:
+    - name: Check reboot status on the Semaphore host
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+        get_checksum: false
+      register: semaphore_reboot
+      when: inventory_hostname == semaphore_host
+
+    - name: Notify Discord that the Semaphore host will reboot
+      community.general.discord:
+        webhook_id: "1149362209001054268"
+        webhook_token: "{{ discord_webhook_token }}"
+        content: "Semaphore host [{{ inventory_hostname }}] needs a reboot. It will reboot in {{ reboot_delay_minutes }} minute(s), after this run finishes."
+        username: Ansible
+        avatar_url: "https://pantheon.tech/wp-content/uploads/2019/04/ansible.png"
+      when:
+        - inventory_hostname == semaphore_host
+        - semaphore_reboot.stat.exists
+
+    - name: Schedule reboot (does not wait, so the Semaphore run can finish)
+      ansible.builtin.command: >
+        shutdown -r +{{ reboot_delay_minutes }}
+        "Ansible: scheduled reboot after package updates"
+      changed_when: true
+      when:
+        - inventory_hostname == semaphore_host
+        - semaphore_reboot.stat.exists
