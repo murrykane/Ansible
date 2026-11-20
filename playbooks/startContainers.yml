@@ -8,8 +8,8 @@
   - name: Start all containers for Docker
     block:
 
-      - name: Get stopped containers
-        shell: "{{ docker_bin }} ps -aq --filter status=exited --filter status=created"
+      - name: Get stopped containers (ID and name)
+        shell: "{{ docker_bin }} ps -a --filter status=exited --filter status=created --format '{% raw %}{{.ID}} {{.Names}}{% endraw %}'"
         register: stopped_containers
         changed_when: false
 
@@ -18,8 +18,9 @@
         register: skip_containers
         changed_when: false
 
-      - name: Build list of skipped container IDs
+      - name: Build ID lists
         set_fact:
+          stopped_ids: "{{ stopped_containers.stdout_lines | map('regex_replace', ' .*$', '') | list }}"
           skip_ids: "{{ skip_containers.stdout_lines | map('regex_replace', ' .*$', '') | list }}"
 
       - name: Report skipped containers
@@ -28,12 +29,23 @@
         loop: "{{ skip_containers.stdout_lines }}"
         loop_control:
           label: "{{ item.split(' ')[1] }}"
-        when: item.split(' ')[0] in stopped_containers.stdout_lines
+        when: item.split(' ')[0] in stopped_ids
 
       - name: Start containers
         docker_container:
-          name: "{{ item }}"
+          name: "{{ item.split(' ')[0] }}"
           state: started
           comparisons:
             '*': ignore
-        loop: "{{ stopped_containers.stdout_lines | difference(skip_ids) }}"
+        loop: "{{ stopped_containers.stdout_lines | reject('match', '^(' ~ (skip_ids | join('|')) ~ ') ') | list if skip_ids | length > 0 else stopped_containers.stdout_lines }}"
+        loop_control:
+          label: "{{ item.split(' ')[1] }}"
+        register: start_results
+
+      - name: Report started containers
+        debug:
+          msg: "Started {{ item.item.split(' ')[1] }} on {{ inventory_hostname }}"
+        loop: "{{ start_results.results }}"
+        loop_control:
+          label: "{{ item.item.split(' ')[1] }}"
+        when: item is changed
