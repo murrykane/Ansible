@@ -370,5 +370,5 @@ records:
     name: freshrss
     ip: mkserver.kane.mk
   - zone: local.kaneworld.org
-    name: dsshub
+    name: rsshub
     ip: mkserver.kane.mk
