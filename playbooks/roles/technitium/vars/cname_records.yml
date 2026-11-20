@@ -366,3 +366,9 @@ records:
   - zone: local.kaneworld.org
     name: vscode-dev
     ip: mkserver.kane.mk
+  - zone: local.kaneworld.org
+    name: freshrss
+    ip: mkserver.kane.mk
+  - zone: local.kaneworld.org
+    name: dsshub
+    ip: mkserver.kane.mk

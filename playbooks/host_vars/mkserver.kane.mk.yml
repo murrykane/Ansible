@@ -38,3 +38,9 @@ infisical_containers:
   - project: mailrise-prod-1
     path: /mailrise-prod-1
     env: prod
+  - project: freshrss-prod-1
+    path: /freshrss-prod-1
+    env: prod
+  - project: rsshub-prod-1
+    path: /rsshub-prod-1
+    env: prod
