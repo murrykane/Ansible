@@ -2,3 +2,4 @@ checkmk_host_labels:
   role: qnap
   os: qnap
   severity: critical
+checkmk_folder: /qnap
