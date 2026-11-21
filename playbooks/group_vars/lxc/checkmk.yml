@@ -2,4 +2,4 @@ checkmk_host_labels:
   role: ubuntu-lxc
   os: ubuntu
   severity: warning
-checkmk_folder: lxc
+checkmk_folder: /lxc

@@ -2,4 +2,4 @@ checkmk_host_labels:
   role: proxmox
   os: proxmox
   severity: critical
-checkmk_folder: prox
+checkmk_folder: /proxmox
