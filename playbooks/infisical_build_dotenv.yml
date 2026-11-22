@@ -17,6 +17,88 @@
           #- "infisical_client_secret: {{ infisical_client_secret }}"
           #- "homelab_project_id: {{ infisical_project_id }}"
 
+    ###########################################################################
+    # CI/CD scoping (driven by the n8n GitHub-CodeDeploy workflow; all optional)
+    #
+    #   target_stacks  list of project names to touch. Empty/absent = everything
+    #                  (previous behaviour, e.g. scheduled or manual runs).
+    #   recycle        false = write .env files only: no Dockhand webhook and no
+    #                  docker compose. n8n then deploys through the Dockhand API.
+    #   force_recycle  true  = recycle the selected stacks even if .env is unchanged
+    #   sync_repo      true  = git pull the repo mirror before recycling
+    #                  self-managed stacks (picks up compose file changes)
+    ###########################################################################
+
+    - name: Normalise CI/CD scoping variables
+      ansible.builtin.set_fact:
+        cd_targets: "{{ target_stacks | default([]) }}"
+        cd_recycle: "{{ recycle | default(true) | bool }}"
+        cd_force: "{{ force_recycle | default(false) | bool }}"
+        cd_sync_repo: "{{ sync_repo | default(false) | bool }}"
+
+    - name: Scope this host's infisical containers to target_stacks
+      ansible.builtin.set_fact:
+        scoped_infisical_containers: >-
+          {{
+            infisical_containers
+            if (cd_targets | length == 0)
+            else (infisical_containers | selectattr('project', 'in', cd_targets) | list)
+          }}
+
+    - name: Build the fleet-wide set of git-managed Dockhand stacks for cyborg
+      ansible.builtin.set_fact:
+        dockhand_host_containers: >-
+          {{
+            dockhand_containers
+            | rejectattr(
+                'project',
+                'in',
+                (
+                  dockhand_selfmanaged_containers
+                  | default([])
+                  | map(attribute='project')
+                  | list
+                )
+              )
+            | list
+          }}
+      when: dockhand_writer | default(false)
+
+    - name: Scope git-managed Dockhand stacks to target_stacks
+      ansible.builtin.set_fact:
+        dockhand_host_containers: >-
+          {{ dockhand_host_containers | selectattr('project', 'in', cd_targets) | list }}
+      when:
+        - dockhand_writer | default(false)
+        - cd_targets | length > 0
+
+    - name: Restrict self-managed stacks to the ones this host owns
+      ansible.builtin.set_fact:
+        dockhand_selfmanaged_host_containers: >-
+          {{
+            dockhand_selfmanaged_containers | default([])
+            | selectattr('host', 'equalto', inventory_hostname)
+            | list
+          }}
+      when: dockhand_writer | default(false)
+
+    - name: Scope self-managed stacks to target_stacks
+      ansible.builtin.set_fact:
+        dockhand_selfmanaged_host_containers: >-
+          {{ dockhand_selfmanaged_host_containers | selectattr('project', 'in', cd_targets) | list }}
+      when:
+        - dockhand_writer | default(false)
+        - cd_targets | length > 0
+
+    # When n8n asks for specific stacks, hosts that own none of them stop here.
+    - name: Skip hosts with nothing requested
+      ansible.builtin.meta: end_host
+      when:
+        - cd_targets | length > 0
+        - scoped_infisical_containers | length == 0
+        - dockhand_host_containers | default([]) | length == 0
+        - dockhand_selfmanaged_host_containers | default([]) | length == 0
+
     - name: Check if Infisical CLI is installed
       ansible.builtin.command: "{{ infisical_bin }} --version"
       register: infisical_check
@@ -107,7 +189,7 @@
         owner: "{{ infisical_owner }}"
         group: "{{ infisical_group }}"
         mode: "0750"
-      loop: "{{ infisical_containers }}"
+      loop: "{{ scoped_infisical_containers }}"
       loop_control:
         label: "{{ item.project }}"
 
@@ -123,7 +205,7 @@
           --format=dotenv
       register: project_env
       no_log: "{{ log_output }}"
-      loop: "{{ infisical_containers }}"
+      loop: "{{ scoped_infisical_containers }}"
       loop_control:
         label: "{{ item.project }}"
 
@@ -174,7 +256,8 @@
       register: dockhand_webhook_results
       no_log: "{{ log_output }}"
       when:
-        - item.changed
+        - cd_recycle
+        - item.changed or cd_force
         - item.item.item.project not in (
             dockhand_selfmanaged_containers
             | default([])
@@ -263,7 +346,7 @@
       ansible.builtin.debug:
         msg: >-
           Wrote {{ output_file }} files for:
-          {{ infisical_containers | map(attribute='project') | list }}
+          {{ scoped_infisical_containers | map(attribute='project') | list }}
 
     ###########################################################################
     # Dockhand secret builds
@@ -290,25 +373,6 @@
     #         | list
     #       }}
     #   when: dockhand_writer | default(false)
-    - name: Build the fleet-wide set of git-managed Dockhand stacks for cyborg
-      ansible.builtin.set_fact:
-        dockhand_host_containers: >-
-          {{
-            dockhand_containers
-            | rejectattr(
-                'project',
-                'in',
-                (
-                  dockhand_selfmanaged_containers
-                  | default([])
-                  | map(attribute='project')
-                  | list
-                )
-              )
-            | list
-          }}
-      when: dockhand_writer | default(false)
-      
     - name: Ensure dockhand project directories exist
       ansible.builtin.file:
         path: "{{ dockhand_home_dir }}/{{ item.project }}"
@@ -382,15 +446,16 @@
     # use local docker compose.
     ###########################################################################
 
-    - name: Restrict self-managed stacks to the ones this host owns
-      ansible.builtin.set_fact:
-        dockhand_selfmanaged_host_containers: >-
-          {{
-            dockhand_selfmanaged_containers | default([])
-            | selectattr('host', 'equalto', inventory_hostname)
-            | list
-          }}
-      when: dockhand_writer | default(false)
+    - name: Update repo mirror before recycling self-managed stacks
+      ansible.builtin.command:
+        cmd: git -C {{ dockhand_repo_home_dir }} pull --ff-only
+      register: repo_pull
+      changed_when: "'Already up to date' not in repo_pull.stdout"
+      when:
+        - dockhand_writer | default(false)
+        - dockhand_selfmanaged_host_containers | default([]) | length > 0
+        - cd_recycle
+        - cd_sync_repo
 
     - name: Ensure self-managed dockhand project directories exist
       ansible.builtin.file:
@@ -454,7 +519,8 @@
       when:
         - dockhand_writer | default(false)
         - dockhand_selfmanaged_host_containers | default([]) | length > 0
-        - item.changed
+        - cd_recycle
+        - item.changed or cd_force
 
     - name: Show docker changes found for changed self-managed dockhand projects only
       ansible.builtin.debug:
@@ -494,7 +560,7 @@
           --plain --silent
       register: cf_token
       no_log: "{{ log_output }}"
-      loop: "{{ infisical_containers | selectattr('project', 'match', '^traefik') | list }}"
+      loop: "{{ scoped_infisical_containers | selectattr('project', 'match', '^traefik') | list }}"
       loop_control:
         label: "{{ item.project }}"
 
@@ -509,4 +575,4 @@
       loop_control:
         label: "{{ item.item.project }}"
       no_log: "{{ log_output }}"
-
+      
