@@ -45,3 +45,8 @@ dockhand_owner: "semaphore"   # e.g. dockhand, or a UID-based service account
 dockhand_group: "repogroup"
 dockhand_writer: true
 reboot_flag: false
+
+# apt.yml: this host runs the shared Postgres (Semaphore's database lives here),
+# so it is never rebooted mid-run. A reboot is scheduled N minutes after the run
+# finishes instead. Keep this SMALLER than cyborg's value so the DB is up first.
+scheduled_reboot_minutes: 2

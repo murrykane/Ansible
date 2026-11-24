@@ -14,3 +14,9 @@ infisical_containers:
   - project: postgres-prod-1       # once you fix the compose label
     path: /postgres-prod-1
     env: prod
+
+
+# apt.yml: this host runs the shared Postgres (Semaphore's database lives here),
+# so it is never rebooted mid-run. A reboot is scheduled N minutes after the run
+# finishes instead. Keep this SMALLER than cyborg's value so the DB is up first.
+scheduled_reboot_minutes: 2
