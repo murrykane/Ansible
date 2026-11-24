@@ -2,37 +2,49 @@
 # =============================================================================
 # apt.yml - patch hosts, then reboot them safely.
 #
-#   1. Upgrade   every non-Proxmox host in parallel. The upgrade runs async so a
-#                dropped SSH session (sshd / docker / systemd restarted by a
-#                package) can no longer hang the whole run: Ansible re-polls over a
-#                fresh connection, and a host that is truly stuck fails after 30 min
-#                instead of blocking everyone.
-#   2. Upgrade   Proxmox nodes ONE AT A TIME. Ceph must report HEALTH_OK before the
-#                next node is touched; any failure stops the play.
-#   3. Reboot    ONE host at a time. Each host must come back (and its containers be
-#                healthy) before the next one goes down. A failure stops the play, so
-#                a bad reboot never cascades. Honors reboot_flag (group_vars: ubuntu =
-#                true, prox = false). Hosts that need a reboot but have reboot_flag
-#                false only get a Discord notice.
-#   4. Scheduled reboot for the hosts Semaphore itself depends on (any host that sets
-#                scheduled_reboot_minutes in host_vars: the Semaphore host and the host
-#                running its database). They cannot be rebooted mid-run, so
-#                `shutdown -r +N` is queued and the run finishes first.
+# WHY THIS LOOKS THE WAY IT DOES
+#   Upgrading docker-ce / containerd.io restarts the Docker daemon, which stops every
+#   container on that host. Semaphore itself runs in a container on cyborg, so a bulk
+#   upgrade that touched Docker there killed the running ansible-playbook process
+#   (Semaphore showed the task as "Running" forever). So Docker packages are kept out of
+#   the bulk upgrade and handled separately, and the hosts Semaphore depends on
+#   (cyborg, and the host running its database) are handled AFTER the run has finished.
 #
-# scriptinventory is the Semaphore survey variable (a group or host pattern). The plays
-# below narrow it with :!prox / :&prox.
+#   1. Upgrade   every non-Proxmox host in parallel, with the Docker packages held back.
+#                Runs async so a dropped SSH session cannot hang the run.
+#   2. Upgrade   Proxmox nodes ONE AT A TIME; Ceph must be HEALTH_OK before the next.
+#   3. Docker    upgrade the Docker packages ONE HOST AT A TIME. Every container that was
+#                running before must be running and healthy again before the next host.
+#   4. Reboot    ONE host at a time, same health gate. Honors reboot_flag.
+#   5. Deferred  hosts that set scheduled_reboot_minutes in host_vars (the Semaphore host
+#                and its database host) are NOT touched during the run. A one-shot systemd
+#                timer upgrades Docker there N minutes after the run ends, then reboots
+#                if a reboot is needed. The DB host gets the smaller number so the
+#                database is back before Semaphore restarts.
 #
-# Discord notices are sent from the Semaphore container (delegate_to localhost), never
-# block patching if Discord is down, and need `discord_webhook_token` as before.
+# scriptinventory is the Semaphore survey variable (a group or host pattern).
+# Discord notices are sent from the Semaphore container and never block patching.
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# 1. Upgrade - everything except Proxmox, in parallel
+# 1. Upgrade - everything except Proxmox, in parallel, Docker packages held back
 # -----------------------------------------------------------------------------
-- name: "1/4 Upgrade packages (non-Proxmox hosts, in parallel)"
+- name: "1/5 Upgrade packages (non-Proxmox hosts, in parallel)"
   hosts: "{{ scriptinventory }}:!prox"
   become: true
   gather_facts: false
+
+  vars:
+    # Packages whose upgrade restarts Docker (and every container). Same list is used by
+    # plays 3 and 5 through the YAML anchor below.
+    docker_apt_packages: &docker_apt_packages
+      - docker-ce
+      - docker-ce-cli
+      - docker-ce-rootless-extras
+      - docker-buildx-plugin
+      - docker-compose-plugin
+      - containerd.io
+      - docker.io
 
   tasks:
     - name: Check whether needrestart is installed
@@ -40,11 +52,10 @@
         path: /etc/needrestart/conf.d
       register: needrestart_dir
 
-    # needrestart (Ubuntu 22.04+) restarts services right after the packages that
-    # need it. When that service is sshd, docker or systemd-logind it kills the SSH
-    # session Ansible is using. 'l' = list only: reboots happen later, in a controlled
-    # way (play 3/4). Services whose libraries changed (but not the kernel) keep
-    # running the old code until the next reboot.
+    # needrestart restarts services right after the packages that need it, which can kill
+    # the SSH session Ansible is using. 'l' = list only; reboots happen later, in a
+    # controlled way. (This does NOT stop docker-ce's own install script restarting
+    # Docker - that is what the hold below is for.)
     - name: Stop needrestart restarting services during the upgrade
       ansible.builtin.copy:
         dest: /etc/needrestart/conf.d/50-ansible.conf
@@ -56,18 +67,41 @@
           $nrconf{restart} = 'l';
       when: needrestart_dir.stat.exists and needrestart_dir.stat.isdir
 
-    - name: Upgrade all packages
-      ansible.builtin.apt:
-        update_cache: true
-        upgrade: dist
-        lock_timeout: 300
-      async: 1800   # fail this host after 30 min rather than hang the run forever
-      poll: 15      # re-check every 15s over a new connection (survives SSH drops)
+    - name: Find installed Docker packages
+      ansible.builtin.shell: |
+        dpkg-query -W -f='${db:Status-Abbrev} ${binary:Package}\n' {{ docker_apt_packages | join(' ') }} 2>/dev/null | awk '$1=="ii"{print $2}'
+      register: docker_installed
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    - name: Upgrade everything except the Docker packages
+      block:
+        - name: Hold Docker packages for the duration of the upgrade
+          ansible.builtin.dpkg_selections:
+            name: "{{ item }}"
+            selection: hold
+          loop: "{{ docker_installed.stdout_lines }}"
+
+        - name: Upgrade all packages
+          ansible.builtin.apt:
+            update_cache: true
+            upgrade: dist
+            lock_timeout: 300
+          async: 1800   # fail this host after 30 min rather than hang the run forever
+          poll: 15      # re-check every 15s over a new connection (survives SSH drops)
+      always:
+        # Always release the hold, even if the upgrade failed, so nothing stays pinned.
+        - name: Release the hold on the Docker packages
+          ansible.builtin.dpkg_selections:
+            name: "{{ item }}"
+            selection: install
+          loop: "{{ docker_installed.stdout_lines }}"
 
 # -----------------------------------------------------------------------------
 # 2. Upgrade - Proxmox nodes, one at a time, Ceph healthy between nodes
 # -----------------------------------------------------------------------------
-- name: "2/4 Upgrade Proxmox nodes (one at a time)"
+- name: "2/5 Upgrade Proxmox nodes (one at a time)"
   hosts: "{{ scriptinventory }}:&prox"
   become: true
   gather_facts: false
@@ -95,25 +129,136 @@
       when: "'prox-cluster' in group_names"
 
 # -----------------------------------------------------------------------------
-# 3. Reboot - one host at a time, each must be healthy before the next goes down
+# 3. Docker - upgrade the Docker packages one host at a time
+#    Restarting Docker stops every container on the host, so each host must have all
+#    of its previously running containers back and healthy before the next one starts.
+#    Hosts with scheduled_reboot_minutes are skipped here (play 5 handles them).
 # -----------------------------------------------------------------------------
-- name: "3/4 Reboot hosts one at a time"
-  hosts: "{{ scriptinventory }}"
+- name: "3/5 Upgrade Docker packages (one host at a time)"
+  hosts: "{{ scriptinventory }}:!prox"
   become: true
   gather_facts: false
   serial: 1
-  order: sorted   # same order every run (alphabetical)
+  order: sorted
   any_errors_fatal: true
 
   vars:
     discord_webhook_id: "1149362209001054268"
-    reboot_timeout: 900         # seconds to wait for the host to come back
+    docker_apt_packages: *docker_apt_packages
+    health_retries: 30   # x health_delay = 5 min for containers to come back
+    health_delay: 10
+
+  tasks:
+    - name: Skip hosts that are handled after the run (play 5)
+      ansible.builtin.meta: end_host
+      when: scheduled_reboot_minutes is defined
+
+    - name: Find installed Docker packages
+      ansible.builtin.shell: |
+        dpkg-query -W -f='${db:Status-Abbrev} ${binary:Package}\n' {{ docker_apt_packages | join(' ') }} 2>/dev/null | awk '$1=="ii"{print $2}'
+      register: docker_installed
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    - name: Skip hosts without Docker
+      ansible.builtin.meta: end_host
+      when: docker_installed.stdout_lines | length == 0
+
+    # Simulate the install to see whether anything is actually pending.
+    - name: Check whether a Docker upgrade is pending
+      ansible.builtin.shell: >-
+        apt-get -s install --only-upgrade {{ docker_installed.stdout_lines | join(' ') }} | grep -c '^Inst '
+      register: docker_pending
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    - name: Skip hosts whose Docker packages are already current
+      ansible.builtin.meta: end_host
+      when: docker_pending.stdout | default('0') | trim | int == 0
+
+    - name: Discord - upgrading Docker
+      community.general.discord:
+        webhook_id: "{{ discord_webhook_id }}"
+        webhook_token: "{{ discord_webhook_token }}"
+        content: "Upgrading Docker on [{{ inventory_hostname }}]. Its containers will restart."
+        username: Ansible
+        avatar_url: "https://pantheon.tech/wp-content/uploads/2019/04/ansible.png"
+      delegate_to: localhost
+      become: false
+      vars:
+        ansible_python_interpreter: "{{ ansible_playbook_python }}"
+      ignore_errors: true
+
+    - name: Record the containers that are running before the upgrade
+      ansible.builtin.shell: "{{ docker_bin | default('docker') }} ps --format '{% raw %}{{.Names}}{% endraw %}'"
+      register: docker_before
+      changed_when: false
+      check_mode: false
+
+    - name: Upgrade the Docker packages
+      ansible.builtin.apt:
+        name: "{{ docker_installed.stdout_lines }}"
+        state: latest
+        lock_timeout: 300
+      register: docker_upgrade
+      async: 1800
+      poll: 15
+
+    # Gate: every container that was running before must be running again, and none may be
+    # unhealthy / restarting / still starting. A host that does not recover stops the play,
+    # so one bad Docker upgrade can never cascade to the next host.
+    - name: Wait for the same containers to be running and healthy again
+      ansible.builtin.shell: "{{ docker_bin | default('docker') }} ps --format '{% raw %}{{.Names}}|{{.Status}}{% endraw %}'"
+      register: docker_after
+      until: >-
+        docker_after.rc == 0 and
+        (docker_before.stdout_lines
+          | difference(docker_after.stdout_lines | map('regex_replace', '[|].*$', '') | list)
+          | length) == 0 and
+        (docker_after.stdout_lines
+          | select('search', 'unhealthy|Restarting|health: starting')
+          | list | length) == 0
+      retries: "{{ health_retries }}"
+      delay: "{{ health_delay }}"
+      changed_when: false
+      when: docker_upgrade is changed
+
+    - name: Discord - Docker upgraded
+      community.general.discord:
+        webhook_id: "{{ discord_webhook_id }}"
+        webhook_token: "{{ discord_webhook_token }}"
+        content: "Docker upgraded on [{{ inventory_hostname }}] and all {{ docker_before.stdout_lines | length }} containers are back."
+        username: Ansible
+        avatar_url: "https://pantheon.tech/wp-content/uploads/2019/04/ansible.png"
+      delegate_to: localhost
+      become: false
+      vars:
+        ansible_python_interpreter: "{{ ansible_playbook_python }}"
+      ignore_errors: true
+      when: docker_upgrade is changed
+
+# -----------------------------------------------------------------------------
+# 4. Reboot - one host at a time, each must be healthy before the next goes down
+# -----------------------------------------------------------------------------
+- name: "4/5 Reboot hosts one at a time"
+  hosts: "{{ scriptinventory }}"
+  become: true
+  gather_facts: false
+  serial: 1
+  order: sorted
+  any_errors_fatal: true
+
+  vars:
+    discord_webhook_id: "1149362209001054268"
+    reboot_timeout: 900          # seconds to wait for the host to come back
     reboot_settle_seconds: 60    # extra wait after SSH is back, before health checks
     health_retries: 30           # x health_delay = 5 min for containers to be healthy
     health_delay: 10
 
   tasks:
-    # Hosts with scheduled_reboot_minutes are handled by play 4.
+    # Hosts with scheduled_reboot_minutes are handled by play 5.
     - name: Skip hosts that get a scheduled reboot instead
       ansible.builtin.meta: end_host
       when: scheduled_reboot_minutes is defined
@@ -177,8 +322,6 @@
             path: /usr/bin/docker
           register: docker_present
 
-        # Gate: do not reboot the next host until every container here is up and
-        # healthy. If this times out the play stops (any_errors_fatal).
         - name: Wait for all containers to be running and healthy
           ansible.builtin.shell: "{{ docker_bin | default('docker') }} ps --format '{% raw %}{{.Names}}|{{.Status}}{% endraw %}'"
           register: docker_state
@@ -206,17 +349,20 @@
           ignore_errors: true
 
 # -----------------------------------------------------------------------------
-# 4. Scheduled reboot - hosts Semaphore depends on (scheduled_reboot_minutes set)
+# 5. Deferred maintenance - hosts Semaphore depends on (scheduled_reboot_minutes set)
 #    Set in host_vars: docker-ceph (Semaphore's DB) = 2, cyborg (Semaphore) = 10.
-#    The DB host reboots first so the database is back before Semaphore restarts.
+#    Nothing risky happens during the run. A one-shot systemd timer on the host upgrades
+#    Docker and then reboots if needed, N minutes after this run has finished. The timer
+#    belongs to systemd, not Docker, so it survives the Docker restart it causes.
 # -----------------------------------------------------------------------------
-- name: "4/4 Schedule reboots for the Semaphore host and its database host"
+- name: "5/5 Schedule deferred Docker upgrade and reboot (Semaphore host and its database host)"
   hosts: "{{ scriptinventory }}"
   become: true
   gather_facts: false
 
   vars:
     discord_webhook_id: "1149362209001054268"
+    docker_apt_packages: *docker_apt_packages
 
   tasks:
     - name: Skip hosts without a scheduled reboot
@@ -229,11 +375,59 @@
         get_checksum: false
       register: reboot_required
 
-    - name: Discord - scheduled reboot
+    - name: Find installed Docker packages
+      ansible.builtin.shell: |
+        dpkg-query -W -f='${db:Status-Abbrev} ${binary:Package}\n' {{ docker_apt_packages | join(' ') }} 2>/dev/null | awk '$1=="ii"{print $2}'
+      register: docker_installed
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    - name: Check whether a Docker upgrade is pending
+      ansible.builtin.shell: >-
+        apt-get -s install --only-upgrade {{ docker_installed.stdout_lines | join(' ') }} | grep -c '^Inst '
+      register: docker_pending
+      changed_when: false
+      failed_when: false
+      check_mode: false
+      when: docker_installed.stdout_lines | length > 0
+
+    - name: Work out what the deferred job has to do
+      ansible.builtin.set_fact:
+        deferred_docker: "{{ (docker_pending.stdout | default('0') | trim | int) > 0 }}"
+        deferred_reboot: "{{ reboot_required.stat.exists }}"
+
+    - name: Write the deferred maintenance script
+      ansible.builtin.copy:
+        dest: /usr/local/sbin/ansible-deferred-maintenance.sh
+        owner: root
+        group: root
+        mode: "0755"
+        content: |
+          #!/bin/sh
+          # Managed by Ansible (playbooks/apt.yml). Run once by a transient systemd timer.
+          export DEBIAN_FRONTEND=noninteractive
+          {% if deferred_docker %}
+          apt-get install -y -o Dpkg::Options::=--force-confold --only-upgrade {{ docker_installed.stdout_lines | join(' ') }}
+          {% endif %}
+          if [ -f /var/run/reboot-required ]; then
+            systemctl reboot
+          fi
+      when: deferred_docker or deferred_reboot
+
+    - name: Cancel any earlier pending deferred job
+      ansible.builtin.command: systemctl stop ansible-deferred-maintenance.timer
+      changed_when: false
+      failed_when: false
+      when: deferred_docker or deferred_reboot
+
+    - name: Discord - deferred maintenance scheduled
       community.general.discord:
         webhook_id: "{{ discord_webhook_id }}"
         webhook_token: "{{ discord_webhook_token }}"
-        content: "[{{ inventory_hostname }}] needs a reboot. It will reboot in {{ scheduled_reboot_minutes }} minute(s), after this run finishes."
+        content: >-
+          [{{ inventory_hostname }}] will run maintenance in {{ scheduled_reboot_minutes }} minute(s),
+          after this run finishes:{{ ' Docker upgrade (containers restart).' if deferred_docker else '' }}{{ ' Reboot.' if deferred_reboot else '' }}
         username: Ansible
         avatar_url: "https://pantheon.tech/wp-content/uploads/2019/04/ansible.png"
       delegate_to: localhost
@@ -241,14 +435,15 @@
       vars:
         ansible_python_interpreter: "{{ ansible_playbook_python }}"
       ignore_errors: true
-      when: reboot_required.stat.exists
+      when: deferred_docker or deferred_reboot
 
-    - name: Schedule reboot (returns immediately so the Semaphore run can finish)
+    - name: Schedule the deferred job (returns immediately so the Semaphore run can finish)
       ansible.builtin.command:
         argv:
-          - shutdown
-          - -r
-          - "+{{ scheduled_reboot_minutes }}"
-          - "Ansible: scheduled reboot after package updates"
+          - systemd-run
+          - --unit=ansible-deferred-maintenance
+          - "--on-active={{ scheduled_reboot_minutes }}m"
+          - --collect
+          - /usr/local/sbin/ansible-deferred-maintenance.sh
       changed_when: true
-      when: reboot_required.stat.exists
+      when: deferred_docker or deferred_reboot
