@@ -14,3 +14,6 @@ infisical_containers:
   - project: actual-dev-1
     path: /actual-dev-1
     env: dev
+  - project: firefly-dev-1
+    path: /firefly-dev-1
+    env: dev
